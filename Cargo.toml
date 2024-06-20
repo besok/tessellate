@@ -1,0 +1,14 @@
+[package]
+name = "tessellate"
+description = "3D scientific data visualization and plotting in Rust"
+version = "0.1.0"
+edition = "2021"
+authors = ["BorisZhguchev <zhguchev@gmail.com>"]
+license-file = "LICENSE"
+keywords = ["visualization", "science", "geometry", "graphics", ]
+homepage = "https://github.com/besok/tessellate"
+repository = "https://github.com/besok/tessellate"
+categories= ["algorithms", "science" ]
+
+[dependencies]
+ nalgebra = "0.32.6"
