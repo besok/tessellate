@@ -1,5 +1,5 @@
 use tessellate::run;
 
 fn main() {
-    run();
+    pollster::block_on(run());
 }
