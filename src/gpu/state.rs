@@ -1,7 +1,9 @@
 use std::iter;
+use nalgebra::{Point3, Vector3};
 use wgpu::util::DeviceExt;
 use winit::event::WindowEvent;
 use winit::window::Window;
+use crate::gpu::camera::Camera;
 use crate::gpu::vertex::Vertex;
 
 pub struct State<'a> {
@@ -10,13 +12,13 @@ pub struct State<'a> {
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     pub(crate) size: winit::dpi::PhysicalSize<u32>,
-    // NEW!
     render_pipeline: wgpu::RenderPipeline,
     window: &'a Window,
     vertex_buffer: wgpu::Buffer,
     num_vertices: u32,
     index_buffer: wgpu::Buffer,
     num_indices: u32,
+    camera: Camera,
 }
 
 impl<'a> State<'a> {
@@ -102,7 +104,19 @@ impl<'a> State<'a> {
             view_formats: vec![],
             desired_maximum_frame_latency: 2,
         };
-
+        let camera = Camera {
+            // position the camera 1 unit up and 2 units back
+            // +z is out of the screen
+            eye: Point3::new(0.0, 1.0, 2.0),
+            // have it look at the origin
+            target: Point3::new(0.0, 0.0, 0.0),
+            // which way is "up"
+            up: Vector3::y(),
+            aspect: config.width as f32 / config.height as f32,
+            fovy: 45.0,
+            znear: 0.1,
+            zfar: 100.0,
+        };
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("Shader"),
             source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
@@ -175,6 +189,7 @@ impl<'a> State<'a> {
             num_vertices,
             index_buffer,
             num_indices,
+            camera
         }
     }
 

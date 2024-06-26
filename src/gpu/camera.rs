@@ -1,13 +1,13 @@
 use nalgebra::{Matrix4, Point3, Vector3};
 
-struct Camera {
-    eye: Point3<f32>,
-    target: Point3<f32>,
-    up: Vector3<f32>,
-    aspect: f32,
-    fovy: f32,
-    znear: f32,
-    zfar: f32,
+pub struct Camera {
+    pub(crate) eye: Point3<f32>,
+    pub(crate) target: Point3<f32>,
+    pub(crate) up: Vector3<f32>,
+    pub(crate) aspect: f32,
+    pub(crate) fovy: f32,
+    pub(crate) znear: f32,
+    pub(crate) zfar: f32,
 }
 
 impl Camera {
