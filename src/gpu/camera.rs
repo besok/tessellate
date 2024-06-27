@@ -1,18 +1,45 @@
 use nalgebra::{Matrix4, Point3, Vector3};
 
 pub struct Camera {
-    pub(crate) eye: Point3<f32>,
-    pub(crate) target: Point3<f32>,
-    pub(crate) up: Vector3<f32>,
-    pub(crate) aspect: f32,
-    pub(crate) fovy: f32,
-    pub(crate) znear: f32,
-    pub(crate) zfar: f32,
+    eye: Point3<f32>,
+    target: Point3<f32>,
+    up: Vector3<f32>,
+    aspect: f32,
+    fovy: f32,
+    znear: f32,
+    zfar: f32,
 }
 
 impl Camera {
+    pub fn center() -> Self {
+        Self {
+            eye: Point3::new(0.0, 1.0, 2.0),
+            target: Point3::new(0.0, 0.0, 0.0),
+            up: Vector3::y(),
+            aspect: 1.0,
+            fovy: 45.0,
+            znear: 0.1,
+            zfar: 100.0,
+        }
+    }
+    pub fn new(eye: Point3<f32>,
+               target: Point3<f32>,
+               up: Vector3<f32>,
+               aspect: f32,
+               fovy: f32,
+               znear: f32,
+               zfar: f32) -> Self {
+        Self {
+            eye,
+            target,
+            up,
+            aspect,
+            fovy,
+            znear,
+            zfar,
+        }
+    }
     fn build_view_projection_matrix(&self) -> Matrix4<f32> {
-
         let view = Matrix4::look_at_rh(&self.eye, &self.target, &self.up);
 
         let proj =

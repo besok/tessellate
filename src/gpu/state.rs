@@ -4,7 +4,7 @@ use wgpu::util::DeviceExt;
 use winit::event::WindowEvent;
 use winit::window::Window;
 use crate::gpu::camera::Camera;
-use crate::gpu::vertex::Vertex;
+use crate::gpu::vertex::{INDICES, Vertex, VERTICES};
 
 pub struct State<'a> {
     surface: wgpu::Surface<'a>,
@@ -36,10 +36,6 @@ impl<'a> State<'a> {
         });
 
         let surface = instance.create_surface(window).unwrap();
-
-
-
-
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::default(),
@@ -104,19 +100,7 @@ impl<'a> State<'a> {
             view_formats: vec![],
             desired_maximum_frame_latency: 2,
         };
-        let camera = Camera {
-            // position the camera 1 unit up and 2 units back
-            // +z is out of the screen
-            eye: Point3::new(0.0, 1.0, 2.0),
-            // have it look at the origin
-            target: Point3::new(0.0, 0.0, 0.0),
-            // which way is "up"
-            up: Vector3::y(),
-            aspect: config.width as f32 / config.height as f32,
-            fovy: 45.0,
-            znear: 0.1,
-            zfar: 100.0,
-        };
+        let camera = Camera::center();
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("Shader"),
             source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
@@ -259,16 +243,3 @@ impl<'a> State<'a> {
         Ok(())
     }
 }
-const VERTICES: &[Vertex] = &[
-    Vertex { position: [-0.0868241, 0.49240386, 0.0], color: [0.5, 0.0, 0.5] }, // A
-    Vertex { position: [-0.49513406, 0.06958647, 0.0], color: [0.5, 0.0, 0.5] }, // B
-    Vertex { position: [-0.21918549, -0.44939706, 0.0], color: [0.5, 0.0, 0.5] }, // C
-    Vertex { position: [0.35966998, -0.3473291, 0.0], color: [0.5, 0.0, 0.5] }, // D
-    Vertex { position: [0.44147372, 0.2347359, 0.0], color: [0.5, 0.0, 0.5] }, // E
-];
-
-const INDICES: &[u16] = &[
-    0, 1, 4,
-    1, 2, 4,
-    2, 3, 4,
-];
