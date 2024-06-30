@@ -1,6 +1,6 @@
+use env_logger::Builder;
 use crate::gpu::processor::GpuProcessor;
-use std::error::Error;
-use std::fmt::Display;
+use log::{info, LevelFilter};
 use winit::error::EventLoopError;
 use winit::event_loop::{ControlFlow, EventLoop};
 
@@ -9,16 +9,20 @@ mod processor;
 mod vertex;
 mod error;
 
+#[cfg(not(target_arch = "wasm32"))]
+fn init_logger() {
+    Builder::new()
+        .filter(None, LevelFilter::Info)
+        .init();
+    info!("Logger initialized");
+}
+#[cfg(target_arch = "wasm32")]
+fn init_logger() {
+    console_log::init_with_level(log::Level::Debug).expect("error initializing logger");
+    info!("Logger initialized");
+}
 pub async fn run() -> Result<(), EventLoopError> {
-    cfg_if::cfg_if! {
-        if #[cfg(target_arch = "wasm32")] {
-            std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-            console_log::init_with_level(log::Level::Warn).expect("Could't initialize logger");
-        } else {
-            env_logger::init();
-        }
-    }
-
+    init_logger();
     let event_loop = EventLoop::new()?;
     event_loop.set_control_flow(ControlFlow::Poll);
     event_loop.set_control_flow(ControlFlow::Wait);
