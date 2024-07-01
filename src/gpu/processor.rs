@@ -1,15 +1,16 @@
+use crate::gpu::camera::{Camera, CameraController, CameraHandler, CameraUniform};
 use crate::gpu::error::{GpuError, GpuResult};
+use crate::gpu::vertex::{Vertex, INDICES, VERTICES};
 use log::{error, info};
 use std::iter;
 use std::sync::Arc;
-use wgpu::Surface;
 use wgpu::util::DeviceExt;
+use wgpu::Surface;
 use winit::application::ApplicationHandler;
 use winit::event::{ElementState, KeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowId};
-use crate::gpu::vertex::VERTICES;
 
 pub struct GpuProcessor {
     state: State,
@@ -28,7 +29,10 @@ struct GpuHandler {
     size: winit::dpi::PhysicalSize<u32>,
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
-
+    num_vertices: u32,
+    num_indices: u32,
+    index_buffer: wgpu::Buffer,
+    camera_handler: CameraHandler,
 }
 
 impl GpuHandler {
@@ -66,7 +70,11 @@ impl GpuHandler {
             });
 
             render_pass.set_pipeline(&self.render_pipeline);
-            render_pass.draw(0..3, 0..1);
+            render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
+            render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+            render_pass.set_bind_group(0, &self.camera_handler.camera_bind_group(), &[]);
+
+            render_pass.draw_indexed(0..self.num_indices, 0, 0..1);
         }
 
         self.queue.submit(iter::once(encoder.finish()));
@@ -82,6 +90,15 @@ impl GpuHandler {
             self.config.height = new_size.height;
             self.surface.configure(&self.device, &self.config);
         }
+    }
+    fn input(&mut self, event: &WindowEvent) -> bool {
+        self.camera_handler.camera_controller().process_events(event)
+    }
+    fn update(&mut self) {
+        self.camera_handler.update_camera();
+        self.queue.write_buffer(&self.camera_handler.camera_buffer(), 0, bytemuck::cast_slice(&[
+            *self.camera_handler.uniform()
+        ]));
     }
 }
 
@@ -99,6 +116,7 @@ impl GpuProcessor {
             State::Initialized(ref mut s) => Ok(s),
         }
     }
+
 }
 
 impl Default for GpuProcessor {
@@ -122,50 +140,52 @@ impl ApplicationHandler for GpuProcessor {
     }
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
         match self.state() {
-            Ok(s) => {
-                match event {
-                    WindowEvent::CloseRequested
-                    | WindowEvent::KeyboardInput {
-                        event:
+            Ok(s)  => {
+                if !s.input(&event) {
+                    match event {
+                        WindowEvent::CloseRequested
+                        | WindowEvent::KeyboardInput {
+                            event:
                             KeyEvent {
                                 state: ElementState::Pressed,
                                 physical_key: PhysicalKey::Code(KeyCode::Escape),
                                 ..
                             },
-                        ..
-                    } => {
-                        info!("The close button was pressed; stopping");
-                        event_loop.exit();
-                    }
-                    WindowEvent::Resized(physical_size) => {
-                        s.resize(physical_size);
-                    }
-                    WindowEvent::RedrawRequested => {
-                        // This tells winit that we want another frame after this one
-                        s.window.request_redraw();
-
-                        match s.render() {
-                            Ok(_) => {}
-                            Err(GpuError::General(e)) => {
-                                error!("Render failed: {e}");
-                                event_loop.exit();
-                            }
-                            Err(GpuError::WgpuSurfaceError(e)) => match e {
-                                wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated => {
-                                    s.resize(s.size);
-                                }
-                                wgpu::SurfaceError::OutOfMemory => {
-                                    error!("OutOfMemory");
+                            ..
+                        } => {
+                            info!("The close button was pressed; stopping");
+                            event_loop.exit();
+                        }
+                        WindowEvent::Resized(physical_size) => {
+                            s.resize(physical_size);
+                        }
+                        WindowEvent::RedrawRequested => {
+                            // This tells winit that we want another frame after this one
+                            s.window.request_redraw();
+                            s.update();
+                            match s.render() {
+                                Ok(_) => {}
+                                Err(GpuError::General(e)) => {
+                                    error!("Render failed: {e}");
                                     event_loop.exit();
                                 }
-                                wgpu::SurfaceError::Timeout => {
-                                    error!("Surface timeout");
-                                }
-                            },
+                                Err(GpuError::WgpuSurfaceError(e)) => match e {
+                                    wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated => {
+                                        s.resize(s.size);
+                                    }
+                                    wgpu::SurfaceError::OutOfMemory => {
+                                        error!("OutOfMemory");
+                                        event_loop.exit();
+                                    }
+                                    wgpu::SurfaceError::Timeout => {
+                                        error!("Surface timeout");
+                                    }
+                                },
+                            }
                         }
-                    }
 
-                    _ => (),
+                        _ => (),
+                    }
                 }
             }
             Err(e) => {
@@ -234,12 +254,60 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
     });
 
-    let render_pipeline_layout =
-        device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("Render Pipeline Layout"),
-            bind_group_layouts: &[],
-            push_constant_ranges: &[],
+
+    let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        label: Some("Vertex Buffer"),
+        contents: bytemuck::cast_slice(VERTICES),
+        usage: wgpu::BufferUsages::VERTEX,
+    });
+    let num_vertices = VERTICES.len() as u32;
+    let num_indices = INDICES.len() as u32;
+    let index_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        label: Some("Index Buffer"),
+        contents: bytemuck::cast_slice(INDICES),
+        usage: wgpu::BufferUsages::INDEX,
+    });
+    let camera = Camera::center();
+    let mut camera_uniform = CameraUniform::new();
+    camera_uniform.update_view_proj(&camera);
+
+    let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        label: Some("Camera Buffer"),
+        contents: bytemuck::cast_slice(&[camera_uniform]),
+        usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+    });
+    let camera_bind_group_layout =
+        device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
+            label: Some("camera_bind_group_layout"),
         });
+    let camera_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+        layout: &camera_bind_group_layout,
+        entries: &[
+            wgpu::BindGroupEntry {
+                binding: 0,
+                resource: camera_buffer.as_entire_binding(),
+            }
+        ],
+        label: Some("camera_bind_group"),
+    });
+
+    let render_pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        label: Some("Render Pipeline Layout"),
+        bind_group_layouts: &[
+            &camera_bind_group_layout,
+        ],
+        push_constant_ranges: &[],
+    });
 
     let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: Some("Render Pipeline"),
@@ -248,7 +316,7 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
             module: &shader,
             entry_point: "vs_main",
             compilation_options: Default::default(),
-            buffers: &[],
+            buffers: &[Vertex::desc()],
         },
         fragment: Some(wgpu::FragmentState {
             module: &shader,
@@ -286,15 +354,8 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         // indicates how many array layers the attachments will have.
         multiview: None,
     });
-
-    // new()
-    let vertex_buffer = device.create_buffer_init(
-        &wgpu::util::BufferInitDescriptor {
-            label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(VERTICES),
-            usage: wgpu::BufferUsages::VERTEX,
-        }
-    );
+    let camera_controller = CameraController::new(0.2);
+    let camera_handler = CameraHandler::new(camera, camera_uniform, camera_buffer, camera_bind_group,camera_controller);
 
     Ok(GpuHandler {
         window,
@@ -304,6 +365,10 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         config,
         render_pipeline,
         size,
-        vertex_buffer
+        vertex_buffer,
+        num_vertices,
+        index_buffer,
+        num_indices,
+        camera_handler,
     })
 }
