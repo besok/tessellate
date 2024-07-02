@@ -1,16 +1,21 @@
-use crate::gpu::camera::{Camera, CameraController, CameraHandler, CameraUniform};
+use crate::gpu::camera::projection::Projection;
+use crate::gpu::camera::{Camera,   CameraUniform};
 use crate::gpu::error::{GpuError, GpuResult};
+use crate::gpu::instance::Instance;
 use crate::gpu::vertex::{Vertex, INDICES, VERTICES};
 use log::{error, info};
+use nalgebra::Point3;
 use std::iter;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
 use wgpu::Surface;
 use winit::application::ApplicationHandler;
-use winit::event::{ElementState, KeyEvent, WindowEvent};
+use winit::event::{DeviceEvent, ElementState, Event, KeyEvent, MouseButton, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowId};
+use crate::gpu::camera::controller::CameraController;
+use crate::gpu::camera::position::CameraPosition;
 
 pub struct GpuProcessor {
     state: State,
@@ -32,7 +37,9 @@ struct GpuHandler {
     num_vertices: u32,
     num_indices: u32,
     index_buffer: wgpu::Buffer,
-    camera_handler: CameraHandler,
+    camera: Camera,
+    instances: Vec<Instance>,
+    instance_buffer: wgpu::Buffer,
 }
 
 impl GpuHandler {
@@ -72,9 +79,10 @@ impl GpuHandler {
             render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
             render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-            render_pass.set_bind_group(0, &self.camera_handler.camera_bind_group(), &[]);
-
-            render_pass.draw_indexed(0..self.num_indices, 0, 0..1);
+            render_pass.set_bind_group(0, &self.camera.camera_bind_group(), &[]);
+            render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
+            render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+            render_pass.draw_indexed(0..self.num_indices, 0, 0..self.instances.len() as _);
         }
 
         self.queue.submit(iter::once(encoder.finish()));
@@ -89,16 +97,46 @@ impl GpuHandler {
             self.config.width = new_size.width;
             self.config.height = new_size.height;
             self.surface.configure(&self.device, &self.config);
+            self.camera.resize(new_size.width, new_size.height);
         }
     }
     fn input(&mut self, event: &WindowEvent) -> bool {
-        self.camera_handler.camera_controller().process_events(event)
+        match event {
+            WindowEvent::KeyboardInput {
+                event:
+                    KeyEvent {
+                        physical_key: PhysicalKey::Code(key),
+                        state,
+                        ..
+                    },
+                ..
+            } => self.camera.process_keyboard(*key, *state),
+            WindowEvent::MouseWheel { delta, .. } => {
+                self.camera.process_scroll(delta);
+                true
+            }
+            WindowEvent::MouseInput {
+                button: MouseButton::Left,
+                state,
+                ..
+            } => {
+                self.camera
+                    .set_mouse_pressed(*state == ElementState::Pressed);
+                true
+            }
+            _ => false,
+        }
     }
-    fn update(&mut self) {
-        self.camera_handler.update_camera();
-        self.queue.write_buffer(&self.camera_handler.camera_buffer(), 0, bytemuck::cast_slice(&[
-            *self.camera_handler.uniform()
-        ]));
+    fn update(&mut self,dt: instant::Duration) {
+        self.camera.update_camera(dt);
+        self.queue.write_buffer(
+            &self.camera.camera_buffer(),
+            0,
+            bytemuck::cast_slice(&[*self.camera.uniform()]),
+        );
+    }
+    pub fn window(&self) -> &Arc<Window> {
+        &self.window
     }
 }
 
@@ -116,7 +154,6 @@ impl GpuProcessor {
             State::Initialized(ref mut s) => Ok(s),
         }
     }
-
 }
 
 impl Default for GpuProcessor {
@@ -139,18 +176,20 @@ impl ApplicationHandler for GpuProcessor {
         }
     }
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
+        let mut last_render_time = instant::Instant::now();
         match self.state() {
-            Ok(s)  => {
-                if !s.input(&event) {
+            Ok(s) => {
+                if _id == s.window().id() && !s.input(&event) {
                     match event {
+
                         WindowEvent::CloseRequested
                         | WindowEvent::KeyboardInput {
                             event:
-                            KeyEvent {
-                                state: ElementState::Pressed,
-                                physical_key: PhysicalKey::Code(KeyCode::Escape),
-                                ..
-                            },
+                                KeyEvent {
+                                    state: ElementState::Pressed,
+                                    physical_key: PhysicalKey::Code(KeyCode::Escape),
+                                    ..
+                                },
                             ..
                         } => {
                             info!("The close button was pressed; stopping");
@@ -159,10 +198,13 @@ impl ApplicationHandler for GpuProcessor {
                         WindowEvent::Resized(physical_size) => {
                             s.resize(physical_size);
                         }
-                        WindowEvent::RedrawRequested => {
+                        WindowEvent::RedrawRequested if _id == s.window().id() => {
                             // This tells winit that we want another frame after this one
                             s.window.request_redraw();
-                            s.update();
+                            let now = instant::Instant::now();
+                            let dt = now - last_render_time;
+                            last_render_time = now;
+                            s.update(dt);
                             match s.render() {
                                 Ok(_) => {}
                                 Err(GpuError::General(e)) => {
@@ -254,7 +296,6 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
     });
 
-
     let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
         label: Some("Vertex Buffer"),
         contents: bytemuck::cast_slice(VERTICES),
@@ -267,9 +308,10 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         contents: bytemuck::cast_slice(INDICES),
         usage: wgpu::BufferUsages::INDEX,
     });
-    let camera = Camera::center();
+    let camera_pos = CameraPosition::new(Point3::new(0.0, 5.0, 10.0), -90.0, -20.0);
+    let projection = Projection::new(config.width, config.height, 45.0, 0.1, 100.0);
     let mut camera_uniform = CameraUniform::new();
-    camera_uniform.update_view_proj(&camera);
+    camera_uniform.update_view_proj(&camera_pos, &projection);
 
     let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
         label: Some("Camera Buffer"),
@@ -292,20 +334,16 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         });
     let camera_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
         layout: &camera_bind_group_layout,
-        entries: &[
-            wgpu::BindGroupEntry {
-                binding: 0,
-                resource: camera_buffer.as_entire_binding(),
-            }
-        ],
+        entries: &[wgpu::BindGroupEntry {
+            binding: 0,
+            resource: camera_buffer.as_entire_binding(),
+        }],
         label: Some("camera_bind_group"),
     });
 
     let render_pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
         label: Some("Render Pipeline Layout"),
-        bind_group_layouts: &[
-            &camera_bind_group_layout,
-        ],
+        bind_group_layouts: &[&camera_bind_group_layout],
         push_constant_ranges: &[],
     });
 
@@ -316,7 +354,7 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
             module: &shader,
             entry_point: "vs_main",
             compilation_options: Default::default(),
-            buffers: &[Vertex::desc()],
+            buffers: &[Vertex::desc(), Instance::desc()],
         },
         fragment: Some(wgpu::FragmentState {
             module: &shader,
@@ -354,9 +392,51 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         // indicates how many array layers the attachments will have.
         multiview: None,
     });
-    let camera_controller = CameraController::new(0.2);
-    let camera_handler = CameraHandler::new(camera, camera_uniform, camera_buffer, camera_bind_group,camera_controller);
+    let camera_controller = CameraController::new(4.0, 0.4);
+    let camera = Camera::new(
+        camera_pos,
+        camera_uniform,
+        camera_buffer,
+        camera_bind_group,
+        projection,
+        camera_controller,
+    );
 
+    const NUM_INSTANCES_PER_ROW: u32 = 10;
+    let INSTANCE_DISPLACEMENT = nalgebra::Vector3::new(
+        NUM_INSTANCES_PER_ROW as f32 * 0.5,
+        0.0,
+        NUM_INSTANCES_PER_ROW as f32 * 0.5,
+    );
+    let instances = (0..NUM_INSTANCES_PER_ROW)
+        .flat_map(|z| {
+            (0..NUM_INSTANCES_PER_ROW).map(move |x| {
+                let position =
+                    nalgebra::Vector3::new(x as f32, 0.0, z as f32) - INSTANCE_DISPLACEMENT;
+
+                let rotation = if position == nalgebra::Vector3::zeros() {
+                    // this is needed so an object at (0, 0, 0) won't get scaled to zero
+                    // as Quaternions can affect scale if they're not created correctly
+                    nalgebra::UnitQuaternion::from_axis_angle(&nalgebra::Vector3::z_axis(), 0.0)
+                        .into_inner()
+                } else {
+                    nalgebra::UnitQuaternion::from_axis_angle(
+                        &nalgebra::Vector3::z_axis(),
+                        45.0f32.to_radians(),
+                    )
+                    .into_inner()
+                };
+
+                Instance { position, rotation }
+            })
+        })
+        .collect::<Vec<_>>();
+    let instance_data = instances.iter().map(Instance::to_raw).collect::<Vec<_>>();
+    let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        label: Some("Instance Buffer"),
+        contents: bytemuck::cast_slice(&instance_data),
+        usage: wgpu::BufferUsages::VERTEX,
+    });
     Ok(GpuHandler {
         window,
         surface,
@@ -369,6 +449,8 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         num_vertices,
         index_buffer,
         num_indices,
-        camera_handler,
+        camera,
+        instances,
+        instance_buffer,
     })
 }

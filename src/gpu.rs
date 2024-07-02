@@ -8,6 +8,7 @@ mod camera;
 mod processor;
 mod vertex;
 mod error;
+mod instance;
 
 #[cfg(not(target_arch = "wasm32"))]
 fn init_logger() {
