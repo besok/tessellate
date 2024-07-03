@@ -1,7 +1,6 @@
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::utils::SAFE_FRAC_PI_2;
 use nalgebra::Vector3;
-use std::time::Duration;
 use winit::dpi::PhysicalPosition;
 use winit::event::{ElementState, MouseScrollDelta};
 use winit::keyboard::KeyCode;
@@ -80,40 +79,35 @@ impl CameraController {
 
     pub fn process_scroll(&mut self, delta: &MouseScrollDelta) {
         self.scroll = -match delta {
-            // I'm assuming a line is about 100 pixels
             MouseScrollDelta::LineDelta(_, scroll) => scroll * 100.0,
             MouseScrollDelta::PixelDelta(PhysicalPosition { y: scroll, .. }) => *scroll as f32,
         };
     }
 
-    pub fn update_camera(&mut self, camera: &mut CameraPosition, dt: instant::Duration) {
-        let dt = dt.as_secs_f32();
+    pub fn update_camera(&mut self, camera: &mut CameraPosition) {
+
 
         // Move forward/backward and left/right
         let (yaw_sin, yaw_cos) = camera.yaw().sin_cos();
         let forward = Vector3::new(yaw_cos, 0.0, yaw_sin).normalize();
         let right = Vector3::new(-yaw_sin, 0.0, yaw_cos).normalize();
-        let shift = forward * (self.forward - self.backward) * self.speed * dt;
-        camera.update_position(forward * (self.forward - self.backward) * self.speed * dt);
-        camera.update_position(right * (self.right - self.left) * self.speed * dt);
+        camera.update_position(forward * (self.forward - self.backward) * self.speed );
+        camera.update_position(right * (self.right - self.left) * self.speed );
 
-        // Move in/out (aka. "zoom")
-        // Note: this isn't an actual zoom. The camera's position
-        // changes when zooming. I've added this to make it easier
-        // to get closer to an object you want to focus on.
+
         let (pitch_sin, pitch_cos) = camera.pitch().sin_cos();
         let scrollward =
             Vector3::new(pitch_cos * yaw_cos, pitch_sin, pitch_cos * yaw_sin).normalize();
-        camera.update_position(scrollward * self.scroll * self.speed * self.sensitivity * dt);
+        camera.update_position(scrollward * self.scroll * self.speed * self.sensitivity);
         self.scroll = 0.0;
 
         // Move up/down. Since we don't use roll, we can just
         // modify the y coordinate directly.
-        camera.shift_y((self.up - self.down) * self.speed * dt);
+        camera.shift_y((self.up - self.down) * self.speed );
 
         // Rotate
-        camera.update_yaw(self.rotate_hor * self.sensitivity * dt);
-        camera.update_pitch(-self.rotate_ver * self.sensitivity * dt);
+        camera.update_yaw(self.rotate_hor * self.sensitivity );
+        camera.update_pitch(-self.rotate_ver * self.sensitivity);
 
         // If process_mouse isn't called every frame, these values
         // will not get set to zero, and the camera will rotate
@@ -121,11 +115,10 @@ impl CameraController {
         self.rotate_hor = 0.0;
         self.rotate_ver = 0.0;
 
-        // Keep the camera's angle from going too high/low.
         if camera.pitch() < -SAFE_FRAC_PI_2 {
-            camera.update_pitch(-SAFE_FRAC_PI_2);
+            camera.set_pitch(-SAFE_FRAC_PI_2);
         } else if camera.pitch() > SAFE_FRAC_PI_2 {
-            camera.update_pitch(SAFE_FRAC_PI_2);
+            camera.set_pitch(SAFE_FRAC_PI_2);
         }
     }
 }

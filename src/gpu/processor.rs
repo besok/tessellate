@@ -127,8 +127,8 @@ impl GpuHandler {
             _ => false,
         }
     }
-    fn update(&mut self,dt: instant::Duration) {
-        self.camera.update_camera(dt);
+    fn update(&mut self) {
+        self.camera.update_camera();
         self.queue.write_buffer(
             &self.camera.camera_buffer(),
             0,
@@ -176,7 +176,6 @@ impl ApplicationHandler for GpuProcessor {
         }
     }
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
-        let mut last_render_time = instant::Instant::now();
         match self.state() {
             Ok(s) => {
                 if _id == s.window().id() && !s.input(&event) {
@@ -199,12 +198,8 @@ impl ApplicationHandler for GpuProcessor {
                             s.resize(physical_size);
                         }
                         WindowEvent::RedrawRequested if _id == s.window().id() => {
-                            // This tells winit that we want another frame after this one
                             s.window.request_redraw();
-                            let now = instant::Instant::now();
-                            let dt = now - last_render_time;
-                            last_render_time = now;
-                            s.update(dt);
+                            s.update();
                             match s.render() {
                                 Ok(_) => {}
                                 Err(GpuError::General(e)) => {
@@ -308,42 +303,12 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         contents: bytemuck::cast_slice(INDICES),
         usage: wgpu::BufferUsages::INDEX,
     });
-    let camera_pos = CameraPosition::new(Point3::new(0.0, 5.0, 10.0), -90.0, -20.0);
-    let projection = Projection::new(config.width, config.height, 45.0, 0.1, 100.0);
-    let mut camera_uniform = CameraUniform::new();
-    camera_uniform.update_view_proj(&camera_pos, &projection);
 
-    let camera_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-        label: Some("Camera Buffer"),
-        contents: bytemuck::cast_slice(&[camera_uniform]),
-        usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-    });
-    let camera_bind_group_layout =
-        device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            entries: &[wgpu::BindGroupLayoutEntry {
-                binding: 0,
-                visibility: wgpu::ShaderStages::VERTEX,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            }],
-            label: Some("camera_bind_group_layout"),
-        });
-    let camera_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-        layout: &camera_bind_group_layout,
-        entries: &[wgpu::BindGroupEntry {
-            binding: 0,
-            resource: camera_buffer.as_entire_binding(),
-        }],
-        label: Some("camera_bind_group"),
-    });
+    let camera = Camera::init(&config,&device);
 
     let render_pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
         label: Some("Render Pipeline Layout"),
-        bind_group_layouts: &[&camera_bind_group_layout],
+        bind_group_layouts: &[&camera.camera_bind_layout()],
         push_constant_ranges: &[],
     });
 
@@ -392,15 +357,7 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         // indicates how many array layers the attachments will have.
         multiview: None,
     });
-    let camera_controller = CameraController::new(4.0, 0.4);
-    let camera = Camera::new(
-        camera_pos,
-        camera_uniform,
-        camera_buffer,
-        camera_bind_group,
-        projection,
-        camera_controller,
-    );
+
 
     const NUM_INSTANCES_PER_ROW: u32 = 10;
     let INSTANCE_DISPLACEMENT = nalgebra::Vector3::new(
@@ -437,6 +394,7 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         contents: bytemuck::cast_slice(&instance_data),
         usage: wgpu::BufferUsages::VERTEX,
     });
+
     Ok(GpuHandler {
         window,
         surface,

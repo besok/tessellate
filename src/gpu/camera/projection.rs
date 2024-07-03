@@ -25,5 +25,6 @@ impl Projection {
     pub fn calc_matrix(&self) -> Matrix4<f32> {
         let perspective = Perspective3::new(self.aspect, self.fovy, self.znear, self.zfar);
         OPENGL_TO_WGPU_MATRIX * perspective.to_homogeneous()
+
     }
 }

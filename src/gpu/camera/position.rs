@@ -25,6 +25,9 @@ impl CameraPosition {
     pub fn update_pitch(&mut self, shift: f32) {
         self.pitch = self.pitch + shift;
     }
+    pub fn set_pitch(&mut self, shift: f32) {
+        self.pitch =  shift;
+    }
 
     pub fn shift_y(&mut self, shift: f32) {
         self.position = Point3::new(self.position.x, self.position.y + shift, self.position.z);
