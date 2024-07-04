@@ -1,5 +1,7 @@
+use crate::gpu::camera::controller::CameraController;
+use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::projection::Projection;
-use crate::gpu::camera::{Camera,   CameraUniform};
+use crate::gpu::camera::{Camera, CameraUniform};
 use crate::gpu::error::{GpuError, GpuResult};
 use crate::gpu::instance::Instance;
 use crate::gpu::vertex::{Vertex, INDICES, VERTICES};
@@ -14,8 +16,6 @@ use winit::event::{DeviceEvent, ElementState, Event, KeyEvent, MouseButton, Wind
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowId};
-use crate::gpu::camera::controller::CameraController;
-use crate::gpu::camera::position::CameraPosition;
 
 pub struct GpuProcessor {
     state: State,
@@ -38,8 +38,8 @@ struct GpuHandler {
     num_indices: u32,
     index_buffer: wgpu::Buffer,
     camera: Camera,
-    instances: Vec<Instance>,
-    instance_buffer: wgpu::Buffer,
+    // instances: Vec<Instance>,
+    // instance_buffer: wgpu::Buffer,
 }
 
 impl GpuHandler {
@@ -80,9 +80,7 @@ impl GpuHandler {
             render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
             render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
             render_pass.set_bind_group(0, &self.camera.camera_bind_group(), &[]);
-            render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
-            render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-            render_pass.draw_indexed(0..self.num_indices, 0, 0..self.instances.len() as _);
+            render_pass.draw(0..VERTICES.len() as u32, 0..1);
         }
 
         self.queue.submit(iter::once(encoder.finish()));
@@ -180,7 +178,6 @@ impl ApplicationHandler for GpuProcessor {
             Ok(s) => {
                 if _id == s.window().id() && !s.input(&event) {
                     match event {
-
                         WindowEvent::CloseRequested
                         | WindowEvent::KeyboardInput {
                             event:
@@ -304,7 +301,7 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         usage: wgpu::BufferUsages::INDEX,
     });
 
-    let camera = Camera::init(&config,&device);
+    let camera = Camera::init(&config, &device);
 
     let render_pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
         label: Some("Render Pipeline Layout"),
@@ -319,7 +316,7 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
             module: &shader,
             entry_point: "vs_main",
             compilation_options: Default::default(),
-            buffers: &[Vertex::desc(), Instance::desc()],
+            buffers: &[Vertex::desc(), /*Instance::desc()*/],
         },
         fragment: Some(wgpu::FragmentState {
             module: &shader,
@@ -334,20 +331,13 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
                 write_mask: wgpu::ColorWrites::ALL,
             })],
         }),
-        primitive: wgpu::PrimitiveState {
+        primitive: wgpu::PrimitiveState{
             topology: wgpu::PrimitiveTopology::TriangleList,
             strip_index_format: None,
-            front_face: wgpu::FrontFace::Ccw,
-            cull_mode: Some(wgpu::Face::Back),
-            // Setting this to anything other than Fill requires Features::POLYGON_MODE_LINE
-            // or Features::POLYGON_MODE_POINT
-            polygon_mode: wgpu::PolygonMode::Fill,
-            // Requires Features::DEPTH_CLIP_CONTROL
-            unclipped_depth: false,
-            // Requires Features::CONSERVATIVE_RASTERIZATION
-            conservative: false,
+            //cull_mode: Some(wgpu::Face::Back),
+            ..Default::default()
         },
-        depth_stencil: None,
+        depth_stencil: Default::default(),
         multisample: wgpu::MultisampleState {
             count: 1,
             mask: !0,
@@ -359,41 +349,6 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
     });
 
 
-    const NUM_INSTANCES_PER_ROW: u32 = 10;
-    let INSTANCE_DISPLACEMENT = nalgebra::Vector3::new(
-        NUM_INSTANCES_PER_ROW as f32 * 0.5,
-        0.0,
-        NUM_INSTANCES_PER_ROW as f32 * 0.5,
-    );
-    let instances = (0..NUM_INSTANCES_PER_ROW)
-        .flat_map(|z| {
-            (0..NUM_INSTANCES_PER_ROW).map(move |x| {
-                let position =
-                    nalgebra::Vector3::new(x as f32, 0.0, z as f32) - INSTANCE_DISPLACEMENT;
-
-                let rotation = if position == nalgebra::Vector3::zeros() {
-                    // this is needed so an object at (0, 0, 0) won't get scaled to zero
-                    // as Quaternions can affect scale if they're not created correctly
-                    nalgebra::UnitQuaternion::from_axis_angle(&nalgebra::Vector3::z_axis(), 0.0)
-                        .into_inner()
-                } else {
-                    nalgebra::UnitQuaternion::from_axis_angle(
-                        &nalgebra::Vector3::z_axis(),
-                        45.0f32.to_radians(),
-                    )
-                    .into_inner()
-                };
-
-                Instance { position, rotation }
-            })
-        })
-        .collect::<Vec<_>>();
-    let instance_data = instances.iter().map(Instance::to_raw).collect::<Vec<_>>();
-    let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-        label: Some("Instance Buffer"),
-        contents: bytemuck::cast_slice(&instance_data),
-        usage: wgpu::BufferUsages::VERTEX,
-    });
 
     Ok(GpuHandler {
         window,
@@ -408,7 +363,5 @@ fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
         index_buffer,
         num_indices,
         camera,
-        instances,
-        instance_buffer,
     })
 }

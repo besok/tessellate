@@ -17,38 +17,54 @@ impl Vertex {
     }
 }
 
+#[rustfmt::skip]
 pub const VERTICES: &[Vertex] = &[
-    // far side (0.0, 0.0, 1.0)
-    Vertex { position: [-1.0, -1.0, 1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [1.0, -1.0, 1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [1.0, 1.0, 1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [-1.0, 1.0, 1.0], color: [0.5, 0.0, 0.5] },
-    // near side (0.0, 0.0, -1.0)
-    Vertex { position: [-1.0, 1.0, -1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [1.0, 1.0, -1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [1.0, -1.0, -1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [-1.0, -1.0, -1.0], color: [0.5, 0.0, 0.5] },
-    // right side (1.0, 0.0, 0.0)
-    Vertex { position: [1.0, -1.0, -1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [1.0, 1.0, -1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [1.0, 1.0, 1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [1.0, -1.0, 1.0], color: [0.5, 0.0, 0.5] },
-    // left side (-1.0, 0.0, 0.0)
-    Vertex { position: [-1.0, -1.0, 1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [-1.0, 1.0, 1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [-1.0, 1.0, -1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [-1.0, -1.0, -1.0], color: [0.5, 0.0, 0.5] },
-    // top (0.0, 1.0, 0.0)
-    Vertex { position: [1.0, 1.0, -1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [-1.0, 1.0, -1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [-1.0, 1.0, 1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [1.0, 1.0, 1.0], color: [0.5, 0.0, 0.5] },
-// bottom (0.0, -1.0, 0.0)
-    Vertex { position: [1.0, -1.0, 1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [-1.0, -1.0, 1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [-1.0, -1.0, -1.0], color: [0.5, 0.0, 0.5] },
-    Vertex { position: [1.0, -1.0, -1.0], color: [0.5, 0.0, 0.5] },
-];
+    Vertex { position: [-1.0, -1.0, 1.0], color: [0.0, 0.0, 1.0] },
+    Vertex { position: [1.0, -1.0, 1.0], color: [0.0, 0.0, 1.0] },
+    Vertex { position: [-1.0, 1.0, 1.0], color: [0.0, 0.0, 1.0] },
+    Vertex { position: [-1.0, 1.0, 1.0], color: [0.0, 0.0, 1.0] },
+    Vertex { position: [1.0, -1.0, 1.0], color: [0.0, 0.0, 1.0] },
+    Vertex { position: [1.0, 1.0, 1.0], color: [0.0, 0.0, 1.0] },
+
+    // right
+    Vertex { position: [1.0, -1.0, 1.0], color: [1.0,0.0,0.0] },
+    Vertex { position: [1.0, -1.0, -1.0], color: [1.0,0.0,0.0] },
+    Vertex { position: [1.0, 1.0, 1.0], color: [1.0,0.0,0.0] },
+    Vertex { position: [1.0, 1.0, 1.0], color: [1.0,0.0,0.0] },
+    Vertex { position: [1.0, -1.0, -1.0], color: [1.0,0.0,0.0] },
+    Vertex { position: [1.0, 1.0, -1.0], color: [1.0,0.0,0.0] },
+
+    // back
+    Vertex { position: [1.0, -1.0, -1.0], color: [1.0,1.0,0.0] },
+    Vertex { position: [-1.0, -1.0, -1.0], color: [1.0,1.0,0.0] },
+    Vertex { position: [1.0, 1.0, -1.0], color: [1.0,1.0,0.0] },
+    Vertex { position: [1.0, 1.0, -1.0], color: [1.0,1.0,0.0] },
+    Vertex { position: [-1.0, -1.0, -1.0], color: [1.0,1.0,0.0] },
+    Vertex { position: [-1.0, 1.0, -1.0], color: [1.0,1.0,0.0] },
+
+    // left
+    Vertex { position: [-1.0, -1.0, -1.0], color: [0.0,1.0,1.0] },
+    Vertex { position: [-1.0, -1.0, 1.0], color: [0.0,1.0,1.0] },
+    Vertex { position: [-1.0, 1.0, -1.0], color: [0.0,1.0,1.0] },
+    Vertex { position: [-1.0, 1.0, -1.0], color: [0.0,1.0,1.0] },
+    Vertex { position: [-1.0, -1.0, 1.0], color: [0.0,1.0,1.0] },
+    Vertex { position: [-1.0, 1.0, 1.0], color: [0.0,1.0,1.0] },
+
+    Vertex { position: [-1.0, 1.0, 1.0], color: [0.0,1.0,0.0] },
+    Vertex { position: [1.0, 1.0, 1.0], color: [0.0,1.0,0.0] },
+    Vertex { position: [-1.0, 1.0, -1.0], color: [0.0,1.0,0.0] },
+    Vertex { position: [-1.0, 1.0, -1.0], color: [0.0,1.0,0.0] },
+    Vertex { position: [1.0, 1.0, 1.0], color: [0.0,1.0,0.0] },
+    Vertex { position: [1.0, 1.0, -1.0], color: [0.0,1.0,0.0] },
+
+    // Bottom vertices
+    Vertex { position: [-1.0, -1.0, -1.0], color: [1.0,0.0,1.0] },
+    Vertex { position: [1.0, -1.0, -1.0], color: [1.0,0.0,1.0] },
+    Vertex { position: [-1.0, -1.0, 1.0], color: [1.0,0.0,1.0] },
+    Vertex { position: [-1.0, -1.0, 1.0], color: [1.0,0.0,1.0] },
+    Vertex { position: [1.0, -1.0, -1.0], color: [1.0,0.0,1.0] },
+    Vertex { position: [1.0, -1.0, 1.0], color: [1.0, 0.0, 1.0] },
+    ];
 
 pub const INDICES: &[u16] = &[
     0, 1, 2, 2, 3, 0, // far
