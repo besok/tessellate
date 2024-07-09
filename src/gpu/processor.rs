@@ -3,10 +3,12 @@ use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::projection::Projection;
 use crate::gpu::camera::{Camera, CameraUniform};
 use crate::gpu::error::{GpuError, GpuResult};
-use crate::gpu::instance::Instance;
-use crate::gpu::vertex::{Vertex, INDICES, VERTICES};
+use crate::gpu::initializer::create_state;
+use crate::gpu::vertex::Vertex;
 use log::{error, info};
-use nalgebra::Point3;
+use nalgebra::{
+    Matrix4, Orthographic3, Perspective3, Point3, Translation3, UnitQuaternion, Vector3,
+};
 use std::iter;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
@@ -25,21 +27,51 @@ enum State {
     Failed(GpuError),
     Initialized(GpuHandler),
 }
-struct GpuHandler {
+pub struct GpuHandler {
     window: Arc<Window>,
+    instance: wgpu::Instance,
     surface: Surface<'static>,
     device: wgpu::Device,
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     size: winit::dpi::PhysicalSize<u32>,
-    render_pipeline: wgpu::RenderPipeline,
+    pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
     num_vertices: u32,
     num_indices: u32,
-    index_buffer: wgpu::Buffer,
     camera: Camera,
-    // instances: Vec<Instance>,
-    // instance_buffer: wgpu::Buffer,
+}
+
+impl GpuHandler {
+    pub fn new(
+        window: Arc<Window>,
+        instance: wgpu::Instance,
+        surface: Surface<'static>,
+        device: wgpu::Device,
+        queue: wgpu::Queue,
+        config: wgpu::SurfaceConfiguration,
+        size: winit::dpi::PhysicalSize<u32>,
+        pipeline: wgpu::RenderPipeline,
+        vertex_buffer: wgpu::Buffer,
+        num_vertices: u32,
+        num_indices: u32,
+        camera: Camera,
+    ) -> Self {
+        Self {
+            window,
+            instance,
+            surface,
+            device,
+            queue,
+            config,
+            size,
+            pipeline,
+            vertex_buffer,
+            num_vertices,
+            num_indices,
+            camera,
+        }
+    }
 }
 
 impl GpuHandler {
@@ -48,6 +80,22 @@ impl GpuHandler {
         let view = output
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
+
+        let depth_texture = self.device.create_texture(&wgpu::TextureDescriptor {
+            size: wgpu::Extent3d {
+                width: self.config.width,
+                height: self.config.height,
+                depth_or_array_layers: 1,
+            },
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::Depth24Plus,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+            label: None,
+            view_formats: &[],
+        });
+        let depth_view = depth_texture.create_view(&wgpu::TextureViewDescriptor::default());
 
         let mut encoder = self
             .device
@@ -71,16 +119,22 @@ impl GpuHandler {
                         store: wgpu::StoreOp::Store,
                     },
                 })],
-                depth_stencil_attachment: None,
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &depth_view,
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(1.0),
+                        store: wgpu::StoreOp::Discard,
+                    }),
+                    stencil_ops: None,
+                }),
                 occlusion_query_set: None,
                 timestamp_writes: None,
             });
 
-            render_pass.set_pipeline(&self.render_pipeline);
+            render_pass.set_pipeline(&self.pipeline);
             render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
-            render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
             render_pass.set_bind_group(0, &self.camera.camera_bind_group(), &[]);
-            render_pass.draw(0..VERTICES.len() as u32, 0..1);
+            render_pass.draw(0..self.num_vertices, 0..1);
         }
 
         self.queue.submit(iter::once(encoder.finish()));
@@ -96,6 +150,7 @@ impl GpuHandler {
             self.config.height = new_size.height;
             self.surface.configure(&self.device, &self.config);
             self.camera.resize(new_size.width, new_size.height);
+            self.update()
         }
     }
     fn input(&mut self, event: &WindowEvent) -> bool {
@@ -228,140 +283,4 @@ impl ApplicationHandler for GpuProcessor {
             }
         }
     }
-}
-fn create_state(event_loop: &ActiveEventLoop) -> GpuResult<GpuHandler> {
-    let window = Arc::new(event_loop.create_window(Window::default_attributes())?);
-    let size = window.inner_size();
-    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
-        #[cfg(not(target_arch = "wasm32"))]
-        backends: wgpu::Backends::PRIMARY,
-        #[cfg(target_arch = "wasm32")]
-        backends: wgpu::Backends::GL,
-        ..Default::default()
-    });
-    let surface = instance.create_surface(window.clone())?;
-    let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
-        power_preference: wgpu::PowerPreference::default(),
-        compatible_surface: Some(&surface),
-        force_fallback_adapter: false,
-    }))
-    .ok_or(GpuError::new("Failed to request adapter"))?;
-
-    let (device, queue) = pollster::block_on(adapter.request_device(
-        &wgpu::DeviceDescriptor {
-            required_features: wgpu::Features::empty(),
-            // WebGL doesn't support all of wgpu's features, so if
-            // we're building for the web, we'll have to disable some.
-            required_limits: if cfg!(target_arch = "wasm32") {
-                wgpu::Limits::downlevel_webgl2_defaults()
-            } else {
-                wgpu::Limits::default()
-            },
-            label: None,
-        },
-        None, // Trace path
-    ))?;
-
-    let surface_caps = surface.get_capabilities(&adapter);
-    // Shader code in this tutorial assumes an sRGB surface texture. Using a different
-    // one will result in all the colors coming out darker. If you want to support non
-    // sRGB surfaces, you'll need to account for that when drawing to the frame.
-    let surface_format = surface_caps
-        .formats
-        .iter()
-        .find(|f| f.is_srgb())
-        .copied()
-        .unwrap_or(surface_caps.formats[0]);
-    let config = wgpu::SurfaceConfiguration {
-        usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-        format: surface_format,
-        width: size.width,
-        height: size.height,
-        present_mode: surface_caps.present_modes[0],
-        alpha_mode: surface_caps.alpha_modes[0],
-        view_formats: vec![],
-        desired_maximum_frame_latency: 2,
-    };
-
-    let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-        label: Some("Shader"),
-        source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
-    });
-
-    let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-        label: Some("Vertex Buffer"),
-        contents: bytemuck::cast_slice(VERTICES),
-        usage: wgpu::BufferUsages::VERTEX,
-    });
-    let num_vertices = VERTICES.len() as u32;
-    let num_indices = INDICES.len() as u32;
-    let index_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-        label: Some("Index Buffer"),
-        contents: bytemuck::cast_slice(INDICES),
-        usage: wgpu::BufferUsages::INDEX,
-    });
-
-    let camera = Camera::init(&config, &device);
-
-    let render_pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-        label: Some("Render Pipeline Layout"),
-        bind_group_layouts: &[&camera.camera_bind_layout()],
-        push_constant_ranges: &[],
-    });
-
-    let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-        label: Some("Render Pipeline"),
-        layout: Some(&render_pipeline_layout),
-        vertex: wgpu::VertexState {
-            module: &shader,
-            entry_point: "vs_main",
-            compilation_options: Default::default(),
-            buffers: &[Vertex::desc(), /*Instance::desc()*/],
-        },
-        fragment: Some(wgpu::FragmentState {
-            module: &shader,
-            entry_point: "fs_main",
-            compilation_options: Default::default(),
-            targets: &[Some(wgpu::ColorTargetState {
-                format: config.format,
-                blend: Some(wgpu::BlendState {
-                    color: wgpu::BlendComponent::REPLACE,
-                    alpha: wgpu::BlendComponent::REPLACE,
-                }),
-                write_mask: wgpu::ColorWrites::ALL,
-            })],
-        }),
-        primitive: wgpu::PrimitiveState{
-            topology: wgpu::PrimitiveTopology::TriangleList,
-            strip_index_format: None,
-            //cull_mode: Some(wgpu::Face::Back),
-            ..Default::default()
-        },
-        depth_stencil: Default::default(),
-        multisample: wgpu::MultisampleState {
-            count: 1,
-            mask: !0,
-            alpha_to_coverage_enabled: false,
-        },
-        // If the pipeline will be used with a multiview render pass, this
-        // indicates how many array layers the attachments will have.
-        multiview: None,
-    });
-
-
-
-    Ok(GpuHandler {
-        window,
-        surface,
-        device,
-        queue,
-        config,
-        render_pipeline,
-        size,
-        vertex_buffer,
-        num_vertices,
-        index_buffer,
-        num_indices,
-        camera,
-    })
 }

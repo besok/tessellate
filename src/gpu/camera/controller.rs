@@ -1,9 +1,9 @@
 use crate::gpu::camera::position::CameraPosition;
-use crate::gpu::camera::utils::SAFE_FRAC_PI_2;
 use nalgebra::Vector3;
 use winit::dpi::PhysicalPosition;
 use winit::event::{ElementState, MouseScrollDelta};
 use winit::keyboard::KeyCode;
+use crate::gpu::camera::projection::SAFE_FRAC_PI_2;
 
 #[derive(Debug)]
 pub struct CameraController {

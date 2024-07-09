@@ -1,5 +1,4 @@
 use nalgebra::{Const, Matrix4, OMatrix, Point3, Vector3};
-use std::ops::Add;
 
 pub struct CameraPosition {
     position: Point3<f32>,

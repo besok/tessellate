@@ -11,7 +11,6 @@ use crate::gpu::camera::projection::Projection;
 pub mod controller;
 pub mod position;
 pub mod projection;
-mod utils;
 
 pub struct Camera {
     camera: CameraPosition,
@@ -23,6 +22,7 @@ pub struct Camera {
     camera_bind_layout: BindGroupLayout,
     mouse_pressed: bool,
 }
+
 
 impl Camera {
     pub fn init(config: &SurfaceConfiguration, device: &Device) -> Self {
