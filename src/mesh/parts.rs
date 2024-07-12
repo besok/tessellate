@@ -1,17 +1,30 @@
 use std::hash::{Hash, Hasher};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Vertex([f32; 3]);
+pub struct Vertex{
+    pub(crate) x:f32,
+    pub(crate) y:f32,
+    pub(crate) z:f32
+}
 
 impl From<[f32; 3]> for Vertex {
     fn from(value: [f32; 3]) -> Self {
-        Vertex(value)
+        Vertex{
+            x:value[0],
+            y:value[1],
+            z:value[2]
+        }
     }
 }
 
 impl From<[i32; 3]> for Vertex {
     fn from(value: [i32; 3]) -> Self {
-        Vertex([value[0] as f32, value[1] as f32, value[2] as f32])
+        Vertex{
+            x:value[0] as f32,
+            y:value[1] as f32,
+            z:value[2] as f32
+
+        }
     }
 }
 
@@ -19,48 +32,55 @@ impl Eq for Vertex {}
 
 impl Hash for Vertex {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        for &val in &self.0 {
-            val.to_bits().hash(state);
-        }
+
+        self.x.to_bits().hash(state);
+        self.y.to_bits().hash(state);
+        self.z.to_bits().hash(state);
     }
 }
 
-pub struct Edge(pub Vertex, pub Vertex);
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Edge(pub Idx, pub Idx);
+
 
 impl<V> From<(V, V)> for Edge
 where
-    V: Into<Vertex>,
+    V: Into<usize>,
 {
     fn from(value: (V, V)) -> Self {
         Edge(value.0.into(), value.1.into())
     }
 }
-
-pub type BorrowedEdge<'a> = (&'a Vertex, &'a Vertex);
-
 pub type Idx = usize;
 
-pub type VColor = [f32; 4];
-pub type VNormal = [f32; 3];
-
 pub enum Face {
-    Triangle(Vertex, Vertex, Vertex),
-    Quad(Vertex, Vertex, Vertex, Vertex),
+    Triangle(Idx, Idx, Idx),
+    Quad(Idx, Idx, Idx, Idx),
 }
 
+impl<T: Into<usize>> From<Array34<T>> for Face {
+    fn from(value: Array34<T>) -> Self {
+        match value {
+            Array34::Array3([v1, v2, v3]) => Face::Triangle(v1.into(), v2.into(), v3.into()),
+            Array34::Array4([v1, v2, v3, v4]) => {
+                Face::Quad(v1.into(), v2.into(), v3.into(), v4.into())
+            }
+        }
+    }
+}
 
-pub enum Array34<T> {
+pub enum Array34<T = Idx> {
     Array3([T; 3]),
     Array4([T; 4]),
 }
 
-impl From<[usize; 3]> for Array34<usize> {
+impl From<[usize; 3]> for Array34 {
     fn from(value: [usize; 3]) -> Self {
         Array34::Array3(value)
     }
 }
 
-impl From<[usize; 4]> for Array34<usize> {
+impl From<[usize; 4]> for Array34 {
     fn from(value: [usize; 4]) -> Self {
         Array34::Array4(value)
     }
