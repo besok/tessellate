@@ -1,10 +1,15 @@
+use std::fmt::Display;
 use std::hash::{Hash, Hasher};
-
-use parts::Edge;
 
 use crate::mesh::normals::VertexNormals;
 use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::tables::MeshTables;
+use parts::Edge;
+pub mod material;
+pub mod normals;
+pub mod parts;
+pub mod primitives;
+pub mod tables;
 
 type MeshResult<T> = Result<T, MeshError>;
 
@@ -19,33 +24,21 @@ impl MeshError {
     }
 }
 
-pub mod normals;
-pub mod parts;
-pub mod tables;
-mod primitives;
-
-pub type VColor = [f32; 4];
-
 #[derive(Default)]
 struct Mesh {
     vertices: Vec<Vertex>,
     edges: Vec<Edge>,
     faces: Vec<Face>,
-    v_colors: VertexColors,
 }
 
 impl Mesh {
-
     pub fn get_v(&self, idx: usize) -> MeshResult<&Vertex> {
-        self.vertices.get(idx).ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
+        self.vertices
+            .get(idx)
+            .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
     }
 
-    pub fn from_vertices<V, E, F>(
-        vertices: Vec<V>,
-        edges: Vec<E>,
-        faces: Vec<F>,
-        v_colors: VertexColors,
-    ) -> Self
+    pub fn from_vertices<V, E, F>(vertices: Vec<V>, edges: Vec<E>, faces: Vec<F>) -> Self
     where
         V: Into<Vertex>,
         E: Into<Edge>,
@@ -58,7 +51,6 @@ impl Mesh {
             vertices,
             edges,
             faces,
-            v_colors,
         }
     }
 
@@ -80,17 +72,6 @@ impl Mesh {
     }
 }
 
-enum VertexColors {
-    Present(Vec<VColor>),
-    NotPresent,
-}
-
-impl Default for VertexColors {
-    fn default() -> Self {
-        VertexColors::NotPresent
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use nalgebra::Vector3;
@@ -102,8 +83,8 @@ mod tests {
         use super::*;
         let vertices = vec![[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]];
         let edges: Vec<(Idx, Idx)> = vec![(0, 1), (1, 2), (2, 3), (3, 0)];
-        let faces: Vec<Array34> = vec![[0, 1, 2].into(), [0, 2, 3].into()];
-        let mesh = Mesh::from_vertices(vertices, edges, faces, Default::default());
+        let faces: Vec<Face> = vec![(0, 1, 2).into(), (0, 2, 3).into()];
+        let mesh = Mesh::from_vertices(vertices, edges, faces);
         assert_eq!(mesh.vertices.len(), 4);
         assert_eq!(mesh.edges.len(), 4);
         assert_eq!(mesh.faces.len(), 2);
@@ -114,8 +95,8 @@ mod tests {
         use super::*;
         let vertices = vec![[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]];
         let edges: Vec<(Idx, Idx)> = vec![(0, 1), (1, 2), (2, 3), (3, 0)];
-        let faces: Vec<Array34> = vec![[0, 1, 2].into(), [0, 2, 3].into()];
-        let mesh = Mesh::from_vertices(vertices, edges, faces, Default::default());
+        let faces: Vec<Face> = vec![(0, 1, 2).into(), (0, 2, 3).into()];
+        let mesh = Mesh::from_vertices(vertices, edges, faces);
         let normals = mesh.try_normals().unwrap();
 
         assert_eq!(normals.get_normal(0), Ok(&Vector3::new(0.0, 0.0, 1.0)));

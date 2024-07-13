@@ -1,29 +1,34 @@
 use std::hash::{Hash, Hasher};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Vertex{
-    pub(crate) x:f32,
-    pub(crate) y:f32,
-    pub(crate) z:f32
+pub struct Vertex {
+    pub(crate) x: f32,
+    pub(crate) y: f32,
+    pub(crate) z: f32,
+}
+
+impl Vertex {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Vertex { x, y, z }
+    }
 }
 
 impl From<[f32; 3]> for Vertex {
     fn from(value: [f32; 3]) -> Self {
-        Vertex{
-            x:value[0],
-            y:value[1],
-            z:value[2]
+        Vertex {
+            x: value[0],
+            y: value[1],
+            z: value[2],
         }
     }
 }
 
 impl From<[i32; 3]> for Vertex {
     fn from(value: [i32; 3]) -> Self {
-        Vertex{
-            x:value[0] as f32,
-            y:value[1] as f32,
-            z:value[2] as f32
-
+        Vertex {
+            x: value[0] as f32,
+            y: value[1] as f32,
+            z: value[2] as f32,
         }
     }
 }
@@ -32,7 +37,6 @@ impl Eq for Vertex {}
 
 impl Hash for Vertex {
     fn hash<H: Hasher>(&self, state: &mut H) {
-
         self.x.to_bits().hash(state);
         self.y.to_bits().hash(state);
         self.z.to_bits().hash(state);
@@ -41,7 +45,6 @@ impl Hash for Vertex {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Edge(pub Idx, pub Idx);
-
 
 impl<V> From<(V, V)> for Edge
 where
@@ -58,30 +61,25 @@ pub enum Face {
     Quad(Idx, Idx, Idx, Idx),
 }
 
-impl<T: Into<usize>> From<Array34<T>> for Face {
-    fn from(value: Array34<T>) -> Self {
-        match value {
-            Array34::Array3([v1, v2, v3]) => Face::Triangle(v1.into(), v2.into(), v3.into()),
-            Array34::Array4([v1, v2, v3, v4]) => {
-                Face::Quad(v1.into(), v2.into(), v3.into(), v4.into())
-            }
-        }
+impl From<(usize, usize, usize, usize)> for Face {
+    fn from(value: (usize, usize, usize, usize)) -> Self {
+        Face::Quad(value.0, value.1, value.2, value.3)
     }
 }
 
-pub enum Array34<T = Idx> {
-    Array3([T; 3]),
-    Array4([T; 4]),
-}
-
-impl From<[usize; 3]> for Array34 {
-    fn from(value: [usize; 3]) -> Self {
-        Array34::Array3(value)
+impl From<(usize, usize, usize)> for Face {
+    fn from(value: (usize, usize, usize)) -> Self {
+        Face::Triangle(value.0, value.1, value.2)
     }
 }
 
-impl From<[usize; 4]> for Array34 {
-    fn from(value: [usize; 4]) -> Self {
-        Array34::Array4(value)
+pub enum FaceType {
+    Triangle,
+    Quad,
+}
+
+impl Default for FaceType {
+    fn default() -> Self {
+        FaceType::Quad
     }
 }
