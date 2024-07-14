@@ -1,8 +1,9 @@
-use crate::mesh::Mesh;
-use bytemuck::{Pod, Zeroable};
-use rand::{Rng};
-use std::mem;
 use crate::mesh;
+use crate::mesh::parts::{Face, FaceType};
+use crate::mesh::{Mesh, MeshError};
+use bytemuck::{Pod, Zeroable};
+use rand::Rng;
+use std::mem;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
@@ -27,15 +28,27 @@ impl From<&mesh::parts::Vertex> for Vertex {
         }
     }
 }
+impl TryFrom<&Mesh> for Vec<Vertex> {
+    type Error = MeshError;
+    fn try_from(mesh: &Mesh) -> Result<Self, Self::Error> {
+        Ok(mesh
+            .faces()
+            .iter()
+            .flat_map(face_to_vertex3)
+            .map(|i| mesh.get_v(i))
+            .into_iter()
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
+            .map(Into::into)
+            .collect::<Vec<_>>())
+    }
+}
 
-
-pub fn create_vertices(mesh: &Mesh) -> Vec<Vertex> {
-    mesh.face_vertex()
-        .unwrap_or_default()
-        .into_iter()
-        .map(Into::into)
-        .collect::<Vec<_>>()
-        .to_vec()
+fn face_to_vertex3(face: &Face) -> Vec<usize> {
+    match face {
+        Face::Triangle(a, b, c) => vec![*a, *b, *c],
+        Face::Quad(a, b, c, d) => vec![*a, *b, *c, *a, *c, *d],
+    }
 }
 
 impl Vertex {

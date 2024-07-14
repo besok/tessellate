@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use wgpu::SurfaceError;
+use crate::mesh::MeshError;
 
 #[derive(Debug, Clone)]
 pub enum GpuError {
@@ -17,6 +18,12 @@ impl GpuError {
 impl From<SurfaceError> for GpuError {
     fn from(e: SurfaceError) -> Self {
         GpuError::WgpuSurfaceError(e)
+    }
+}
+
+impl From<MeshError> for GpuError {
+    fn from(e: MeshError) -> Self {
+        GpuError::General(format!("Mesh error: {:?}", e))
     }
 }
 

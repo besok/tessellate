@@ -2,7 +2,7 @@ use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::Camera;
 use crate::gpu::error::{GpuError, GpuResult};
 use crate::gpu::processor::{GpuHandler, GpuProcessor};
-use crate::gpu::vertex::{create_vertices, Vertex};
+use crate::gpu::vertex::{Vertex};
 use crate::mesh::Mesh;
 use glam::Vec3;
 use std::sync::Arc;
@@ -62,7 +62,7 @@ impl GpuProcessor {
             label: Some("Shader"),
             source: wgpu::ShaderSource::Wgsl(include_str!("../wgsl/shader.wgsl").into()),
         });
-        let vertices = &create_vertices(meshes.get(0).unwrap());
+        let vertices: &Vec<Vertex> = &meshes.get(0).unwrap().try_into()?;
         let num_vertices = vertices.len() as u32;
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Vertex Buffer"),

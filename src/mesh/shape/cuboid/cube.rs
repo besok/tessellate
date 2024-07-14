@@ -1,20 +1,31 @@
 use crate::mesh::parts::{Edge, Face, FaceType, Vertex};
+
 use crate::mesh::Mesh;
+use glam::Vec3;
+use crate::mesh::shape::HasMesh;
 
 /// A solid object bounded by six square faces, with three meeting at each vertex.
 /// Regular hexahedron, Platonic solid, consists of 6 faces, 12 edges, and 8 vertices.
 pub struct Cube {
     mesh: Mesh,
+    center: Vertex,
+    size: f32,
+}
+
+impl HasMesh for Cube {
+    fn mesh(self) -> Mesh {
+        self.mesh
+    }
 }
 
 impl Default for Cube {
     fn default() -> Self {
-        Cube::from_center([0.0, 0.0, 0.0], 1.0, Default::default())
+        Cube::create([0.0, 0.0, 0.0], 1.0, Default::default())
     }
 }
 
 impl Cube {
-    pub fn from_center<V>(center: V, size: f32, face_type: FaceType) -> Self
+    pub fn create<V>(center: V, size: f32, face_type: FaceType) -> Self
     where
         V: Into<Vertex>,
     {
@@ -30,12 +41,6 @@ impl Cube {
             Vertex::new(center.x + half_size, center.y + half_size, center.z + half_size),
             Vertex::new(center.x - half_size, center.y + half_size, center.z + half_size),
         ];
-        #[rustfmt::skip]
-        let edges:Vec<Edge> = vec![
-            (0usize, 1usize), (1, 2), (2, 3), (3, 0),
-            (4, 5), (5, 6), (6, 7), (7, 4),
-            (0, 4), (1, 5), (2, 6), (3, 7),
-        ].into_iter().map(Into::into).collect();
 
         let faces: Vec<Face> = match face_type {
             FaceType::Triangle =>
@@ -65,20 +70,16 @@ impl Cube {
         };
 
         Cube {
-            mesh: Mesh::from_vertices(vertices, edges, faces),
+            mesh: Mesh::from_vertices(vertices, faces),
+            center,
+            size,
         }
-    }
-}
-
-impl From<Cube> for Mesh {
-    fn from(cube: Cube) -> Self {
-        cube.mesh
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::mesh::primitives::cuboid::Cube;
+    use crate::mesh::shape::cuboid::cube::Cube;
 
     #[test]
     fn test_cuboid() {

@@ -1,0 +1,78 @@
+use crate::mesh::parts::{Face, Vertex};
+use crate::mesh::shape::HasMesh;
+use crate::mesh::Mesh;
+use std::f32::consts::PI;
+
+pub struct Sphere {
+    radius: f32,
+    center: Vertex,
+    segments: usize,
+    mesh: Mesh,
+}
+
+impl HasMesh for Sphere {
+    fn mesh(self) -> Mesh {
+        self.mesh
+    }
+}
+
+impl Sphere {
+    pub fn create_uv<V: Into<Vertex>>(center: V, radius: f32, m: usize, n: usize) -> Self {
+        let center = center.into();
+        let mut vertices = Vec::new();
+        let mut faces = Vec::new();
+
+        for i in 0..=m {
+            let theta = i as f32 * PI / m as f32;
+            for j in 0..n {
+                let phi = j as f32 * 2.0 * PI / n as f32;
+                let v = calc_vertex(radius, theta, phi);
+                vertices.push(v + center);
+            }
+        }
+        for i in 0..m {
+            for j in 0..n {
+                let next_j = (j + 1) % n;
+                faces.push(Face::Quad(
+                    i * n + j,
+                    i * n + next_j,
+                    (i + 1) * n + j,
+                    (i + 1) * n + next_j,
+                ));
+            }
+        }
+
+        Sphere {
+            radius,
+            center,
+            segments: n * m,
+            mesh: Mesh::from_vertices(vertices, faces),
+        }
+    }
+    pub fn create_ico<V: Into<Vertex>>(center: V, radius: f32, segments:usize) -> Self {
+        let center = center.into();
+        let mut vertices = Vec::new();
+        let mut faces = Vec::new();
+
+
+        Sphere {
+            radius,
+            center,
+            segments,
+            mesh: Mesh::from_vertices(vertices, faces),
+        }
+    }
+}
+
+impl Default for Sphere {
+    fn default() -> Self {
+        Sphere::create_uv(Vertex::default(), 1.0, 32, 32)
+    }
+}
+
+pub fn calc_vertex(r: f32, theta: f32, phi: f32) -> Vertex {
+    let (theta_sin, theta_cos) = theta.sin_cos();
+    let (phi_sin, phi_cos) = phi.sin_cos();
+
+    Vertex::new(r * phi_sin * theta_cos, r * phi_cos, r * phi_sin * theta_sin)
+}

@@ -1,10 +1,23 @@
 use std::hash::{Hash, Hasher};
+use std::ops::Add;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vertex {
     pub(crate) x: f32,
     pub(crate) y: f32,
     pub(crate) z: f32,
+}
+
+impl Add for Vertex {
+    type Output = Vertex;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Vertex {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
+        }
+    }
 }
 
 impl Default for Vertex {
@@ -52,8 +65,28 @@ impl Hash for Vertex {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Edge(pub Idx, pub Idx);
+
+
+impl From<&Face> for Vec<Edge> {
+    fn from(face: &Face) -> Self {
+        match face {
+            Face::Triangle(a, b, c) => vec![
+                Edge(*a, *b),
+                Edge(*b, *c),
+                Edge(*c, *a),
+            ],
+            Face::Quad(a, b, c, d) => vec![
+                Edge(*a, *b),
+                Edge(*b, *c),
+                Edge(*c, *d),
+                Edge(*d, *a),
+            ],
+        }
+    }
+
+}
 
 impl<V> From<(V, V)> for Edge
 where
@@ -91,9 +124,19 @@ impl From<(usize, usize, usize)> for Face {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq,Eq)]
 pub enum FaceType {
     Triangle,
     Quad,
+}
+
+impl Hash for FaceType {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            FaceType::Triangle => 0.hash(state),
+            FaceType::Quad => 1.hash(state),
+        }
+    }
 }
 
 impl Default for FaceType {
