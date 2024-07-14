@@ -1,5 +1,8 @@
+use crate::mesh::Mesh;
 use bytemuck::{Pod, Zeroable};
+use rand::{Rng};
 use std::mem;
+use crate::mesh;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
@@ -8,22 +11,29 @@ pub(crate) struct Vertex {
     color: [f32; 4],
 }
 
-fn vertex(p12: ([i8; 3], [i8; 3])) -> Vertex {
-    let (p, c) = p12;
-    Vertex {
-        position: [p[0] as f32, p[1] as f32, p[2] as f32, 1.0],
-        color: [c[0] as f32, c[1] as f32, c[2] as f32, 1.0],
+impl From<&mesh::parts::Vertex> for Vertex {
+    fn from(value: &mesh::parts::Vertex) -> Self {
+        let mut rng = rand::thread_rng();
+        let color = [
+            rng.gen_range(0.0..1.0),
+            rng.gen_range(0.0..1.0),
+            rng.gen_range(0.0..1.0),
+            rng.gen_range(0.0..1.0),
+        ];
+        let p = value.flatten();
+        Vertex {
+            position: [p[0], p[1], p[2], 1.0],
+            color,
+        }
     }
 }
 
-pub fn create_vertices() -> Vec<Vertex> {
-    let pos = cube_positions();
-    let col = cube_colors();
 
-    (0..pos.len())
+pub fn create_vertices(mesh: &Mesh) -> Vec<Vertex> {
+    mesh.face_vertex()
+        .unwrap_or_default()
         .into_iter()
-        .map(|i| (pos[i], col[i]))
-        .map(vertex)
+        .map(Into::into)
         .collect::<Vec<_>>()
         .to_vec()
 }
@@ -38,48 +48,4 @@ impl Vertex {
             attributes: &Self::ATTRIBUTES,
         }
     }
-}
-#[rustfmt::skip]
-pub fn cube_positions() -> Vec<[i8; 3]> {
-    [
-        // front (0, 0, 1)
-        [-1, -1,  1], [1, -1,  1], [-1,  1,  1], [-1,  1,  1], [ 1, -1,  1], [ 1,  1,  1],
-
-        // right (1, 0, 0)
-        [ 1, -1,  1], [1, -1, -1], [ 1,  1,  1], [ 1,  1,  1], [ 1, -1, -1], [ 1,  1, -1],
-
-        // back (0, 0, -1)
-        [ 1, -1, -1], [-1, -1, -1], [1,  1, -1], [ 1,  1, -1], [-1, -1, -1], [-1,  1, -1],
-
-        // left (-1, 0, 0)
-        [-1, -1, -1], [-1, -1,  1], [-1,  1, -1], [-1,  1, -1], [-1, -1,  1], [-1,  1,  1],
-
-        // top (0, 1, 0)
-        [-1,  1,  1], [ 1,  1,  1], [-1,  1, -1], [-1,  1, -1], [ 1,  1,  1], [ 1,  1, -1],
-
-        // bottom (0, -1, 0)
-        [-1, -1, -1], [ 1, -1, -1], [-1, -1,  1], [-1, -1,  1], [ 1, -1, -1], [ 1, -1,  1],
-    ].to_vec()
-}
-#[rustfmt::skip]
-pub fn cube_colors() -> Vec<[i8; 3]> {
-    [
-        // front - blue
-        [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1],
-
-        // right - red
-        [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0],
-
-        // back - yellow
-        [1, 1, 0], [1, 1, 0], [1, 1, 0], [1, 1, 0], [1, 1, 0], [1, 1, 0],
-
-        // left - aqua
-        [0, 1, 1], [0, 1, 1], [0, 1, 1], [0, 1, 1], [0, 1, 1], [0, 1, 1],
-
-        // top - green
-        [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0],
-
-        // bottom - fuchsia
-        [1, 0, 1], [1, 0, 1], [1, 0, 1], [1, 0, 1], [1, 0, 1], [1, 0, 1],
-    ].to_vec()
 }

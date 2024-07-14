@@ -1,4 +1,4 @@
-use nalgebra::{Matrix4, Point3};
+use glam::{Mat4, Vec3};
 use wgpu::util::DeviceExt;
 use wgpu::{BindGroupLayout, Device, SurfaceConfiguration};
 use winit::event::{ElementState, MouseScrollDelta};
@@ -23,10 +23,9 @@ pub struct Camera {
     mouse_pressed: bool,
 }
 
-
 impl Camera {
     pub fn init(config: &SurfaceConfiguration, device: &Device) -> Self {
-        let camera_pos = CameraPosition::new(Point3::new(0.0, 0.0, 0.0), 0.0, 0.0);
+        let camera_pos = CameraPosition::new(Vec3::new(0.0, 0.0, 0.0), 0.0, 0.0);
         let projection = Projection::new(config.width, config.height, 45.0, 0.1, 100.0);
         let mut camera_uniform = CameraUniform::new();
         camera_uniform.update_view_proj(&camera_pos, &projection);
@@ -57,7 +56,7 @@ impl Camera {
             }],
             label: Some("camera_bind_group"),
         });
-        let controller = CameraController::new(1., 0.1);
+        let controller = CameraController::new(0.1, 0.1);
 
         Self::new(
             camera_pos,
@@ -66,7 +65,7 @@ impl Camera {
             camera_bind_group,
             projection,
             controller,
-            camera_bind_group_layout
+            camera_bind_group_layout,
         )
     }
 
@@ -147,12 +146,11 @@ pub struct CameraUniform {
 impl CameraUniform {
     pub(crate) fn new() -> Self {
         Self {
-            view_proj: Matrix4::identity().into(),
+            view_proj: Mat4::IDENTITY.to_cols_array_2d(),
         }
     }
 
     pub(crate) fn update_view_proj(&mut self, camera: &CameraPosition, projection: &Projection) {
-        // self.view_position = camera.to_homogeneous().into();
-        self.view_proj = (projection.calc_matrix() * camera.calc_matrix()).into();
+        self.view_proj = (projection.calc_matrix() * camera.calc_matrix()).to_cols_array_2d();
     }
 }

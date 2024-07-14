@@ -1,5 +1,5 @@
+use glam::Vec3;
 use crate::gpu::camera::position::CameraPosition;
-use nalgebra::Vector3;
 use winit::dpi::PhysicalPosition;
 use winit::event::{ElementState, MouseScrollDelta};
 use winit::keyboard::KeyCode;
@@ -89,15 +89,15 @@ impl CameraController {
 
         // Move forward/backward and left/right
         let (yaw_sin, yaw_cos) = camera.yaw().sin_cos();
-        let forward = Vector3::new(yaw_cos, 0.0, yaw_sin).normalize();
-        let right = Vector3::new(-yaw_sin, 0.0, yaw_cos).normalize();
+        let forward = Vec3::new(yaw_cos, 0.0, yaw_sin).normalize();
+        let right = Vec3::new(-yaw_sin, 0.0, yaw_cos).normalize();
         camera.update_position(forward * (self.forward - self.backward) * self.speed );
         camera.update_position(right * (self.right - self.left) * self.speed );
 
 
         let (pitch_sin, pitch_cos) = camera.pitch().sin_cos();
         let scrollward =
-            Vector3::new(pitch_cos * yaw_cos, pitch_sin, pitch_cos * yaw_sin).normalize();
+            Vec3::new(pitch_cos * yaw_cos, pitch_sin, pitch_cos * yaw_sin).normalize();
         camera.update_position(scrollward * self.scroll * self.speed * self.sensitivity);
         self.scroll = 0.0;
 

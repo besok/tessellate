@@ -1,10 +1,10 @@
+use glam::Vec3;
 use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::{Mesh, MeshError, MeshResult};
-use nalgebra::Vector3;
 
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct VertexNormals {
-    normals: Vec<Vector3<f32>>,
+    normals: Vec<Vec3>,
 }
 
 impl TryFrom<&Mesh> for VertexNormals {
@@ -17,7 +17,7 @@ impl TryFrom<&Mesh> for VertexNormals {
 
 impl VertexNormals {
     pub fn new(mesh: &Mesh) -> MeshResult<Self> {
-        let mut normals: Vec<Vector3<f32>> = vec![Vector3::new(0.0, 0.0, 0.0); mesh.vertices.len()];
+        let mut normals: Vec<Vec3> = vec![Vec3::new(0.0, 0.0, 0.0); mesh.vertices.len()];
 
         for face in &mesh.faces {
             match face {
@@ -49,15 +49,15 @@ impl VertexNormals {
         })
     }
 
-    pub fn get_normal(&self, idx: usize) -> MeshResult<&Vector3<f32>> {
+    pub fn get_normal(&self, idx: usize) -> MeshResult<&Vec3> {
         self.normals
             .get(idx)
             .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
     }
 }
 
-fn calculate_triangle_normal(v1: &Vertex, v2: &Vertex, v3: &Vertex) -> Vector3<f32> {
-    let u = Vector3::new(v2.x - v1.x, v2.y - v1.y, v2.z - v1.z);
-    let v = Vector3::new(v3.x - v1.x, v3.y - v1.y, v3.z - v1.z);
-    u.cross(&v).normalize()
+fn calculate_triangle_normal(v1: &Vertex, v2: &Vertex, v3: &Vertex) -> Vec3{
+    let u = Vec3::new(v2.x - v1.x, v2.y - v1.y, v2.z - v1.z);
+    let v = Vec3::new(v3.x - v1.x, v3.y - v1.y, v3.z - v1.z);
+    u.cross(v).normalize()
 }

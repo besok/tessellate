@@ -7,9 +7,18 @@ pub struct Vertex {
     pub(crate) z: f32,
 }
 
+impl Default for Vertex {
+    fn default() -> Self {
+        Vertex::new(0.0, 0.0, 0.0)
+    }
+}
+
 impl Vertex {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Vertex { x, y, z }
+    }
+    pub fn flatten(&self) -> [f32; 3] {
+        [self.x, self.y, self.z]
     }
 }
 
@@ -59,6 +68,15 @@ pub type Idx = usize;
 pub enum Face {
     Triangle(Idx, Idx, Idx),
     Quad(Idx, Idx, Idx, Idx),
+}
+
+impl Face {
+    pub fn flatten(&self) -> Vec<usize> {
+        match self {
+            Face::Triangle(a, b, c) => vec![*a, *b, *c],
+            Face::Quad(a, b, c, d) => vec![*a, *b, *c, *d],
+        }
+    }
 }
 
 impl From<(usize, usize, usize, usize)> for Face {

@@ -3,12 +3,10 @@ use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::projection::Projection;
 use crate::gpu::camera::{Camera, CameraUniform};
 use crate::gpu::error::{GpuError, GpuResult};
-use crate::gpu::initializer::create_state;
 use crate::gpu::vertex::Vertex;
+use crate::mesh::Mesh;
 use log::{error, info};
-use nalgebra::{
-    Matrix4, Orthographic3, Perspective3, Point3, Translation3, UnitQuaternion, Vector3,
-};
+
 use std::iter;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
@@ -19,11 +17,23 @@ use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowId};
 
+mod init;
+mod render;
+
 pub struct GpuProcessor {
     state: State,
 }
+
+impl GpuProcessor {
+    pub fn new(meshes: Vec<Mesh>) -> Self {
+        GpuProcessor {
+            state: State::NotInitialized(meshes),
+        }
+    }
+}
+
 enum State {
-    NotInitialized,
+    NotInitialized(Vec<Mesh>),
     Failed(GpuError),
     Initialized(GpuHandler),
 }
@@ -74,129 +84,12 @@ impl GpuHandler {
     }
 }
 
-impl GpuHandler {
-    fn render(&mut self) -> GpuResult<()> {
-        let output = self.surface.get_current_texture()?;
-        let view = output
-            .texture
-            .create_view(&wgpu::TextureViewDescriptor::default());
 
-        let depth_texture = self.device.create_texture(&wgpu::TextureDescriptor {
-            size: wgpu::Extent3d {
-                width: self.config.width,
-                height: self.config.height,
-                depth_or_array_layers: 1,
-            },
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: wgpu::TextureDimension::D2,
-            format: wgpu::TextureFormat::Depth24Plus,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-            label: None,
-            view_formats: &[],
-        });
-        let depth_view = depth_texture.create_view(&wgpu::TextureViewDescriptor::default());
-
-        let mut encoder = self
-            .device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("Render Encoder"),
-            });
-
-        {
-            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: Some("Render Pass"),
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
-                            a: 1.0,
-                        }),
-                        store: wgpu::StoreOp::Store,
-                    },
-                })],
-                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                    view: &depth_view,
-                    depth_ops: Some(wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(1.0),
-                        store: wgpu::StoreOp::Discard,
-                    }),
-                    stencil_ops: None,
-                }),
-                occlusion_query_set: None,
-                timestamp_writes: None,
-            });
-
-            render_pass.set_pipeline(&self.pipeline);
-            render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
-            render_pass.set_bind_group(0, &self.camera.camera_bind_group(), &[]);
-            render_pass.draw(0..self.num_vertices, 0..1);
-        }
-
-        self.queue.submit(iter::once(encoder.finish()));
-        output.present();
-
-        Ok(())
-    }
-    pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
-        if new_size.width > 0 && new_size.height > 0 {
-            info!("Resizing to {:?}", new_size);
-            self.size = new_size;
-            self.config.width = new_size.width;
-            self.config.height = new_size.height;
-            self.surface.configure(&self.device, &self.config);
-            self.camera.resize(new_size.width, new_size.height);
-            self.update()
-        }
-    }
-    fn input(&mut self, event: &WindowEvent) -> bool {
-        match event {
-            WindowEvent::KeyboardInput {
-                event:
-                    KeyEvent {
-                        physical_key: PhysicalKey::Code(key),
-                        state,
-                        ..
-                    },
-                ..
-            } => self.camera.process_keyboard(*key, *state),
-            WindowEvent::MouseWheel { delta, .. } => {
-                self.camera.process_scroll(delta);
-                true
-            }
-            WindowEvent::MouseInput {
-                button: MouseButton::Left,
-                state,
-                ..
-            } => {
-                self.camera
-                    .set_mouse_pressed(*state == ElementState::Pressed);
-                true
-            }
-            _ => false,
-        }
-    }
-    fn update(&mut self) {
-        self.camera.update_camera();
-        self.queue.write_buffer(
-            &self.camera.camera_buffer(),
-            0,
-            bytemuck::cast_slice(&[*self.camera.uniform()]),
-        );
-    }
-    pub fn window(&self) -> &Arc<Window> {
-        &self.window
-    }
-}
 
 impl GpuProcessor {
     pub fn state(&mut self) -> GpuResult<&mut GpuHandler> {
         match &mut self.state {
-            State::NotInitialized => {
+            State::NotInitialized(_) => {
                 error!("GPU processor not initialized");
                 Err(GpuError::new("GPU processor not initialized"))
             }
@@ -212,19 +105,25 @@ impl GpuProcessor {
 impl Default for GpuProcessor {
     fn default() -> Self {
         GpuProcessor {
-            state: State::NotInitialized,
+            state: State::NotInitialized(vec![]),
         }
     }
 }
 
 impl ApplicationHandler for GpuProcessor {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
-        match create_state(event_loop) {
-            Ok(s) => {
-                self.state = State::Initialized(s);
-            }
-            Err(e) => {
-                self.state = State::Failed(e);
+        match &self.state {
+            State::NotInitialized(meshes) => match GpuProcessor::try_init(event_loop, meshes) {
+                Ok(s) => {
+                    self.state = State::Initialized(s);
+                }
+                Err(e) => {
+                    self.state = State::Failed(e);
+                }
+            },
+            e => {
+                info!("GPU processor already initialized");
+                return;
             }
         }
     }

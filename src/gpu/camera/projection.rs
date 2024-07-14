@@ -1,5 +1,5 @@
+use glam::{Mat4, Vec4};
 use std::f32::consts::FRAC_PI_2;
-use nalgebra::{Matrix4, Orthographic3, Perspective3, Point3, Translation3, UnitQuaternion, Vector3};
 
 pub struct Projection {
     aspect: f32,
@@ -22,21 +22,18 @@ impl Projection {
         self.aspect = width as f32 / height as f32;
     }
 
-    pub fn calc_matrix(&self) -> Matrix4<f32> {
-        let perspective = Perspective3::new(self.aspect, self.fovy, self.znear, self.zfar);
-        OPENGL_TO_WGPU_MATRIX * perspective.to_homogeneous()
+    pub fn calc_matrix(&self) -> Mat4 {
+        let perspective =
+            Mat4::perspective_rh_gl(self.fovy.to_radians(), self.aspect, self.znear, self.zfar);
 
+        OPENGL_TO_WGPU_MATRIX * perspective
     }
 }
 #[rustfmt::skip]
-pub const OPENGL_TO_WGPU_MATRIX: nalgebra::Matrix4<f32> = nalgebra::Matrix4::new(
+pub const OPENGL_TO_WGPU_MATRIX: Mat4 = Mat4::from_cols_array(&[
     1.0, 0.0, 0.0, 0.0,
     0.0, 1.0, 0.0, 0.0,
     0.0, 0.0, 0.5, 0.0,
     0.0, 0.0, 0.5, 1.0,
-);
-
+]);
 pub const SAFE_FRAC_PI_2: f32 = FRAC_PI_2 - 0.0001;
-
-
-

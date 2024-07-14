@@ -70,7 +70,11 @@ impl Cube {
     }
 }
 
-
+impl From<Cube> for Mesh {
+    fn from(cube: Cube) -> Self {
+        cube.mesh
+    }
+}
 
 #[cfg(test)]
 mod tests {

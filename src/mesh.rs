@@ -14,7 +14,7 @@ pub mod tables;
 type MeshResult<T> = Result<T, MeshError>;
 
 #[derive(Debug, Clone, PartialEq)]
-enum MeshError {
+pub enum MeshError {
     InvalidIndex(String),
 }
 
@@ -25,7 +25,7 @@ impl MeshError {
 }
 
 #[derive(Default)]
-struct Mesh {
+pub struct Mesh {
     vertices: Vec<Vertex>,
     edges: Vec<Edge>,
     faces: Vec<Face>,
@@ -70,13 +70,21 @@ impl Mesh {
     pub fn faces(&self) -> &Vec<Face> {
         &self.faces
     }
+    pub fn face_vertex(&self) -> MeshResult<Vec<&Vertex>> {
+        self
+            .faces()
+            .iter()
+            .flat_map(Face::flatten)
+            .map(|i| self.get_v(i))
+            .into_iter()
+            .collect()
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::Vector3;
-
     use crate::mesh::parts::Idx;
+    use glam::Vec3;
 
     #[test]
     fn test() {
@@ -99,9 +107,9 @@ mod tests {
         let mesh = Mesh::from_vertices(vertices, edges, faces);
         let normals = mesh.try_normals().unwrap();
 
-        assert_eq!(normals.get_normal(0), Ok(&Vector3::new(0.0, 0.0, 1.0)));
-        assert_eq!(normals.get_normal(1), Ok(&Vector3::new(0.0, 0.0, 1.0)));
-        assert_eq!(normals.get_normal(2), Ok(&Vector3::new(0.0, 0.0, 1.0)));
-        assert_eq!(normals.get_normal(3), Ok(&Vector3::new(0.0, 0.0, 1.0)));
+        assert_eq!(normals.get_normal(0), Ok(&Vec3::new(0.0, 0.0, 1.0)));
+        assert_eq!(normals.get_normal(1), Ok(&Vec3::new(0.0, 0.0, 1.0)));
+        assert_eq!(normals.get_normal(2), Ok(&Vec3::new(0.0, 0.0, 1.0)));
+        assert_eq!(normals.get_normal(3), Ok(&Vec3::new(0.0, 0.0, 1.0)));
     }
 }
