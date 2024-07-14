@@ -1,9 +1,16 @@
 use glam::{Mat4, Vec3};
 
+#[derive(Debug, Clone, Copy)]
 pub struct CameraPosition {
     position: Vec3,
     yaw: f32,
     pitch: f32,
+}
+
+impl Default for CameraPosition {
+    fn default() -> Self {
+        CameraPosition::new(Vec3::ZERO, 0.0, 0.0)
+    }
 }
 
 impl CameraPosition {
@@ -19,10 +26,10 @@ impl CameraPosition {
         self.position += shift;
     }
     pub fn update_yaw(&mut self, shift: f32) {
-        self.yaw = self.yaw + shift;
+        self.yaw = self.yaw + shift/300.;
     }
     pub fn update_pitch(&mut self, shift: f32) {
-        self.pitch = self.pitch + shift;
+        self.pitch = self.pitch + shift/300.;
     }
     pub fn set_pitch(&mut self, shift: f32) {
         self.pitch = shift;

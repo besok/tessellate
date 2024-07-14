@@ -25,15 +25,15 @@ pub struct GpuProcessor {
 }
 
 impl GpuProcessor {
-    pub fn new(meshes: Vec<Mesh>) -> Self {
+    pub fn new(meshes: Vec<Mesh>, camera: CameraPosition) -> Self {
         GpuProcessor {
-            state: State::NotInitialized(meshes),
+            state: State::NotInitialized(meshes, camera),
         }
     }
 }
 
 enum State {
-    NotInitialized(Vec<Mesh>),
+    NotInitialized(Vec<Mesh>, CameraPosition),
     Failed(GpuError),
     Initialized(GpuHandler),
 }
@@ -84,12 +84,10 @@ impl GpuHandler {
     }
 }
 
-
-
 impl GpuProcessor {
     pub fn state(&mut self) -> GpuResult<&mut GpuHandler> {
         match &mut self.state {
-            State::NotInitialized(_) => {
+            State::NotInitialized(..) => {
                 error!("GPU processor not initialized");
                 Err(GpuError::new("GPU processor not initialized"))
             }
@@ -105,7 +103,7 @@ impl GpuProcessor {
 impl Default for GpuProcessor {
     fn default() -> Self {
         GpuProcessor {
-            state: State::NotInitialized(vec![]),
+            state: State::NotInitialized(vec![], CameraPosition::default()),
         }
     }
 }
@@ -113,14 +111,17 @@ impl Default for GpuProcessor {
 impl ApplicationHandler for GpuProcessor {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         match &self.state {
-            State::NotInitialized(meshes) => match GpuProcessor::try_init(event_loop, meshes) {
-                Ok(s) => {
-                    self.state = State::Initialized(s);
+            State::NotInitialized(meshes, camera) => {
+                match GpuProcessor::try_init(event_loop, meshes, camera.clone()) {
+                    Ok(s) => {
+                        self.state = State::Initialized(s);
+                    }
+                    Err(e) => {
+                        self.state = State::Failed(e);
+                    }
                 }
-                Err(e) => {
-                    self.state = State::Failed(e);
-                }
-            },
+            }
+
             e => {
                 info!("GPU processor already initialized");
                 return;

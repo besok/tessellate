@@ -1,15 +1,21 @@
+use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::Camera;
 use crate::gpu::error::{GpuError, GpuResult};
 use crate::gpu::processor::{GpuHandler, GpuProcessor};
 use crate::gpu::vertex::{create_vertices, Vertex};
 use crate::mesh::Mesh;
+use glam::Vec3;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::Window;
 
 impl GpuProcessor {
-    pub fn try_init(event_loop: &ActiveEventLoop, meshes: &Vec<Mesh>) -> GpuResult<GpuHandler> {
+    pub fn try_init(
+        event_loop: &ActiveEventLoop,
+        meshes: &Vec<Mesh>,
+        camera_pos: CameraPosition,
+    ) -> GpuResult<GpuHandler> {
         let attributes = Window::default_attributes();
         let window = Arc::new(event_loop.create_window(attributes)?);
         let size = window.inner_size();
@@ -64,7 +70,7 @@ impl GpuProcessor {
             usage: wgpu::BufferUsages::VERTEX,
         });
         let num_indices = vertices.len() as u32;
-        let camera = Camera::init(&config, &device);
+        let camera = Camera::init(&config, &device, camera_pos);
 
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {

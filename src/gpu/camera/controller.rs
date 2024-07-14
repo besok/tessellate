@@ -18,6 +18,7 @@ pub struct CameraController {
     scroll: f32,
     speed: f32,
     sensitivity: f32,
+    last_mouse_pos: PhysicalPosition<f64>,
 }
 
 impl CameraController {
@@ -34,6 +35,7 @@ impl CameraController {
             scroll: 0.0,
             speed,
             sensitivity,
+            last_mouse_pos: PhysicalPosition::new(0.0, 0.0),
         }
     }
 
@@ -72,7 +74,12 @@ impl CameraController {
         }
     }
 
-    pub fn process_mouse(&mut self, mouse_dx: f64, mouse_dy: f64) {
+    pub fn process_mouse(&mut self, position:&PhysicalPosition<f64>) {
+
+        let mouse_dx = position.x - self.last_mouse_pos.x;
+        let mouse_dy = position.y - self.last_mouse_pos.y;
+        self.last_mouse_pos = *position;
+
         self.rotate_hor = mouse_dx as f32;
         self.rotate_ver = mouse_dy as f32;
     }

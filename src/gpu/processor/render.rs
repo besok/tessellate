@@ -1,11 +1,12 @@
+use crate::gpu::error::GpuResult;
+use crate::gpu::processor::GpuHandler;
+use log::info;
 use std::iter;
 use std::sync::Arc;
-use log::info;
+use winit::dpi::PhysicalPosition;
 use winit::event::{ElementState, KeyEvent, MouseButton, WindowEvent};
 use winit::keyboard::PhysicalKey;
 use winit::window::Window;
-use crate::gpu::error::GpuResult;
-use crate::gpu::processor::GpuHandler;
 
 impl GpuHandler {
     pub fn render(&mut self) -> GpuResult<()> {
@@ -90,11 +91,11 @@ impl GpuHandler {
         match event {
             WindowEvent::KeyboardInput {
                 event:
-                KeyEvent {
-                    physical_key: PhysicalKey::Code(key),
-                    state,
-                    ..
-                },
+                    KeyEvent {
+                        physical_key: PhysicalKey::Code(key),
+                        state,
+                        ..
+                    },
                 ..
             } => self.camera.process_keyboard(*key, *state),
             WindowEvent::MouseWheel { delta, .. } => {
@@ -108,6 +109,11 @@ impl GpuHandler {
             } => {
                 self.camera
                     .set_mouse_pressed(*state == ElementState::Pressed);
+                true
+            }
+            WindowEvent::CursorMoved { position, .. } if self.camera.is_mouse_pressed() => {
+
+                self.camera.process_mouse(position);
                 true
             }
             _ => false,

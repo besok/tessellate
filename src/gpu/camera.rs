@@ -1,6 +1,8 @@
 use glam::{Mat4, Vec3};
+use log::{info, log};
 use wgpu::util::DeviceExt;
 use wgpu::{BindGroupLayout, Device, SurfaceConfiguration};
+use winit::dpi::PhysicalPosition;
 use winit::event::{ElementState, MouseScrollDelta};
 use winit::keyboard::KeyCode;
 
@@ -11,6 +13,8 @@ use crate::gpu::camera::projection::Projection;
 pub mod controller;
 pub mod position;
 pub mod projection;
+
+
 
 pub struct Camera {
     camera: CameraPosition,
@@ -24,8 +28,11 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn init(config: &SurfaceConfiguration, device: &Device) -> Self {
-        let camera_pos = CameraPosition::new(Vec3::new(0.0, 0.0, 0.0), 0.0, 0.0);
+    pub fn init(
+        config: &SurfaceConfiguration,
+        device: &Device,
+        camera_pos: CameraPosition
+    ) -> Self {
         let projection = Projection::new(config.width, config.height, 45.0, 0.1, 100.0);
         let mut camera_uniform = CameraUniform::new();
         camera_uniform.update_view_proj(&camera_pos, &projection);
@@ -117,6 +124,8 @@ impl Camera {
         self.camera_controller.update_camera(&mut self.camera);
         self.uniform
             .update_view_proj(&self.camera, &self.projection);
+
+        info!("Camera position: {:?}", self.camera);
     }
 
     pub fn resize(&mut self, width: u32, height: u32) {
@@ -129,8 +138,8 @@ impl Camera {
         self.camera_controller.process_scroll(delta);
     }
 
-    pub fn process_mouse(&mut self, mouse_dx: f64, mouse_dy: f64) {
-        self.camera_controller.process_mouse(mouse_dx, mouse_dy);
+    pub fn process_mouse(&mut self, position:&PhysicalPosition<f64>) {
+        self.camera_controller.process_mouse(position);
     }
 
     pub fn set_mouse_pressed(&mut self, pressed: bool) {
