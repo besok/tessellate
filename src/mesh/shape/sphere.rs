@@ -1,4 +1,5 @@
 use crate::mesh::parts::{Face, Vertex};
+use crate::mesh::shape::icosahedron::Icosahedron;
 use crate::mesh::shape::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
@@ -49,18 +50,21 @@ impl Sphere {
             mesh: Mesh::from_vertices(vertices, faces),
         }
     }
-    pub fn create_ico<V: Into<Vertex>>(center: V, radius: f32, segments:usize) -> Self {
+    pub fn create_ico<V: Into<Vertex>>(center: V, radius: f32, subdivisions: usize) -> Self {
         let center = center.into();
-        let mut vertices = Vec::new();
-        let mut faces = Vec::new();
-
+        let ico = Icosahedron::create(center, radius);
+        let mesh = (0..subdivisions).fold(ico.mesh(), |acc, _| acc.subdivide());
 
         Sphere {
             radius,
             center,
-            segments,
-            mesh: Mesh::from_vertices(vertices, faces),
+            segments: subdivisions,
+            mesh,
         }
+    }
+
+    pub fn create<V: Into<Vertex>>(center: V, radius: f32) -> Self {
+        Sphere::create_uv(center, radius, 32, 32)
     }
 }
 

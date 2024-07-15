@@ -1,11 +1,10 @@
-use std::collections::HashSet;
-use std::fmt::Display;
-use std::hash::{Hash, Hasher};
-
 use crate::mesh::normals::VertexNormals;
 use crate::mesh::parts::{Face, FaceType, Vertex};
 use crate::mesh::tables::MeshTables;
 use parts::Edge;
+use std::collections::{HashMap, HashSet};
+use std::fmt::Display;
+use std::hash::{Hash, Hasher};
 pub mod material;
 pub mod normals;
 pub mod parts;
@@ -26,7 +25,7 @@ impl MeshError {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug, Clone)]
 pub struct Mesh {
     vertices: Vec<Vertex>,
     edges: Vec<Edge>,
@@ -77,8 +76,72 @@ impl Mesh {
     pub fn faces(&self) -> &Vec<Face> {
         &self.faces
     }
-}
 
+    pub fn subdivide(&self) -> Mesh {
+        let mut new_vertices = self.vertices.to_vec();
+        let mut new_faces = Vec::new();
+        let mut midpoint_cache = HashMap::new();
+
+        for face in self.faces.iter() {
+            let face_vertices = face.flatten();
+            let mut mid_indices = Vec::new();
+            for i in 0..face_vertices.len() {
+                let key = if face_vertices[i] < face_vertices[(i + 1) % face_vertices.len()] {
+                    (face_vertices[i], face_vertices[(i + 1) % face_vertices.len()])
+                } else {
+                    (face_vertices[(i + 1) % face_vertices.len()], face_vertices[i])
+                };
+
+                if let Some(&mid_index) = midpoint_cache.get(&key) {
+                    mid_indices.push(mid_index);
+                } else {
+                    let mid_vertex = midpoint(
+                        &self.vertices[face_vertices[i]],
+                        &self.vertices[face_vertices[(i + 1) % face_vertices.len()]],
+                    );
+                    let mid_index = new_vertices.len();
+                    new_vertices.push(mid_vertex);
+                    midpoint_cache.insert(key, mid_index);
+                    mid_indices.push(mid_index);
+                }
+            }
+
+            match face {
+                Face::Triangle(_, _, _) => {
+                    new_faces.push(Face::Triangle(
+                        face_vertices[0],
+                        mid_indices[0],
+                        mid_indices[2],
+                    ));
+                    new_faces.push(Face::Triangle(
+                        face_vertices[1],
+                        mid_indices[1],
+                        mid_indices[0],
+                    ));
+                    new_faces.push(Face::Triangle(
+                        face_vertices[2],
+                        mid_indices[2],
+                        mid_indices[1],
+                    ));
+                    new_faces.push(Face::Triangle(mid_indices[0], mid_indices[1], mid_indices[2]));
+                }
+                Face::Quad(_, _, _, _) => {
+                    // For Quad, adapt the logic to handle quad subdivision
+                }
+            }
+        }
+
+        let new_vertices = new_vertices.into_iter().map(|v| v.normalize()).collect();
+        Mesh::from_vertices(new_vertices, new_faces)
+    }
+}
+pub fn midpoint(vertex1: &Vertex, vertex2: &Vertex) -> Vertex {
+    Vertex::new(
+        (vertex1.x + vertex2.x) / 2.0,
+        (vertex1.y + vertex2.y) / 2.0,
+        (vertex1.z + vertex2.z) / 2.0,
+    )
+}
 pub fn dedup<T: Hash + Eq>(items: Vec<T>) -> Vec<T> {
     items
         .into_iter()
