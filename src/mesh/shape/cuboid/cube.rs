@@ -1,11 +1,13 @@
 use crate::mesh::parts::{Edge, Face, FaceType, Vertex};
 
+use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use glam::Vec3;
-use crate::mesh::shape::HasMesh;
 
 /// A solid object bounded by six square faces, with three meeting at each vertex.
 /// Regular hexahedron, Platonic solid, consists of 6 faces, 12 edges, and 8 vertices.
+
+#[derive(Debug, Clone)]
 pub struct Cube {
     mesh: Mesh,
     center: Vertex,
@@ -13,8 +15,12 @@ pub struct Cube {
 }
 
 impl HasMesh for Cube {
-    fn mesh(self) -> Mesh {
-        self.mesh
+    fn mesh(&self) -> &Mesh {
+        &self.mesh
+    }
+
+    fn mesh_mut(&mut self) -> &mut Mesh {
+        &mut self.mesh
     }
 }
 

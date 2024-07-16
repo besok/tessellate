@@ -1,9 +1,9 @@
 use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::shape::icosahedron::Icosahedron;
-use crate::mesh::shape::HasMesh;
+use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
-
+#[derive(Debug, Clone)]
 pub struct Sphere {
     radius: f32,
     center: Vertex,
@@ -12,8 +12,11 @@ pub struct Sphere {
 }
 
 impl HasMesh for Sphere {
-    fn mesh(self) -> Mesh {
-        self.mesh
+    fn mesh(&self) -> &Mesh {
+        &self.mesh
+    }
+    fn mesh_mut(&mut self) -> &mut Mesh {
+        &mut self.mesh
     }
 }
 
@@ -52,14 +55,17 @@ impl Sphere {
     }
     pub fn create_ico<V: Into<Vertex>>(center: V, radius: f32, subdivisions: usize) -> Self {
         let center = center.into();
-        let ico = Icosahedron::create(center, radius);
-        let mesh = (0..subdivisions).fold(ico.mesh(), |acc, _| acc.subdivide());
+        let mut ico = Icosahedron::create(center, radius);
+        let mesh = (0..subdivisions).fold(ico.mesh_mut(), |mut acc, _| {
+            acc.subdivide();
+            acc
+        });
 
         Sphere {
             radius,
             center,
             segments: subdivisions,
-            mesh,
+            mesh:mesh.clone(),
         }
     }
 

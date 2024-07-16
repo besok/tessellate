@@ -1,8 +1,8 @@
 use crate::mesh::parts::{Face, Vertex};
-use crate::mesh::shape::HasMesh;
+use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
-
+#[derive(Debug, Clone)]
 pub struct Ring {
     center: Vertex,
     inner_radius: f32,
@@ -110,7 +110,10 @@ impl Ring {
     }
 }
 impl HasMesh for Ring {
-    fn mesh(self) -> Mesh {
-        self.mesh.clone()
+    fn mesh(&self) -> &Mesh {
+        &self.mesh
+    }
+    fn mesh_mut(&mut self) -> &mut Mesh {
+        &mut self.mesh
     }
 }

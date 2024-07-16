@@ -8,14 +8,7 @@ pub mod cone;
 pub mod cylinder;
 pub mod ring;
 pub mod pyramid;
+pub mod plane;
+pub mod grid;
 
-pub trait HasMesh {
-    fn mesh(self) -> Mesh;
-}
-
-impl<T:HasMesh> From<T> for Mesh {
-    fn from(value: T) -> Self {
-        value.mesh()
-    }
-}
 

@@ -1,8 +1,8 @@
 use crate::mesh::parts::{Face, Vertex};
-use crate::mesh::shape::HasMesh;
+use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
-
+#[derive(Debug, Clone)]
 pub struct Torus {
     center: Vertex,
     major_radius: f32,
@@ -63,7 +63,10 @@ impl Torus {
     }
 }
 impl HasMesh for Torus {
-    fn mesh(self) -> Mesh {
-        self.mesh.clone()
+    fn mesh(&self) -> &Mesh {
+        &self.mesh
+    }
+    fn mesh_mut(&mut self) -> &mut Mesh {
+        &mut self.mesh
     }
 }

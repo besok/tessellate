@@ -1,7 +1,7 @@
 use crate::mesh::parts::{Edge, Face, FaceType, Vertex};
-use crate::mesh::shape::HasMesh;
+use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
-
+#[derive(Debug, Clone)]
 pub struct RectCuboid {
     mesh: Mesh,
     center: Vertex,
@@ -11,8 +11,11 @@ pub struct RectCuboid {
 }
 
 impl HasMesh for RectCuboid {
-    fn mesh(self) -> Mesh {
-        self.mesh
+    fn mesh(&self) -> &Mesh {
+        &self.mesh
+    }
+    fn mesh_mut(&mut self) -> &mut Mesh {
+        &mut self.mesh
     }
 }
 

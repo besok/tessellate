@@ -10,6 +10,8 @@ pub mod normals;
 pub mod parts;
 pub mod shape;
 pub mod tables;
+pub mod transform;
+
 
 type MeshResult<T> = Result<T, MeshError>;
 
@@ -77,7 +79,7 @@ impl Mesh {
         &self.faces
     }
 
-    pub fn subdivide(&self) -> Mesh {
+    pub fn subdivide(&mut self) -> MeshResult<()> {
         let mut new_vertices = self.vertices.to_vec();
         let mut new_faces = Vec::new();
         let mut midpoint_cache = HashMap::new();
@@ -132,9 +134,22 @@ impl Mesh {
         }
 
         let new_vertices = new_vertices.into_iter().map(|v| v.normalize()).collect();
-        Mesh::from_vertices(new_vertices, new_faces)
+        *self = Mesh::from_vertices(new_vertices, new_faces);
+        Ok(())
     }
 }
+
+pub trait HasMesh {
+    fn mesh(&self) -> &Mesh;
+    fn mesh_mut(&mut self) -> &mut Mesh;
+}
+
+impl<T: HasMesh> From<T> for Mesh {
+    fn from(item: T) -> Self {
+        item.mesh().clone()
+    }
+}
+
 pub fn midpoint(vertex1: &Vertex, vertex2: &Vertex) -> Vertex {
     Vertex::new(
         (vertex1.x + vertex2.x) / 2.0,

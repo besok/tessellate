@@ -1,9 +1,9 @@
 use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::shape::sphere::{calc_vertex, Sphere};
-use crate::mesh::shape::HasMesh;
+use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
-
+#[derive(Debug, Clone)]
 pub struct Icosahedron {
     center: Vertex,
     scale: f32,
@@ -11,8 +11,11 @@ pub struct Icosahedron {
 }
 
 impl HasMesh for Icosahedron {
-    fn mesh(self) -> Mesh {
-        self.mesh
+    fn mesh(&self) -> &Mesh {
+        &self.mesh
+    }
+    fn mesh_mut(&mut self) -> &mut Mesh {
+        &mut self.mesh
     }
 }
 
