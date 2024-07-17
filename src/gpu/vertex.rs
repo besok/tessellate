@@ -44,7 +44,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
     }
 }
 
-fn face_to_vertex3(face: &Face) -> Vec<usize> {
+pub fn face_to_vertex3(face: &Face) -> Vec<usize> {
     match face {
         Face::Triangle(a, b, c) => vec![*a, *b, *c],
         Face::Quad(a, b, c, d) => vec![*a, *b, *c, *a, *c, *d],

@@ -5,6 +5,7 @@ use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor};
 use crate::gpu::vertex::{Vertex};
 use crate::mesh::Mesh;
 use std::sync::Arc;
+use wgpu::Features;
 use wgpu::util::DeviceExt;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::Window;
@@ -38,7 +39,7 @@ impl GpuProcessor {
 
         let (device, queue) = pollster::block_on(adapter.request_device(
             &wgpu::DeviceDescriptor {
-                required_features: wgpu::Features::POLYGON_MODE_LINE,
+                required_features: Features::empty(), // wgpu::Features::POLYGON_MODE_LINE,
                 required_limits: wgpu::Limits::default(),
                 label: None,
             },

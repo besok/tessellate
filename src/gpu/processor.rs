@@ -180,6 +180,10 @@ impl ApplicationHandler for GpuProcessor {
                                         error!("Surface timeout");
                                     }
                                 },
+                                Err(GpuError::EventLoopError(e)) => {
+                                    error!("EventLoop failed: {e}");
+                                    event_loop.exit();
+                                }
                             }
                         }
 

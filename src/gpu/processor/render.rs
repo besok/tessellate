@@ -1,6 +1,6 @@
 use crate::gpu::error::GpuResult;
 use crate::gpu::processor::GpuHandler;
-use crate::gpu::vertex::Vertex;
+use crate::gpu::vertex::{face_to_vertex3, Vertex};
 use log::info;
 use std::iter;
 use std::sync::Arc;
@@ -74,7 +74,7 @@ impl GpuHandler {
                     .mesh
                     .faces()
                     .into_iter()
-                    .flat_map(|f| f.flatten())
+                    .flat_map(face_to_vertex3)
                     .count();
                 render_pass.draw(0..*vertices_len as u32, 0..1);
             }

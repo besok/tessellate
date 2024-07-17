@@ -1,17 +1,25 @@
+use crate::mesh::MeshError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use wgpu::SurfaceError;
-use crate::mesh::MeshError;
+use winit::error::EventLoopError;
 
 #[derive(Debug, Clone)]
 pub enum GpuError {
     General(String),
     WgpuSurfaceError(SurfaceError),
+    EventLoopError(String),
 }
 
 impl GpuError {
     pub fn new(message: &str) -> Self {
         GpuError::General(message.to_string())
+    }
+}
+
+impl From<EventLoopError> for GpuError {
+    fn from(e: EventLoopError) -> Self {
+        GpuError::EventLoopError(format!("Event loop error: {}", e))
     }
 }
 
@@ -52,6 +60,7 @@ impl Display for GpuError {
         match self {
             GpuError::General(message) => write!(f, "{}", message),
             GpuError::WgpuSurfaceError(e) => write!(f, "Wgpu surface error: {}", e),
+            GpuError::EventLoopError(_) => write!(f, "Event loop error"),
         }
     }
 }
