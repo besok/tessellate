@@ -1,5 +1,6 @@
 use crate::gpu::error::GpuResult;
 use crate::gpu::processor::GpuHandler;
+use crate::gpu::vertex::Vertex;
 use log::info;
 use std::iter;
 use std::sync::Arc;
@@ -66,9 +67,17 @@ impl GpuHandler {
             });
 
             render_pass.set_pipeline(&self.pipeline);
-            render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
             render_pass.set_bind_group(0, &self.camera.camera_bind_group(), &[]);
-            render_pass.draw(0..self.num_vertices, 0..1);
+            for gpu_mesh in self.meshes.iter() {
+                render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
+                let vertices_len = &gpu_mesh
+                    .mesh
+                    .faces()
+                    .into_iter()
+                    .flat_map(|f| f.flatten())
+                    .count();
+                render_pass.draw(0..*vertices_len as u32, 0..1);
+            }
         }
 
         self.queue.submit(iter::once(encoder.finish()));
@@ -112,7 +121,6 @@ impl GpuHandler {
                 true
             }
             WindowEvent::CursorMoved { position, .. } if self.camera.is_mouse_pressed() => {
-
                 self.camera.process_mouse(position);
                 true
             }

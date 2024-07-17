@@ -10,8 +10,9 @@ use log::{error, info};
 use std::iter;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
-use wgpu::Surface;
+use wgpu::{Buffer, RenderPipeline, Surface};
 use winit::application::ApplicationHandler;
+use winit::dpi;
 use winit::event::{DeviceEvent, ElementState, Event, KeyEvent, MouseButton, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
@@ -22,6 +23,21 @@ mod render;
 
 pub struct GpuProcessor {
     state: State,
+}
+
+struct GpuMesh {
+    vertex_buffer: Buffer,
+    mesh: Mesh,
+}
+
+impl GpuMesh {
+    pub fn new(vertex_buffer: Buffer, mesh: Mesh) -> Self {
+        GpuMesh {
+            vertex_buffer,
+            mesh,
+        }
+    }
+
 }
 
 impl GpuProcessor {
@@ -44,11 +60,9 @@ pub struct GpuHandler {
     device: wgpu::Device,
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
-    size: winit::dpi::PhysicalSize<u32>,
-    pipeline: wgpu::RenderPipeline,
-    vertex_buffer: wgpu::Buffer,
-    num_vertices: u32,
-    num_indices: u32,
+    size: dpi::PhysicalSize<u32>,
+    pipeline: RenderPipeline,
+    meshes: Vec<GpuMesh>,
     camera: Camera,
 }
 
@@ -60,11 +74,9 @@ impl GpuHandler {
         device: wgpu::Device,
         queue: wgpu::Queue,
         config: wgpu::SurfaceConfiguration,
-        size: winit::dpi::PhysicalSize<u32>,
-        pipeline: wgpu::RenderPipeline,
-        vertex_buffer: wgpu::Buffer,
-        num_vertices: u32,
-        num_indices: u32,
+        size: dpi::PhysicalSize<u32>,
+        pipeline: RenderPipeline,
+        meshes: Vec<GpuMesh>,
         camera: Camera,
     ) -> Self {
         Self {
@@ -76,9 +88,7 @@ impl GpuHandler {
             config,
             size,
             pipeline,
-            vertex_buffer,
-            num_vertices,
-            num_indices,
+            meshes,
             camera,
         }
     }

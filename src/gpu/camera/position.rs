@@ -7,6 +7,22 @@ pub struct CameraPosition {
     pitch: f32,
 }
 
+impl From<Mat4> for CameraPosition {
+    fn from(matrix: Mat4) -> Self {
+        let position = Vec3::new(matrix.w_axis.x, matrix.w_axis.y, matrix.w_axis.z);
+        let forward = Vec3::new(-matrix.z_axis.x, -matrix.z_axis.y, -matrix.z_axis.z).normalize();
+
+        let yaw = -forward.z.atan2(forward.x);
+        let pitch = forward.y.asin();
+
+        CameraPosition::new(position, yaw, pitch)
+    }
+}
+impl From<Vec3> for CameraPosition {
+    fn from(value: Vec3) -> Self {
+        CameraPosition::new(value, 0.0, 0.0)
+    }
+}
 impl Default for CameraPosition {
     fn default() -> Self {
         CameraPosition::new(Vec3::ZERO, 0.0, 0.0)
@@ -26,10 +42,10 @@ impl CameraPosition {
         self.position += shift;
     }
     pub fn update_yaw(&mut self, shift: f32) {
-        self.yaw = self.yaw + shift/300.;
+        self.yaw = self.yaw + shift / 300.;
     }
     pub fn update_pitch(&mut self, shift: f32) {
-        self.pitch = self.pitch + shift/300.;
+        self.pitch = self.pitch + shift / 300.;
     }
     pub fn set_pitch(&mut self, shift: f32) {
         self.pitch = shift;

@@ -1,14 +1,19 @@
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::Camera;
 use crate::gpu::error::{GpuError, GpuResult};
-use crate::gpu::processor::{GpuHandler, GpuProcessor};
+use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor};
 use crate::gpu::vertex::{Vertex};
 use crate::mesh::Mesh;
-use glam::Vec3;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::Window;
+
+
+pub struct Settings{
+    // if true, required_features: wgpu::Features::POLYGON_MODE_LINE and polygon_mode: wgpu::PolygonMode::Line
+    pub only_lines:bool
+}
 
 impl GpuProcessor {
     pub fn try_init(
@@ -33,7 +38,7 @@ impl GpuProcessor {
 
         let (device, queue) = pollster::block_on(adapter.request_device(
             &wgpu::DeviceDescriptor {
-                required_features: wgpu::Features::empty(),
+                required_features: wgpu::Features::POLYGON_MODE_LINE,
                 required_limits: wgpu::Limits::default(),
                 label: None,
             },
@@ -62,14 +67,18 @@ impl GpuProcessor {
             label: Some("Shader"),
             source: wgpu::ShaderSource::Wgsl(include_str!("../wgsl/shader.wgsl").into()),
         });
-        let vertices: &Vec<Vertex> = &meshes.get(0).unwrap().try_into()?;
-        let num_vertices = vertices.len() as u32;
-        let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(vertices),
-            usage: wgpu::BufferUsages::VERTEX,
-        });
-        let num_indices = vertices.len() as u32;
+
+        let mut gpu_meshes = Vec::new();
+
+        for mesh in meshes.into_iter() {
+            let vertices:Vec<Vertex> =mesh.try_into()?;
+            let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Vertex Buffer"),
+                contents: bytemuck::cast_slice(&vertices),
+                usage: wgpu::BufferUsages::VERTEX,
+            });
+            gpu_meshes.push(GpuMesh::new(vertex_buffer, mesh.clone()));
+        }
         let camera = Camera::init(&config, &device, camera_pos);
 
         let render_pipeline_layout =
@@ -104,6 +113,7 @@ impl GpuProcessor {
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleList,
                 strip_index_format: None,
+                polygon_mode: wgpu::PolygonMode::Fill,
                 ..Default::default()
             },
             depth_stencil: Some(wgpu::DepthStencilState {
@@ -130,9 +140,7 @@ impl GpuProcessor {
             config,
             size,
             pipeline,
-            vertex_buffer,
-            num_vertices,
-            num_indices,
+            gpu_meshes,
             camera,
         ))
     }
