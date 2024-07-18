@@ -1,3 +1,4 @@
+use crate::mesh::material::Color;
 use crate::mesh::normals::VertexNormals;
 use crate::mesh::parts::{Face, FaceType, Vertex};
 use crate::mesh::tables::MeshTables;
@@ -5,7 +6,6 @@ use parts::Edge;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
-use crate::mesh::material::Color;
 
 pub mod material;
 pub mod normals;
@@ -13,7 +13,6 @@ pub mod parts;
 pub mod shape;
 pub mod tables;
 pub mod transform;
-
 
 type MeshResult<T> = Result<T, MeshError>;
 
@@ -34,7 +33,7 @@ pub struct Mesh {
     vertices: Vec<Vertex>,
     edges: Vec<Edge>,
     faces: Vec<Face>,
-    color: Color
+    color: Color,
 }
 
 impl Mesh {
@@ -44,7 +43,7 @@ impl Mesh {
             .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
     }
 
-    pub fn from_vertices<V, F>(vertices: Vec<V>, faces: Vec<F>,color: Color) -> Self
+    pub fn from_vertices<V, F>(vertices: Vec<V>, faces: Vec<F>, color: Color) -> Self
     where
         V: Into<Vertex>,
 
@@ -62,7 +61,7 @@ impl Mesh {
             vertices,
             edges,
             faces,
-            color
+            color,
         }
     }
 
@@ -138,12 +137,16 @@ impl Mesh {
         }
 
         let new_vertices = new_vertices.into_iter().map(|v| v.normalize()).collect();
-        *self = Mesh::from_vertices(new_vertices, new_faces,self.color.clone());
+        *self = Mesh::from_vertices(new_vertices, new_faces, self.color.clone());
         Ok(())
     }
 
     pub fn color(&self) -> &Color {
         &self.color
+    }
+
+    pub fn set_color(&mut self, color: Color) {
+        self.color = color;
     }
 }
 
@@ -194,7 +197,7 @@ mod tests {
         use super::*;
         let vertices = vec![[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]];
         let faces: Vec<Face> = vec![(0, 1, 2).into(), (0, 2, 3).into()];
-        let mesh = Mesh::from_vertices(vertices, faces,Default::default());
+        let mesh = Mesh::from_vertices(vertices, faces, Default::default());
         let normals = mesh.try_normals().unwrap();
 
         assert_eq!(normals.get_normal(0), Ok(&Vec3::new(0.0, 0.0, 1.0)));

@@ -16,7 +16,7 @@ use tessellate::mesh::shape::ring::Ring;
 use tessellate::mesh::shape::sphere::Sphere;
 use tessellate::mesh::shape::torus::Torus;
 use tessellate::mesh::transform::Transform;
-use tessellate::mesh::Mesh;
+use tessellate::mesh::{HasMesh, Mesh};
 use tessellate::{gpu, TessError};
 use winit::error::EventLoopError;
 
@@ -42,7 +42,17 @@ fn main() -> Result<(), TessError> {
 
     let mut torus = Torus::default();
     torus.transform(Mat4::from_translation(Vec3::new(0.0, -2.0, 2.0)))?;
-    let mut cube = Cube::create(Vertex::default(), 1.0, FaceType::Triangle, Color::v_random());
+
+    let mut cube = Cube::create(Vertex::default(), 1.0, FaceType::Quad, Default::default());
+    let colors = cube.mesh()
+        .faces()
+        .iter()
+        .map(|_| RgbaColor::random())
+        .collect();
+    cube.mesh_mut().set_color(Color::Face(colors));
+    cube.transform(Mat4::from_translation(Vec3::new(-3.0, -3.0, 0.0)))?;
+
+
     let mut sphere = Sphere::create_ico(Vertex::default(), 1.0, 3, RgbaColor::GREEN.into());
     let _ = sphere.transform(Mat4::from_translation(Vec3::new(0.0, 1.0, 0.0)));
 
