@@ -1,3 +1,4 @@
+use crate::mesh::material::Color;
 use crate::mesh::parts::{Edge, Face, FaceType, Vertex};
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
@@ -20,7 +21,14 @@ impl HasMesh for RectCuboid {
 }
 
 impl RectCuboid {
-    pub fn create<V>(center: V, size_x: f32, size_y: f32, size_z: f32, face_type: FaceType) -> Self
+    pub fn create<V>(
+        center: V,
+        size_x: f32,
+        size_y: f32,
+        size_z: f32,
+        face_type: FaceType,
+        color: Color,
+    ) -> Self
     where
         V: Into<Vertex>,
     {
@@ -67,7 +75,7 @@ impl RectCuboid {
         };
 
         Self {
-            mesh: Mesh::from_vertices(vertices, faces),
+            mesh: Mesh::from_vertices(vertices, faces, color),
             center,
             size_x,
             size_y,
@@ -78,6 +86,6 @@ impl RectCuboid {
 
 impl Default for RectCuboid {
     fn default() -> Self {
-        RectCuboid::create([0.0, 0.0, 0.0], 1.0, 1.0, 1.0, Default::default())
+        RectCuboid::create([0.0, 0.0, 0.0], 1.0, 1.0, 1.0, Default::default(), Default::default())
     }
 }

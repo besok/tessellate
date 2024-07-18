@@ -2,6 +2,8 @@ use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
+use crate::mesh::material::Color;
+
 #[derive(Debug, Clone)]
 pub struct Ring {
     center: Vertex,
@@ -13,7 +15,7 @@ pub struct Ring {
 
 impl Default for Ring {
     fn default() -> Self {
-        Ring::create(Vertex::default(), 1.0, 0.5, 1.0, 32)
+        Ring::create(Vertex::default(), 1.0, 0.5, 1.0, 32, Color::default())
     }
 }
 
@@ -22,8 +24,9 @@ impl Ring {
         center: V,
         inner_radius: f32,
         outer_radius: f32,
-        height: f32, // Added height parameter
+        height: f32,
         segments: usize,
+        color: Color
     ) -> Self {
         let center = center.into();
         let mut vertices: Vec<Vertex> = Vec::new();
@@ -98,7 +101,7 @@ impl Ring {
             ));
         }
 
-        let mesh = Mesh::from_vertices(vertices, faces);
+        let mesh = Mesh::from_vertices(vertices, faces,color);
 
         Ring {
             center,

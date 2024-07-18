@@ -2,6 +2,8 @@ use std::f32::consts::PI;
 use crate::mesh::Mesh;
 use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::HasMesh;
+use crate::mesh::material::Color;
+
 #[derive(Debug, Clone)]
 pub struct Cylinder {
     center: Vertex,
@@ -12,7 +14,7 @@ pub struct Cylinder {
 
 impl Default for Cylinder{
     fn default() -> Self {
-        Cylinder::create(Vertex::default(), 1.0, 2.0, 32)
+        Cylinder::create(Vertex::default(), 1.0, 2.0, 32, Default::default())
     }
 }
 impl Cylinder {
@@ -21,6 +23,7 @@ impl Cylinder {
         radius: f32,
         height: f32,
         segments: usize,
+        color: Color
     ) -> Self {
         let center = center.into();
         let mut vertices: Vec<Vertex> = Vec::new();
@@ -73,7 +76,7 @@ impl Cylinder {
             faces.push(Face::Triangle(top_center_index, top_seg, next_top_seg));
         }
 
-        let mesh = Mesh::from_vertices(vertices, faces);
+        let mesh = Mesh::from_vertices(vertices, faces,color);
         Cylinder {
             center,
             radius,

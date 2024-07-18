@@ -1,8 +1,10 @@
 use crate::mesh;
+use crate::mesh::material::{Color, RgbaColor};
 use crate::mesh::parts::{Face, FaceType};
 use crate::mesh::{Mesh, MeshError};
 use bytemuck::{Pod, Zeroable};
 use rand::Rng;
+use std::iter::zip;
 use std::mem;
 
 #[repr(C)]
@@ -12,35 +14,98 @@ pub(crate) struct Vertex {
     color: [f32; 4],
 }
 
-impl From<&mesh::parts::Vertex> for Vertex {
-    fn from(value: &mesh::parts::Vertex) -> Self {
-        let mut rng = rand::thread_rng();
-        let color = [
-            rng.gen_range(0.0..1.0),
-            rng.gen_range(0.0..1.0),
-            rng.gen_range(0.0..1.0),
-            rng.gen_range(0.0..1.0),
-        ];
-        let p = value.flatten();
+impl Vertex {
+    fn from(v: &mesh::parts::Vertex, color: &RgbaColor) -> Self {
+        let v = v.flatten();
         Vertex {
-            position: [p[0], p[1], p[2], 1.0],
-            color,
+            position: [v[0], v[1], v[2], 1.0],
+            color: color.clone().into(),
         }
     }
 }
+
 impl TryFrom<&Mesh> for Vec<Vertex> {
     type Error = MeshError;
     fn try_from(mesh: &Mesh) -> Result<Self, Self::Error> {
-        Ok(mesh
-            .faces()
-            .iter()
-            .flat_map(face_to_vertex3)
-            .map(|i| mesh.get_v(i))
-            .into_iter()
-            .collect::<Result<Vec<_>, _>>()?
-            .into_iter()
-            .map(Into::into)
-            .collect::<Vec<_>>())
+        match mesh.color() {
+            Color::Face(fs) => {
+                let faces = mesh.faces();
+                faces_check(fs, faces)?;
+                let mut vertices = Vec::new();
+                for (col, face) in zip(fs.into_iter(), faces.into_iter()) {
+                    let vs = face_to_vertex3(face)
+                        .into_iter()
+                        .map(|i| mesh.get_v(i))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    vertices.extend(vs.into_iter().map(|v| Vertex::from(v, col)))
+                }
+                Ok(vertices)
+            }
+            Color::Mesh(m) => Ok(mesh
+                .faces()
+                .iter()
+                .flat_map(face_to_vertex3)
+                .map(|i| mesh.get_v(i))
+                .into_iter()
+                .collect::<Result<Vec<_>, _>>()?
+                .into_iter()
+                .map(|v| Vertex::from(v, m))
+                .collect::<Vec<_>>()),
+            Color::Func(f) => {
+                let mut vertices = Vec::new();
+                for face in mesh.faces().into_iter() {
+                    let vs = face_to_vertex3(face)
+                        .into_iter()
+                        .map(|i| mesh.get_v(i))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    vertices.extend(
+                        vs.into_iter()
+                            .enumerate()
+                            .map(|(i, v)| Vertex::from(v, &f(v, i))),
+                    )
+                }
+                Ok(vertices)
+            }
+            Color::Vertex(colors) => {
+                let mut vertices = Vec::new();
+                for face in mesh.faces().into_iter() {
+                    let vs = face_to_vertex3(face)
+                        .into_iter()
+                        .map(|i| mesh.get_v(i))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    vertices.extend(
+                        zip(vs.into_iter(), colors.into_iter()).map(|(v, c)| Vertex::from(v, c)),
+                    )
+                }
+                Ok(vertices)
+            }
+        }
+    }
+}
+
+fn faces_check(fs: &Vec<RgbaColor>, faces: &Vec<Face>) -> Result<(), MeshError> {
+    if fs.len() != faces.len() {
+        Err(MeshError::InvalidFaceType(format!(
+            "Face color count {} does not match face count {}",
+            fs.len(),
+            faces.len()
+        )))
+    } else {
+        Ok(())
+    }
+}
+fn vertices_check(
+    vs: &Vec<RgbaColor>,
+    vertices: &Vec<mesh::parts::Vertex>,
+) -> Result<(), MeshError> {
+    if vs.len() != vertices.len() {
+        return Err(MeshError::InvalidIndex(format!(
+            "Vertex color count {} does not match vertex count {}",
+            vs.len(),
+            vertices.len()
+        )));
+    } else {
+        Ok(())
     }
 }
 

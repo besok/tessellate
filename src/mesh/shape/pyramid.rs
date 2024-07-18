@@ -2,6 +2,8 @@ use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
+use crate::mesh::material::Color;
+
 #[derive(Debug, Clone)]
 pub struct Pyramid {
     center: Vertex,
@@ -12,11 +14,11 @@ pub struct Pyramid {
 
 impl Default for Pyramid {
     fn default() -> Self {
-        Pyramid::create(Vertex::default(), 1.0, 3.0)
+        Pyramid::create(Vertex::default(), 1.0, 3.0,Color::default())
     }
 }
 impl Pyramid {
-    pub fn create<V: Into<Vertex>>(center: V, size: f32, height: f32) -> Self {
+    pub fn create<V: Into<Vertex>>(center: V, size: f32, height: f32,color: Color) -> Self {
         let center = center.into();
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut faces: Vec<Face> = Vec::new();
@@ -43,7 +45,7 @@ impl Pyramid {
         faces.push(Face::Triangle(base_center_index, 2, 3));
         faces.push(Face::Triangle(base_center_index, 3, 0));
 
-        let mesh = Mesh::from_vertices(vertices, faces);
+        let mesh = Mesh::from_vertices(vertices, faces,color);
         Self {
             center,
             size,

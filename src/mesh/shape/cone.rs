@@ -2,6 +2,8 @@ use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
+use crate::mesh::material::Color;
+
 #[derive(Debug, Clone)]
 pub struct Cone {
     center: Vertex,
@@ -12,7 +14,7 @@ pub struct Cone {
 
 impl Default for Cone {
     fn default() -> Self {
-        Cone::create(Vertex::default(), 1.0, 2.0, 32)
+        Cone::create(Vertex::default(), 1.0, 2.0, 32,Color::default())
     }
 }
 
@@ -22,6 +24,7 @@ impl Cone {
         radius: f32,
         height: f32,
         segments: usize,
+        color: Color
     ) -> Self {
         let center = center.into();
         let mut vertices: Vec<Vertex> = Vec::new();
@@ -46,7 +49,7 @@ impl Cone {
             faces.push(Face::Triangle(1, seg + 1, seg + 2));
         }
 
-        let mesh = Mesh::from_vertices(vertices, faces);
+        let mesh = Mesh::from_vertices(vertices, faces,color);
 
         Cone {
             center,

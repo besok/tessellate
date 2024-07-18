@@ -1,7 +1,9 @@
+use crate::mesh::material::Color;
 use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
+
 #[derive(Debug, Clone)]
 pub struct Torus {
     center: Vertex,
@@ -12,7 +14,7 @@ pub struct Torus {
 
 impl Default for Torus {
     fn default() -> Self {
-        Torus::create(Vertex::default(), 1.0, 0.5, 32, 16)
+        Torus::create(Vertex::default(), 1.0, 0.5, 32, 16, Color::default())
     }
 }
 
@@ -23,6 +25,7 @@ impl Torus {
         minor_radius: f32,
         segments: usize,
         sides: usize,
+        color: Color,
     ) -> Self {
         let center = center.into();
         let mut vertices: Vec<Vertex> = Vec::new();
@@ -52,7 +55,7 @@ impl Torus {
             }
         }
 
-        let mesh = Mesh::from_vertices(vertices, faces);
+        let mesh = Mesh::from_vertices(vertices, faces, color);
 
         Torus {
             major_radius,

@@ -1,6 +1,8 @@
 use crate::mesh::Mesh;
 use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::HasMesh;
+use crate::mesh::material::Color;
+
 #[derive(Debug, Clone)]
 pub struct Plane {
     center: Vertex,
@@ -11,7 +13,7 @@ pub struct Plane {
 
 impl Plane {
 
-    pub fn create<V: Into<Vertex>>(center: V, width: f32, height: f32) -> Self {
+    pub fn create<V: Into<Vertex>>(center: V, width: f32, height: f32,color: Color) -> Self {
         let center = center.into();
         let half_width = width / 2.0;
         let half_height = height / 2.0;
@@ -28,7 +30,7 @@ impl Plane {
         faces.push(Face::Triangle(0, 1, 2));
         faces.push(Face::Triangle(2, 3, 0));
 
-        let mesh = Mesh::from_vertices(vertices, faces);
+        let mesh = Mesh::from_vertices(vertices, faces,color);
 
         Self {
             center,
@@ -50,6 +52,6 @@ impl HasMesh for Plane {
 
 impl Default for Plane {
     fn default() -> Self {
-        Plane::create(Vertex::default(), 1.0, 1.0)
+        Plane::create(Vertex::default(), 1.0, 1.0,Color::default())
     }
 }

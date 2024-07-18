@@ -1,6 +1,8 @@
 use crate::mesh::Mesh;
 use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::HasMesh;
+use crate::mesh::material::Color;
+
 #[derive(Debug, Clone)]
 pub struct Grid {
     rows: usize,
@@ -10,7 +12,7 @@ pub struct Grid {
 }
 
 impl Grid {
-    pub fn create(rows: usize, columns: usize, spacing: f32) -> Self {
+    pub fn create(rows: usize, columns: usize, spacing: f32,color: Color) -> Self {
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut faces: Vec<Face> = Vec::new();
 
@@ -36,7 +38,7 @@ impl Grid {
             }
         }
 
-        let mesh = Mesh::from_vertices(vertices, faces);
+        let mesh = Mesh::from_vertices(vertices, faces,color);
 
         Self {
             rows,
@@ -58,6 +60,6 @@ impl HasMesh for Grid {
 
 impl Default for Grid {
     fn default() -> Self {
-        Grid::create(10, 10, 1.0)
+        Grid::create(10, 10, 1.0,Color::default())
     }
 }

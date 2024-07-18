@@ -2,6 +2,7 @@ use env_logger::Builder;
 use glam::{EulerRot, Mat4, Quat, Vec3};
 use log::{info, LevelFilter};
 use tessellate::gpu::camera::position::CameraPosition;
+use tessellate::mesh::material::{Color, RgbaColor};
 use tessellate::mesh::parts::{FaceType, Vertex};
 use tessellate::mesh::shape::cone::Cone;
 use tessellate::mesh::shape::cuboid::cube::Cube;
@@ -26,22 +27,23 @@ fn init_logger() {
 fn main() -> Result<(), TessError> {
     init_logger();
 
-    let ico = Icosahedron::create(Vertex::new(3.0, 2.0, 1.0), 1.0);
+    let ico = Icosahedron::create(Vertex::new(3.0, 2.0, 1.0), 1.0, RgbaColor::CYAN.into());
 
     let mut ring = Ring::default();
     ring.transform(Mat4::from_translation(Vec3::new(0.0, 4.0, 0.0)))?;
 
-    let cylinder = Cylinder::create(Vertex::new(0.0, 0.0, 4.0), 1.0, 1.0, 3);
+    let cylinder = Cylinder::create(Vertex::new(0.0, 0.0, 4.0), 1.0, 1.0, 3, Default::default());
+
     let mut pyramid = Pyramid::default();
     pyramid.transform(Mat4::from_rotation_translation(
-        Quat::from_rotation_x(30.0),
+        Quat::from_rotation_x(0.0),
         Vec3::new(0.0, 1.0, -3.0),
     ))?;
 
     let mut torus = Torus::default();
     torus.transform(Mat4::from_translation(Vec3::new(0.0, -2.0, 2.0)))?;
-    let mut cube = Cube::create(Vertex::default(), 1.0, FaceType::Triangle);
-    let mut sphere = Sphere::create_ico(Vertex::default(), 1.0, 3);
+    let mut cube = Cube::create(Vertex::default(), 1.0, FaceType::Triangle, Color::v_random());
+    let mut sphere = Sphere::create_ico(Vertex::default(), 1.0, 3, RgbaColor::GREEN.into());
     let _ = sphere.transform(Mat4::from_translation(Vec3::new(0.0, 1.0, 0.0)));
 
     let mut cone = Cone::default();

@@ -1,5 +1,6 @@
 use crate::mesh::parts::{Edge, Face, FaceType, Vertex};
 
+use crate::mesh::material::Color;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use glam::Vec3;
@@ -26,12 +27,12 @@ impl HasMesh for Cube {
 
 impl Default for Cube {
     fn default() -> Self {
-        Cube::create([0.0, 0.0, 0.0], 1.0, Default::default())
+        Cube::create([0.0, 0.0, 0.0], 1.0, Default::default(), Default::default())
     }
 }
 
 impl Cube {
-    pub fn create<V>(center: V, size: f32, face_type: FaceType) -> Self
+    pub fn create<V>(center: V, size: f32, face_type: FaceType, color: Color) -> Self
     where
         V: Into<Vertex>,
     {
@@ -76,7 +77,7 @@ impl Cube {
         };
 
         Cube {
-            mesh: Mesh::from_vertices(vertices, faces),
+            mesh: Mesh::from_vertices(vertices, faces, color),
             center,
             size,
         }

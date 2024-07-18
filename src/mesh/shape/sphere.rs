@@ -3,6 +3,8 @@ use crate::mesh::shape::icosahedron::Icosahedron;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
+use crate::mesh::material::Color;
+
 #[derive(Debug, Clone)]
 pub struct Sphere {
     radius: f32,
@@ -21,7 +23,7 @@ impl HasMesh for Sphere {
 }
 
 impl Sphere {
-    pub fn create_uv<V: Into<Vertex>>(center: V, radius: f32, m: usize, n: usize) -> Self {
+    pub fn create_uv<V: Into<Vertex>>(center: V, radius: f32, m: usize, n: usize, color: Color) -> Self {
         let center = center.into();
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
@@ -50,12 +52,12 @@ impl Sphere {
             radius,
             center,
             segments: n * m,
-            mesh: Mesh::from_vertices(vertices, faces),
+            mesh: Mesh::from_vertices(vertices, faces,color),
         }
     }
-    pub fn create_ico<V: Into<Vertex>>(center: V, radius: f32, subdivisions: usize) -> Self {
+    pub fn create_ico<V: Into<Vertex>>(center: V, radius: f32, subdivisions: usize, color: Color) -> Self {
         let center = center.into();
-        let mut ico = Icosahedron::create(center, radius);
+        let mut ico = Icosahedron::create(center, radius,color);
         let mesh = (0..subdivisions).fold(ico.mesh_mut(), |mut acc, _| {
             acc.subdivide();
             acc
@@ -69,14 +71,14 @@ impl Sphere {
         }
     }
 
-    pub fn create<V: Into<Vertex>>(center: V, radius: f32) -> Self {
-        Sphere::create_uv(center, radius, 32, 32)
+    pub fn create<V: Into<Vertex>>(center: V, radius: f32,color:Color) -> Self {
+        Sphere::create_uv(center, radius, 32, 32,color)
     }
 }
 
 impl Default for Sphere {
     fn default() -> Self {
-        Sphere::create_uv(Vertex::default(), 1.0, 32, 32)
+        Sphere::create_uv(Vertex::default(), 1.0, 32, 32, Color::default())
     }
 }
 

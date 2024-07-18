@@ -3,6 +3,8 @@ use crate::mesh::shape::sphere::{calc_vertex, Sphere};
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
+use crate::mesh::material::Color;
+
 #[derive(Debug, Clone)]
 pub struct Icosahedron {
     center: Vertex,
@@ -20,14 +22,14 @@ impl HasMesh for Icosahedron {
 }
 
 impl Icosahedron {
-    pub fn create<V: Into<Vertex>>(center: V, size: f32) -> Self {
+    pub fn create<V: Into<Vertex>>(center: V, size: f32,color: Color) -> Self {
         let center = center.into();
         let phi = (1.0 + 5.0_f32.sqrt()) / 2.0;
         let scale = size / phi.sqrt();
         Self {
             center,
             scale,
-            mesh: Mesh::from_vertices(vertices(center, phi, scale), faces()),
+            mesh: Mesh::from_vertices(vertices(center, phi, scale), faces(),color),
         }
     }
 }
