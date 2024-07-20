@@ -22,8 +22,12 @@ impl HasMesh for Icosahedron {
 }
 
 impl Icosahedron {
-    pub fn create<V: Into<Vertex>>(center: V, size: f32,color: Color) -> Self {
+    pub fn create<V,C>(center: V, size: f32,color: C) -> Self
+    where V: Into<Vertex>,
+          C: Into<Color>
+    {
         let center = center.into();
+        let color = color.into();
         let phi = (1.0 + 5.0_f32.sqrt()) / 2.0;
         let scale = size / phi.sqrt();
         Self {

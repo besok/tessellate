@@ -21,21 +21,23 @@ impl HasMesh for RectCuboid {
 }
 
 impl RectCuboid {
-    pub fn create<V>(
+    pub fn create<V,C>(
         center: V,
         size_x: f32,
         size_y: f32,
         size_z: f32,
         face_type: FaceType,
-        color: Color,
+        color: C,
     ) -> Self
     where
         V: Into<Vertex>,
+        C: Into<Color>,
     {
         let half_size_x = size_x / 2.0;
         let half_size_y = size_y / 2.0;
         let half_size_z = size_z / 2.0;
         let center = center.into();
+        let color = color.into();
         let vertices = vec![
             Vertex::new(center.x - half_size_x, center.y - half_size_y, center.z - half_size_z),
             Vertex::new(center.x + half_size_x, center.y - half_size_y, center.z - half_size_z),

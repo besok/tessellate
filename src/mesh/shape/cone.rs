@@ -1,8 +1,8 @@
+use crate::mesh::material::Color;
 use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
-use crate::mesh::material::Color;
 
 #[derive(Debug, Clone)]
 pub struct Cone {
@@ -14,25 +14,23 @@ pub struct Cone {
 
 impl Default for Cone {
     fn default() -> Self {
-        Cone::create(Vertex::default(), 1.0, 2.0, 32,Color::default())
+        Cone::create(Vertex::default(), 1.0, 2.0, 32, Color::default())
     }
 }
 
 impl Cone {
-    pub fn create<V: Into<Vertex>>(
-        center: V,
-        radius: f32,
-        height: f32,
-        segments: usize,
-        color: Color
-    ) -> Self {
+    pub fn create<V, C>(center: V, radius: f32, height: f32, segments: usize, color: C) -> Self
+    where
+        V: Into<Vertex>,
+        C: Into<Color>,
+    {
         let center = center.into();
+        let color = color.into();
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut faces: Vec<Face> = Vec::new();
 
         let tip = Vertex::new(center.x, center.y, center.z + height);
         vertices.push(tip);
-
 
         for seg in 0..segments {
             let angle = (seg as f32) * 2.0 * PI / (segments as f32);
@@ -45,11 +43,11 @@ impl Cone {
             faces.push(Face::Triangle(0, seg, (seg + 1) % segments));
         }
 
-        for seg in 1..segments-1 {
+        for seg in 1..segments - 1 {
             faces.push(Face::Triangle(1, seg + 1, seg + 2));
         }
 
-        let mesh = Mesh::from_vertices(vertices, faces,color);
+        let mesh = Mesh::from_vertices(vertices, faces, color);
 
         Cone {
             center,

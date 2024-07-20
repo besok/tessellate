@@ -27,7 +27,7 @@ fn init_logger() {
 fn main() -> Result<(), TessError> {
     init_logger();
 
-    let ico = Icosahedron::create([3.0, 2.0, 1.0], 1.0, RgbaColor::CYAN.into());
+    let ico = Icosahedron::create([3.0, 2.0, 1.0], 1.0, RgbaColor::CYAN);
 
     let mut ring = Ring::default();
     ring.transform(Mat4::from_translation(Vec3::new(0.0, 4.0, 0.0)))?;

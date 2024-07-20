@@ -32,12 +32,14 @@ impl Default for Cube {
 }
 
 impl Cube {
-    pub fn create<V>(center: V, size: f32, face_type: FaceType, color: Color) -> Self
+    pub fn create<V,C>(center: V, size: f32, face_type: FaceType, color: C) -> Self
     where
         V: Into<Vertex>,
+        C: Into<Color>
     {
         let half_size = size / 2.0;
         let center = center.into();
+        let color = color.into();
         let vertices = vec![
             Vertex::new(center.x - half_size, center.y - half_size, center.z - half_size),
             Vertex::new(center.x + half_size, center.y - half_size, center.z - half_size),
