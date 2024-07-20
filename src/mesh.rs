@@ -13,6 +13,7 @@ pub mod parts;
 pub mod shape;
 pub mod tables;
 pub mod transform;
+pub mod bool;
 
 type MeshResult<T> = Result<T, MeshError>;
 

@@ -27,12 +27,12 @@ fn init_logger() {
 fn main() -> Result<(), TessError> {
     init_logger();
 
-    let ico = Icosahedron::create(Vertex::new(3.0, 2.0, 1.0), 1.0, RgbaColor::CYAN.into());
+    let ico = Icosahedron::create([3.0, 2.0, 1.0], 1.0, RgbaColor::CYAN.into());
 
     let mut ring = Ring::default();
     ring.transform(Mat4::from_translation(Vec3::new(0.0, 4.0, 0.0)))?;
 
-    let cylinder = Cylinder::create(Vertex::new(0.0, 0.0, 4.0), 1.0, 1.0, 3, Default::default());
+    let cylinder = Cylinder::create([0.0, 0.0, 4.0], 1.0, 1.0, 3, Default::default());
 
     let mut pyramid = Pyramid::default();
     pyramid.transform(Mat4::from_rotation_translation(
@@ -44,14 +44,14 @@ fn main() -> Result<(), TessError> {
     torus.transform(Mat4::from_translation(Vec3::new(0.0, -2.0, 2.0)))?;
 
     let mut cube = Cube::create(Vertex::default(), 1.0, FaceType::Quad, Default::default());
-    let colors = cube.mesh()
+    let colors = cube
+        .mesh()
         .faces()
         .iter()
         .map(|_| RgbaColor::random())
         .collect();
     cube.mesh_mut().set_color(Color::Face(colors));
     cube.transform(Mat4::from_translation(Vec3::new(-3.0, -3.0, 0.0)))?;
-
 
     let mut sphere = Sphere::create_ico(Vertex::default(), 1.0, 3, RgbaColor::GREEN.into());
     let _ = sphere.transform(Mat4::from_translation(Vec3::new(0.0, 1.0, 0.0)));
