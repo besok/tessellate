@@ -13,8 +13,13 @@ pub struct Plane {
 
 impl Plane {
 
-    pub fn create<V: Into<Vertex>>(center: V, width: f32, height: f32,color: Color) -> Self {
+    pub fn create<V,C>(center: V, width: f32, height: f32,color: C) -> Self
+    where
+        V:Into<Vertex>,
+        C:Into<Color>
+    {
         let center = center.into();
+        let color = color.into();
         let half_width = width / 2.0;
         let half_height = height / 2.0;
         let mut vertices: Vec<Vertex> = Vec::new();

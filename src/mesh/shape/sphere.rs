@@ -23,8 +23,12 @@ impl HasMesh for Sphere {
 }
 
 impl Sphere {
-    pub fn create_uv<V: Into<Vertex>>(center: V, radius: f32, m: usize, n: usize, color: Color) -> Self {
+    pub fn create_uv<V,C>(center: V, radius: f32, m: usize, n: usize, color: C) -> Self
+    where V: Into<Vertex>,
+          C: Into<Color>
+    {
         let center = center.into();
+        let color = color.into();
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
 

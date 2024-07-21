@@ -32,7 +32,7 @@ fn main() -> Result<(), TessError> {
     let mut ring = Ring::default();
     ring.transform(Mat4::from_translation(Vec3::new(0.0, 4.0, 0.0)))?;
 
-    let cylinder = Cylinder::create([0.0, 0.0, 4.0], 1.0, 1.0, 3, Default::default());
+    let cylinder = Cylinder::create([0.0, 0.0, 4.0], 1.0, 1.0, 3, Color::default());
 
     let mut pyramid = Pyramid::default();
     pyramid.transform(Mat4::from_rotation_translation(
@@ -43,7 +43,7 @@ fn main() -> Result<(), TessError> {
     let mut torus = Torus::default();
     torus.transform(Mat4::from_translation(Vec3::new(0.0, -2.0, 2.0)))?;
 
-    let mut cube = Cube::create(Vertex::default(), 1.0, FaceType::Quad, Default::default());
+    let mut cube = Cube::create(Vertex::default(), 1.0, FaceType::Quad, Color::default());
     let colors = cube
         .mesh()
         .faces()

@@ -19,15 +19,19 @@ impl Default for Torus {
 }
 
 impl Torus {
-    pub fn create<V: Into<Vertex>>(
+    pub fn create<V,C>(
         center: V,
         major_radius: f32,
         minor_radius: f32,
         segments: usize,
         sides: usize,
-        color: Color,
-    ) -> Self {
+        color: C,
+    ) -> Self
+    where V:Into<Vertex>,
+          C:Into<Color>
+    {
         let center = center.into();
+        let color = color.into();
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut faces: Vec<Face> = Vec::new();
 

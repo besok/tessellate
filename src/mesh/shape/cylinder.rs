@@ -14,18 +14,22 @@ pub struct Cylinder {
 
 impl Default for Cylinder{
     fn default() -> Self {
-        Cylinder::create(Vertex::default(), 1.0, 2.0, 32, Default::default())
+        Cylinder::create(Vertex::default(), 1.0, 2.0, 32, Color::default())
     }
 }
 impl Cylinder {
-    pub fn create<V: Into<Vertex>>(
+    pub fn create<V,C>(
         center: V,
         radius: f32,
         height: f32,
         segments: usize,
-        color: Color
-    ) -> Self {
+        color: C
+    ) -> Self
+    where V:Into<Vertex>,
+          C:Into<Color>
+    {
         let center = center.into();
+        let color = color.into();
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut faces: Vec<Face> = Vec::new();
 

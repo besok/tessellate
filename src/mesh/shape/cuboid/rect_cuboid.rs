@@ -88,6 +88,6 @@ impl RectCuboid {
 
 impl Default for RectCuboid {
     fn default() -> Self {
-        RectCuboid::create([0.0, 0.0, 0.0], 1.0, 1.0, 1.0, Default::default(), Default::default())
+        RectCuboid::create([0.0, 0.0, 0.0], 1.0, 1.0, 1.0, Default::default(), Color::default())
     }
 }

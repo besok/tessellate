@@ -27,7 +27,7 @@ impl HasMesh for Cube {
 
 impl Default for Cube {
     fn default() -> Self {
-        Cube::create([0.0, 0.0, 0.0], 1.0, Default::default(), Default::default())
+        Cube::create([0.0, 0.0, 0.0], 1.0, Default::default(), Color::default())
     }
 }
 
