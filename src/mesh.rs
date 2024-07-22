@@ -1,5 +1,5 @@
 use crate::mesh::material::Color;
-use crate::mesh::normals::VertexNormals;
+use crate::mesh::normals::MeshNormals;
 use crate::mesh::parts::{Face, FaceType, Vertex};
 use crate::mesh::tables::MeshTables;
 use parts::Edge;
@@ -69,7 +69,7 @@ impl Mesh {
     pub fn try_tables(&self) -> MeshResult<MeshTables> {
         self.try_into()
     }
-    pub fn try_normals(&self) -> MeshResult<VertexNormals> {
+    pub fn try_normals(&self) -> MeshResult<MeshNormals> {
         self.try_into()
     }
 

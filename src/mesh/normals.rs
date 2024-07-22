@@ -1,25 +1,28 @@
 use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::{Mesh, MeshError, MeshResult};
 use glam::Vec3;
+use std::collections::HashMap;
 
 #[derive(Default, Debug, Clone, PartialEq)]
-pub struct VertexNormals {
-    normals: Vec<Vec3>,
-    f_normals: Vec<Vec3>,
+pub struct MeshNormals {
+    normals_vert: Vec<Vec3>,
+    normals_face: Vec<Vec3>,
+    normals_face_map: HashMap<Face, Vec3>,
 }
 
-impl TryFrom<&Mesh> for VertexNormals {
+impl TryFrom<&Mesh> for MeshNormals {
     type Error = MeshError;
 
-    fn try_from(value: &Mesh) -> Result<Self, Self::Error> {
-        VertexNormals::new(value)
+    fn try_from(value: &Mesh) -> MeshResult<Self> {
+        MeshNormals::new(value)
     }
 }
 
-impl VertexNormals {
+impl MeshNormals {
     pub fn new(mesh: &Mesh) -> MeshResult<Self> {
         let mut normals: Vec<Vec3> = vec![Vec3::new(0.0, 0.0, 0.0); mesh.vertices.len()];
         let mut face_normals: Vec<Vec3> = vec![Vec3::new(0.0, 0.0, 0.0); mesh.faces.len()];
+        let mut face_normals_map: HashMap<Face, Vec3> = HashMap::new();
 
         for face in &mesh.faces {
             match face {
@@ -29,6 +32,7 @@ impl VertexNormals {
                     let v3 = mesh.get_v(*v3_idx)?;
                     let face_normal = calculate_triangle_normal(v1, v2, v3);
                     face_normals.push(face_normal);
+                    face_normals_map.insert(face.clone(), face_normal);
                     normals[*v1_idx] += face_normal;
                     normals[*v2_idx] += face_normal;
                     normals[*v3_idx] += face_normal;
@@ -39,6 +43,7 @@ impl VertexNormals {
                     let v3 = mesh.get_v(*v3_idx)?;
                     let _v4 = mesh.get_v(*v4_idx)?;
                     let face_normal = calculate_triangle_normal(v1, v2, v3);
+                    face_normals_map.insert(face.clone(), face_normal);
                     face_normals.push(face_normal);
                     normals[*v1_idx] += face_normal;
                     normals[*v2_idx] += face_normal;
@@ -49,14 +54,25 @@ impl VertexNormals {
         }
 
         Ok(Self {
-            normals: normals.into_iter().map(|n| n.normalize()).collect(),
-            f_normals: face_normals.into_iter().map(|n| n.normalize()).collect(),
+            normals_vert: normals.into_iter().map(|n| n.normalize()).collect(),
+            normals_face: face_normals.into_iter().map(|n| n.normalize()).collect(),
+            normals_face_map: face_normals_map,
         })
     }
 
     pub fn get_normal(&self, idx: usize) -> MeshResult<&Vec3> {
-        self.normals
+        self.normals_vert
             .get(idx)
+            .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
+    }
+    pub fn get_face_normal_by_idx(&self, idx: usize) -> MeshResult<&Vec3> {
+        self.normals_face
+            .get(idx)
+            .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
+    }
+    pub fn get_face_normal(&self, face: Face) -> MeshResult<&Vec3> {
+        self.normals_face_map
+            .get(&face)
             .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
     }
 }
