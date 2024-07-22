@@ -3,6 +3,12 @@ use crate::mesh::{Mesh, MeshError, MeshResult};
 use glam::Vec3;
 use std::collections::HashMap;
 
+
+/// Mesh normals
+/// The structure to store normals for vertices and faces
+/// The normals are calculated based on the faces
+/// The normals for vertices are calculated
+/// as the sum of the normals of the faces that share the vertex
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct MeshNormals {
     normals_vert: Vec<Vec3>,
@@ -60,16 +66,21 @@ impl MeshNormals {
         })
     }
 
+    /// Get the normal for a vertex
     pub fn get_normal(&self, idx: usize) -> MeshResult<&Vec3> {
         self.normals_vert
             .get(idx)
             .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
     }
+
+    /// Get the normal for a face
     pub fn get_face_normal_by_idx(&self, idx: usize) -> MeshResult<&Vec3> {
         self.normals_face
             .get(idx)
             .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
     }
+
+    /// Get the normal for a face
     pub fn get_face_normal(&self, face: Face) -> MeshResult<&Vec3> {
         self.normals_face_map
             .get(&face)
