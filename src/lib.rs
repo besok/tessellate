@@ -1,9 +1,16 @@
+use log::LevelFilter;
 use crate::gpu::error::GpuError;
 use crate::mesh::MeshError;
-
 pub mod gpu;
 pub mod mesh;
-
+pub fn turn_on_test_logs() {
+    let _ = env_logger::builder()
+        .is_test(true)
+        .filter_level(LevelFilter::max())
+        .format_timestamp(None)
+        .format_level(false)
+        .try_init();
+}
 
 #[derive(Debug)]
 pub enum TessError {

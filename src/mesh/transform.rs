@@ -8,7 +8,7 @@ pub trait Transform {
 
 impl<HM: HasMesh> Transform for HM {
     fn transform<T: Into<Mat4>>(&mut self, matrix: T) -> MeshResult<()> {
-        &mut self.mesh_mut().transform(matrix);
+        let _ = &mut self.mesh_mut().transform(matrix);
         Ok(())
     }
 }

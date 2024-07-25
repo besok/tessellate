@@ -1,12 +1,9 @@
+use winit::event_loop::{ControlFlow, EventLoop};
+
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::error::GpuError;
 use crate::gpu::processor::GpuProcessor;
 use crate::mesh::Mesh;
-use env_logger::Builder;
-use glam::Vec3;
-use log::{info, LevelFilter};
-use winit::error::EventLoopError;
-use winit::event_loop::{ControlFlow, EventLoop};
 
 pub mod camera;
 pub mod error;

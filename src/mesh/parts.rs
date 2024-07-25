@@ -1,6 +1,6 @@
 use glam::Vec3;
 use std::hash::{Hash, Hasher};
-use std::ops::{Add, Mul};
+use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vertex {
@@ -52,6 +52,19 @@ impl Add for Vertex {
             z: self.z + rhs.z,
         }
     }
+}
+
+impl Sub for Vertex {
+    type Output = Vertex;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Vertex {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z,
+        }
+    }
+
 }
 
 impl Default for Vertex {
@@ -123,6 +136,29 @@ where
     }
 }
 pub type Idx = usize;
+
+#[derive(Debug, Clone, PartialEq,Eq, Hash)]
+pub struct Polygon {
+    vertices: Vec<Vertex>
+}
+
+impl From<Vec<Vertex>> for Polygon{
+    fn from(vertices: Vec<Vertex>) -> Self {
+        Self{vertices}
+    }
+
+}
+
+impl Polygon {
+    pub fn new(vertices: Vec<&Vertex>) -> Self {
+        Self{vertices:vertices.into_iter().map(|v| v.clone()).collect()}
+    }
+
+    pub fn vertices(&self) -> &Vec<Vertex> {
+        &self.vertices
+    }
+
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Face {

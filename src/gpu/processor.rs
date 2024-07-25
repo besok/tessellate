@@ -1,15 +1,10 @@
-use crate::gpu::camera::controller::CameraController;
 use crate::gpu::camera::position::CameraPosition;
-use crate::gpu::camera::projection::Projection;
-use crate::gpu::camera::{Camera, CameraUniform};
+use crate::gpu::camera::{Camera};
 use crate::gpu::error::{GpuError, GpuResult};
-use crate::gpu::vertex::Vertex;
 use crate::mesh::Mesh;
 use log::{error, info};
 
-use std::iter;
 use std::sync::Arc;
-use wgpu::util::DeviceExt;
 use wgpu::{Buffer, RenderPipeline, Surface};
 use winit::application::ApplicationHandler;
 use winit::dpi;

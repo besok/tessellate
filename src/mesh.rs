@@ -1,19 +1,18 @@
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
-use crate::mesh::parts::{Face, FaceType, Vertex};
+use crate::mesh::parts::{Face, Polygon, Vertex};
 use crate::mesh::tables::MeshTables;
 use parts::Edge;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
-
+pub mod bool;
 pub mod material;
 pub mod normals;
 pub mod parts;
 pub mod shape;
 pub mod tables;
 pub mod transform;
-pub mod bool;
 
 type MeshResult<T> = Result<T, MeshError>;
 
@@ -21,6 +20,7 @@ type MeshResult<T> = Result<T, MeshError>;
 pub enum MeshError {
     InvalidIndex(String),
     InvalidFaceType(String),
+    WrongIntersection(String),
 }
 
 impl MeshError {
@@ -47,7 +47,6 @@ impl Mesh {
     pub fn from_vertices<V, F>(vertices: Vec<V>, faces: Vec<F>, color: Color) -> Self
     where
         V: Into<Vertex>,
-
         F: Into<Face>,
     {
         let vertices = vertices.into_iter().map(Into::into).collect();
@@ -81,6 +80,13 @@ impl Mesh {
     }
     pub fn faces(&self) -> &Vec<Face> {
         &self.faces
+    }
+    pub fn try_polygons(&self) -> MeshResult<Vec<Polygon>> {
+        self
+            .faces
+            .iter()
+            .map(|f| self.face_to_polygon(f))
+            .collect::<Result<Vec<_>, _>>()
     }
 
     pub fn subdivide(&mut self) -> MeshResult<()> {
@@ -149,6 +155,15 @@ impl Mesh {
     pub fn set_color(&mut self, color: Color) {
         self.color = color;
     }
+
+    fn face_to_polygon(&self, face: &Face) -> MeshResult<Polygon> {
+        face.flatten()
+            .iter()
+            .map(|i| self.get_v(*i))
+            .into_iter()
+            .collect::<Result<Vec<_>, _>>()
+            .map(Polygon::new)
+    }
 }
 
 pub trait HasMesh {
@@ -179,7 +194,6 @@ pub fn dedup<T: Hash + Eq>(items: Vec<T>) -> Vec<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::mesh::parts::Idx;
     use glam::Vec3;
 
     #[test]

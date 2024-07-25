@@ -1,5 +1,5 @@
-use glam::{Mat4, Vec3};
-use log::{info, log};
+use glam::{Mat4};
+use log::{info};
 use wgpu::util::DeviceExt;
 use wgpu::{BindGroupLayout, Device, SurfaceConfiguration};
 use winit::dpi::PhysicalPosition;

@@ -63,7 +63,7 @@ impl Sphere {
         let center = center.into();
         let mut ico = Icosahedron::create(center, radius,color);
         let mesh = (0..subdivisions).fold(ico.mesh_mut(), |mut acc, _| {
-            acc.subdivide();
+            let _ = acc.subdivide();
             acc
         });
 

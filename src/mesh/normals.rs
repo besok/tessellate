@@ -3,7 +3,6 @@ use crate::mesh::{Mesh, MeshError, MeshResult};
 use glam::Vec3;
 use std::collections::HashMap;
 
-
 /// Mesh normals
 /// The structure to store normals for vertices and faces
 /// The normals are calculated based on the faces
@@ -21,6 +20,17 @@ impl TryFrom<&Mesh> for MeshNormals {
 
     fn try_from(value: &Mesh) -> MeshResult<Self> {
         MeshNormals::new(value)
+    }
+}
+
+pub fn calculate_normal(vertices: &Vec<Vertex>) -> Vec3 {
+    if vertices.len() < 3 {
+        Vec3::new(0.0, 0.0, 0.0)
+    } else {
+        let v0 = &vertices[0];
+        let v1 = &vertices[1];
+        let v2 = &vertices[2];
+        calculate_triangle_normal(v0, v1, v2)
     }
 }
 
@@ -72,24 +82,10 @@ impl MeshNormals {
             .get(idx)
             .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
     }
-
-    /// Get the normal for a face
-    pub fn get_face_normal_by_idx(&self, idx: usize) -> MeshResult<&Vec3> {
-        self.normals_face
-            .get(idx)
-            .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
-    }
-
-    /// Get the normal for a face
-    pub fn get_face_normal(&self, face: Face) -> MeshResult<&Vec3> {
-        self.normals_face_map
-            .get(&face)
-            .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
-    }
 }
 
 fn calculate_triangle_normal(v1: &Vertex, v2: &Vertex, v3: &Vertex) -> Vec3 {
-    let u = Vec3::new(v2.x - v1.x, v2.y - v1.y, v2.z - v1.z);
-    let v = Vec3::new(v3.x - v1.x, v3.y - v1.y, v3.z - v1.z);
+    let u:Vec3 = (*v2 - *v1).into();
+    let v:Vec3 = (*v3 - *v1).into();
     u.cross(v).normalize()
 }
