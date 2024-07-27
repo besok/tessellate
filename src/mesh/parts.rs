@@ -9,6 +9,8 @@ pub struct Vertex {
     pub(crate) z: f32,
 }
 
+
+
 impl From<Vec3> for Vertex {
     fn from(value: Vec3) -> Self {
         Vertex {

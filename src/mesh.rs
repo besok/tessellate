@@ -65,6 +65,38 @@ impl Mesh {
         }
     }
 
+    pub fn from_polygons(polygons: Vec<Polygon>, color: Color) -> Self {
+        let mut vertices = Vec::new();
+        let mut vertices_map = HashMap::new();
+        let mut faces = Vec::new();
+        for polygon in polygons.iter() {
+            for v in polygon.vertices() {
+                if !vertices_map.contains_key(v) {
+                    vertices_map.insert(v, vertices.len());
+                    vertices.push(v.clone());
+                }
+            }
+        }
+
+        for polygon in polygons.iter() {
+            let vertices = polygon.vertices();
+
+            let faces_poly = triangulate(polygon)
+                .iter()
+                .map(|p| {
+                    p.vertices()
+                        .iter()
+                        .map(|v| vertices_map[v])
+                        .collect::<Vec<_>>()
+                })
+                .map(|v| Face::Triangle(v[0], v[1], v[2]))
+                .collect::<Vec<_>>();
+            faces.extend(faces_poly);
+        }
+
+        Mesh::from_vertices(vertices, faces, color)
+    }
+
     pub fn try_tables(&self) -> MeshResult<MeshTables> {
         self.try_into()
     }
@@ -82,8 +114,7 @@ impl Mesh {
         &self.faces
     }
     pub fn try_polygons(&self) -> MeshResult<Vec<Polygon>> {
-        self
-            .faces
+        self.faces
             .iter()
             .map(|f| self.face_to_polygon(f))
             .collect::<Result<Vec<_>, _>>()
@@ -190,6 +221,20 @@ pub fn dedup<T: Hash + Eq>(items: Vec<T>) -> Vec<T> {
         .collect::<HashSet<_>>()
         .into_iter()
         .collect::<Vec<_>>()
+}
+
+pub fn triangulate(polygon: &Polygon) -> Vec<Polygon> {
+    let vertices = polygon.vertices();
+    let mut triangles = Vec::new();
+    if vertices.len() <= 3 {
+        triangles.push(polygon.clone());
+    } else {
+        for i in 1..(vertices.len() - 1) {
+            let triangle = Polygon::new(vec![&vertices[0], &vertices[i], &vertices[i + 1]]);
+            triangles.push(triangle);
+        }
+    }
+    triangles
 }
 
 #[cfg(test)]
