@@ -3,7 +3,7 @@ use glam::{EulerRot, Mat4, Quat, Vec3};
 use log::{info, LevelFilter};
 use tessellate::gpu::camera::position::CameraPosition;
 use tessellate::mesh::material::{Color, RgbaColor};
-use tessellate::mesh::parts::{FaceType, Vertex};
+use tessellate::mesh::parts::{BoundingBox, FaceType, Vertex};
 use tessellate::mesh::shape::cone::Cone;
 use tessellate::mesh::shape::cuboid::cube::Cube;
 use tessellate::mesh::shape::cuboid::rect_cuboid::RectCuboid;
@@ -77,15 +77,12 @@ fn main() -> Result<(), TessError> {
 
     let fig = Cone::default();
     let mesh = fig.mesh();
-    let bsp: BSPTree = mesh.try_into()?;
 
-    let planes = bsp.plane_meshes(1.0, Color ::default());
-    let orig_mesh = bsp.to_mesh(Default::default());
+    let bbox:BoundingBox = mesh.into();
+    let mut rect_cuboid = bbox.to_rect_cuboid(FaceType::Quad, RgbaColor::CYAN);
 
-
-    let mut meshes = vec![orig_mesh];
-    meshes.extend(planes);
+    rect_cuboid.transform(Mat4::from_translation(Vec3::new(0.0, 0.0, 0.0)))?;
 
     let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
-    Ok(gpu::visualize(meshes, camera)?)
+    Ok(gpu::visualize(vec![mesh.clone(), rect_cuboid.into()], camera)?)
 }

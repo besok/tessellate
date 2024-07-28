@@ -70,12 +70,14 @@ impl GpuHandler {
             render_pass.set_bind_group(0, &self.camera.camera_bind_group(), &[]);
             for gpu_mesh in self.meshes.iter() {
                 render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
+
                 let vertices_len = &gpu_mesh
                     .mesh
                     .faces()
                     .into_iter()
                     .flat_map(face_to_vertex3)
                     .count();
+
                 render_pass.draw(0..*vertices_len as u32, 0..1);
             }
         }

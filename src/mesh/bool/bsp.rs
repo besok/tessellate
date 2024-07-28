@@ -16,15 +16,14 @@ pub struct BSPTree {
 
 impl Into<Mesh> for BSPTree {
     fn into(self) -> Mesh {
-        self.to_mesh(Color::default())
+        self.mesh(Color::default())
     }
 }
 
 impl TryFrom<&Mesh> for BSPTree {
     type Error = MeshError;
     fn try_from(mesh: &Mesh) -> Result<Self, Self::Error> {
-        let polygons = mesh.try_polygons()?;
-        try_build_bsp_tree(&polygons, None)
+        try_build_bsp_tree(&mesh.try_polygons()?, None)
     }
 }
 
@@ -51,7 +50,7 @@ impl BSPTree {
         query::PostOrderIterator::new(&self.root)
     }
 
-    pub fn to_mesh(self, color:Color) -> Mesh {
+    pub fn mesh(self, color:Color) -> Mesh {
         let polygons: HashSet<Polygon> = self
             .iter_preorder()
             .flat_map(|node| node.polygons().clone())
@@ -59,7 +58,7 @@ impl BSPTree {
         Mesh::from_polygons(polygons.into_iter().collect(), color)
     }
 
-    pub fn plane_meshes(&self, size: f32, color: Color) -> Vec<Mesh> {
+    pub fn planes(&self, size: f32, color: Color) -> Vec<Mesh> {
         let mut meshes = vec![];
         for node in self.iter_preorder() {
             if let BSPNode::Node { plane, .. } = node {
@@ -187,7 +186,7 @@ mod tests {
         let mesh = fig.mesh();
         let bsp: BSPTree = mesh.try_into().unwrap();
 
-        let orig_mesh = bsp.to_mesh(Default::default());
+        let orig_mesh = bsp.mesh(Default::default());
         let camera = CameraPosition::default();
         visualize(vec![orig_mesh,mesh.clone()], camera).unwrap();
     }

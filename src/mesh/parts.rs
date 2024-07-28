@@ -1,3 +1,6 @@
+use crate::mesh::material::Color;
+use crate::mesh::shape::cuboid::rect_cuboid::RectCuboid;
+use crate::mesh::Mesh;
 use glam::Vec3;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Sub};
@@ -8,8 +11,6 @@ pub struct Vertex {
     pub(crate) y: f32,
     pub(crate) z: f32,
 }
-
-
 
 impl From<Vec3> for Vertex {
     fn from(value: Vec3) -> Self {
@@ -66,7 +67,6 @@ impl Sub for Vertex {
             z: self.z - rhs.z,
         }
     }
-
 }
 
 impl Default for Vertex {
@@ -139,27 +139,27 @@ where
 }
 pub type Idx = usize;
 
-#[derive(Debug, Clone, PartialEq,Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Polygon {
-    vertices: Vec<Vertex>
+    vertices: Vec<Vertex>,
 }
 
-impl From<Vec<Vertex>> for Polygon{
+impl From<Vec<Vertex>> for Polygon {
     fn from(vertices: Vec<Vertex>) -> Self {
-        Self{vertices}
+        Self { vertices }
     }
-
 }
 
 impl Polygon {
     pub fn new(vertices: Vec<&Vertex>) -> Self {
-        Self{vertices:vertices.into_iter().map(|v| v.clone()).collect()}
+        Self {
+            vertices: vertices.into_iter().map(|v| v.clone()).collect(),
+        }
     }
 
     pub fn vertices(&self) -> &Vec<Vertex> {
         &self.vertices
     }
-
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -207,5 +207,46 @@ impl Hash for FaceType {
 impl Default for FaceType {
     fn default() -> Self {
         FaceType::Quad
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct BoundingBox {
+    min_vertex: Vertex,
+    max_vertex: Vertex,
+}
+
+impl BoundingBox {
+    pub fn new(min_vertex: Vertex, max_vertex: Vertex) -> Self {
+        Self {
+            min_vertex,
+            max_vertex,
+        }
+    }
+
+    pub fn to_rect_cuboid<C>(self, face_type: FaceType, color: C) -> RectCuboid
+    where
+        C: Into<Color>,
+    {
+        RectCuboid::create_bbox(self.min_vertex, self.max_vertex, face_type, color)
+    }
+}
+
+impl From<&Mesh> for BoundingBox {
+    fn from(value: &Mesh) -> Self {
+        let mut min_v = Vertex::new(f32::MAX, f32::MAX, f32::MAX);
+        let mut max_v = Vertex::new(f32::MIN, f32::MIN, f32::MIN);
+        for vertex in value.vertices.iter() {
+            min_v.x = min_v.x.min(vertex.x);
+            min_v.y = min_v.y.min(vertex.y);
+            min_v.z = min_v.z.min(vertex.z);
+            max_v.x = max_v.x.max(vertex.x);
+            max_v.y = max_v.y.max(vertex.y);
+            max_v.z = max_v.z.max(vertex.z);
+        }
+        Self {
+            min_vertex: min_v,
+            max_vertex: max_v,
+        }
     }
 }

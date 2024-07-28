@@ -84,6 +84,24 @@ impl RectCuboid {
             size_z,
         }
     }
+
+    pub fn create_bbox<V,C>(min_v:V, max_v:V,face_type: FaceType, color: C) -> Self
+    where
+        V: Into<Vertex>,
+        C: Into<Color>,
+    {
+        let min_v = min_v.into();
+        let max_v = max_v.into();
+        let center = Vertex::new(
+            (min_v.x + max_v.x) / 2.0,
+            (min_v.y + max_v.y) / 2.0,
+            (min_v.z + max_v.z) / 2.0,
+        );
+        let size_x = max_v.x - min_v.x;
+        let size_y = max_v.y - min_v.y;
+        let size_z = max_v.z - min_v.z;
+        Self::create(center, size_x, size_y, size_z, face_type, color)
+    }
 }
 
 impl Default for RectCuboid {
