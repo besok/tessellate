@@ -78,7 +78,7 @@ fn main() -> Result<(), TessError> {
     let fig = Cone::default();
     let mesh = fig.mesh();
 
-    let bbox:BoundingBox = mesh.into();
+    let bbox:BoundingBox = mesh.bbox();
     let mut rect_cuboid = bbox.to_rect_cuboid(FaceType::default(), RgbaColor::default());
 
     rect_cuboid.transform(Mat4::from_translation(Vec3::new(0.0, 0.0, 0.0)))?;

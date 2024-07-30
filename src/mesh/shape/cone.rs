@@ -3,6 +3,7 @@ use crate::mesh::parts::{Face, Vertex};
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
+use std::ops::Deref;
 
 #[derive(Debug, Clone)]
 pub struct Cone {
@@ -11,6 +12,7 @@ pub struct Cone {
     height: f32,
     mesh: Mesh,
 }
+
 
 impl Default for Cone {
     fn default() -> Self {

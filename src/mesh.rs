@@ -1,11 +1,13 @@
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
-use crate::mesh::parts::{Face, Polygon, Vertex};
+use crate::mesh::parts::{BoundingBox, Face, Polygon, Vertex};
 use crate::mesh::tables::MeshTables;
 use parts::Edge;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
+use std::ops::Deref;
+
 pub mod bool;
 pub mod material;
 pub mod normals;
@@ -195,12 +197,17 @@ impl Mesh {
             .collect::<Result<Vec<_>, _>>()
             .map(Polygon::new)
     }
+
+    pub fn bbox(&self) -> BoundingBox {
+        BoundingBox::from(self)
+    }
 }
 
 pub trait HasMesh {
     fn mesh(&self) -> &Mesh;
     fn mesh_mut(&mut self) -> &mut Mesh;
 }
+
 
 impl<T: HasMesh> From<T> for Mesh {
     fn from(item: T) -> Self {
