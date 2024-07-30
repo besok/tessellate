@@ -1,5 +1,4 @@
 ///
-/// Pseudocode for creating a 3D BSP tree:
 ///
 /// 1. Define BSPTree and BSPNode Structures
 /// - `BSPTree` contains a root node.

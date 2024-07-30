@@ -206,7 +206,7 @@ impl Hash for FaceType {
 
 impl Default for FaceType {
     fn default() -> Self {
-        FaceType::Quad
+        FaceType::Triangle
     }
 }
 
@@ -216,8 +216,31 @@ pub struct BoundingBox {
     max_vertex: Vertex,
 }
 
+impl From<(BoundingBox, BoundingBox)> for BoundingBox {
+    fn from(value: (BoundingBox, BoundingBox)) -> Self {
+        BoundingBox::merge(value.0, value.1)
+    }
+}
+
 impl BoundingBox {
     pub fn new(min_vertex: Vertex, max_vertex: Vertex) -> Self {
+        Self {
+            min_vertex,
+            max_vertex,
+        }
+    }
+
+    pub fn merge(lhs: BoundingBox, rhs: BoundingBox) -> Self {
+        let min_vertex = Vertex::new(
+            lhs.min_vertex.x.min(rhs.min_vertex.x),
+            lhs.min_vertex.y.min(rhs.min_vertex.y),
+            lhs.min_vertex.z.min(rhs.min_vertex.z),
+        );
+        let max_vertex = Vertex::new(
+            lhs.max_vertex.x.max(rhs.max_vertex.x),
+            lhs.max_vertex.y.max(rhs.max_vertex.y),
+            lhs.max_vertex.z.max(rhs.max_vertex.z),
+        );
         Self {
             min_vertex,
             max_vertex,

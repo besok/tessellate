@@ -79,7 +79,7 @@ fn main() -> Result<(), TessError> {
     let mesh = fig.mesh();
 
     let bbox:BoundingBox = mesh.into();
-    let mut rect_cuboid = bbox.to_rect_cuboid(FaceType::Quad, RgbaColor::CYAN);
+    let mut rect_cuboid = bbox.to_rect_cuboid(FaceType::default(), RgbaColor::default());
 
     rect_cuboid.transform(Mat4::from_translation(Vec3::new(0.0, 0.0, 0.0)))?;
 
