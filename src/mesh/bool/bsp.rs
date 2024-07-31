@@ -1,6 +1,6 @@
 use crate::mesh::bool::bsp::build::try_build_bsp_tree;
 use crate::mesh::parts::{Face, Polygon, Vertex};
-use crate::mesh::{Mesh, MeshError};
+use crate::mesh::{Mesh, MeshError, MeshResult};
 use glam::Vec3;
 use rand::Rng;
 use std::collections::HashSet;
@@ -22,12 +22,17 @@ impl Into<Mesh> for BSPTree {
 
 impl TryFrom<&Mesh> for BSPTree {
     type Error = MeshError;
-    fn try_from(mesh: &Mesh) -> Result<Self, Self::Error> {
-        try_build_bsp_tree(&mesh.try_polygons()?, None)
+    fn try_from(mesh: &Mesh) -> MeshResult<Self> {
+        BSPTree::try_from_mesh(mesh, None)
     }
 }
 
 impl BSPTree {
+
+    pub fn try_from_mesh(mesh: &Mesh, depth: Option<usize>) -> MeshResult<Self> {
+        try_build_bsp_tree(&mesh.try_polygons()?, depth)
+    }
+
     pub fn root(&self) -> &BSPNode {
         &self.root
     }

@@ -23,6 +23,7 @@ pub enum MeshError {
     InvalidIndex(String),
     InvalidFaceType(String),
     WrongIntersection(String),
+    Custom(String),
 }
 
 impl MeshError {
@@ -83,7 +84,7 @@ impl Mesh {
         for polygon in polygons.iter() {
             let vertices = polygon.vertices();
 
-            let faces_poly = triangulate(polygon)
+            let faces_poly = polygon.triangulate()
                 .iter()
                 .map(|p| {
                     p.vertices()
@@ -230,19 +231,7 @@ pub fn dedup<T: Hash + Eq>(items: Vec<T>) -> Vec<T> {
         .collect::<Vec<_>>()
 }
 
-pub fn triangulate(polygon: &Polygon) -> Vec<Polygon> {
-    let vertices = polygon.vertices();
-    let mut triangles = Vec::new();
-    if vertices.len() <= 3 {
-        triangles.push(polygon.clone());
-    } else {
-        for i in 1..(vertices.len() - 1) {
-            let triangle = Polygon::new(vec![&vertices[0], &vertices[i], &vertices[i + 1]]);
-            triangles.push(triangle);
-        }
-    }
-    triangles
-}
+
 
 #[cfg(test)]
 mod tests {

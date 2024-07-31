@@ -1,6 +1,6 @@
 use crate::mesh::material::Color;
 use crate::mesh::shape::cuboid::rect_cuboid::RectCuboid;
-use crate::mesh::Mesh;
+use crate::mesh::{Mesh, MeshError, MeshResult};
 use glam::Vec3;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Sub};
@@ -21,6 +21,8 @@ impl From<Vec3> for Vertex {
         }
     }
 }
+
+
 
 impl Into<Vec3> for Vertex {
     fn into(self) -> Vec3 {
@@ -160,6 +162,31 @@ impl Polygon {
     pub fn vertices(&self) -> &Vec<Vertex> {
         &self.vertices
     }
+    pub fn triangulate(&self) -> Vec<Polygon> {
+        let vertices = self.vertices();
+        let mut triangles = Vec::new();
+        if vertices.len() <= 3 {
+            triangles.push(self.clone());
+        } else {
+            for i in 1..(vertices.len() - 1) {
+                let triangle = Polygon::new(vec![&vertices[0], &vertices[i], &vertices[i + 1]]);
+                triangles.push(triangle);
+            }
+        }
+        triangles
+    }
+    pub fn centroid(&self) -> MeshResult<Vertex> {
+        if self.vertices.is_empty() {
+            Err(MeshError::Custom("empty polygon".to_string()))
+        } else {
+            let mut centroid = Vertex::default();
+            for vertex in self.vertices.iter() {
+                centroid = centroid + *vertex;
+            }
+
+            Ok(centroid * (1.0 / self.vertices.len() as f32))
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -217,8 +244,8 @@ pub struct BoundingBox {
 }
 
 impl From<(BoundingBox, BoundingBox)> for BoundingBox {
-    fn from(value: (BoundingBox, BoundingBox)) -> Self {
-        BoundingBox::merge(value.0, value.1)
+    fn from((lhs, rhs): (BoundingBox, BoundingBox)) -> Self {
+        BoundingBox::merge(lhs, rhs)
     }
 }
 
