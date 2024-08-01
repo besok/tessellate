@@ -87,6 +87,12 @@ impl Vertex {
     pub fn normalize(&self) -> Vertex {
         <&Vertex as Into<Vec3>>::into(&self).normalize().into()
     }
+    pub fn distance(&self, other: &Vertex) -> f32 {
+        self.flatten().iter().zip(other.flatten().iter())
+            .map(|(a, b)| (a - b).powi(2))
+            .sum::<f32>()
+            .sqrt()
+    }
 }
 
 impl From<[f32; 3]> for Vertex {

@@ -2,9 +2,10 @@ use crate::mesh::bool::bsp::BSPTree;
 use crate::mesh::bool::kdtree::{KDNode, KDTree};
 use crate::mesh::parts::{Polygon, Vertex};
 use crate::mesh::{MeshError, MeshResult};
+use log::debug;
 use std::cmp::Ordering;
 
-const MAX_REC_DEPTH: usize = 60;
+const MAX_REC_DEPTH: usize = 90;
 
 pub fn try_build_kd_tree(polygons: &Vec<Polygon>, depth: Option<usize>) -> MeshResult<KDTree> {
     let max_depth = depth.unwrap_or(MAX_REC_DEPTH);
@@ -18,11 +19,15 @@ fn build_node(
     depth: usize,
     max_depth: usize,
 ) -> MeshResult<Option<Box<KDNode>>> {
+    debug!("Polygons number is {} and depth is {depth}", polygons.len());
+    let axis = depth % 3;
+    let by_axis = |(_, p1): &(_, Vertex), (_, p2): &(_, Vertex)| sort_by_axis(&p1, &p2, axis);
+
     if polygons.is_empty() || depth >= max_depth {
         Ok(None)
+    } else if polygons.len() == 1 {
+        Ok(Some(Box::new(KDNode::Leaf { point: polygons[0].centroid()?, axis })))
     } else {
-        let axis = depth % 3;
-        let by_axis = |(_,p1): &(_, Vertex), (_,p2): &(_, Vertex)| sort_by_axis(&p1, &p2, axis);
         let mut points = polygons
             .iter()
             .enumerate()
@@ -54,12 +59,4 @@ fn sort_by_axis(v1: &Vertex, v2: &Vertex, axis: usize) -> Ordering {
     v1.flatten()[axis]
         .partial_cmp(&v2.flatten()[axis])
         .unwrap_or(Ordering::Equal)
-}
-
-fn dist(p1: &Vec<f32>, p2: &Vec<f32>) -> f32 {
-    p1.iter()
-        .zip(p2)
-        .map(|(a, b)| (a - b).powi(2))
-        .sum::<f32>()
-        .sqrt()
 }
