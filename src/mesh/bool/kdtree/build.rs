@@ -19,7 +19,6 @@ fn build_node(
     depth: usize,
     max_depth: usize,
 ) -> MeshResult<Option<Box<KDNode>>> {
-    debug!("Polygons number is {} and depth is {depth}", polygons.len());
     let axis = depth % 3;
     let by_axis = |(_, p1): &(_, Vertex), (_, p2): &(_, Vertex)| sort_by_axis(&p1, &p2, axis);
 

@@ -1,8 +1,8 @@
-use std::cmp::Ordering;
 use crate::mesh::bool::kdtree::KDNode;
 use crate::mesh::parts::Vertex;
-use std::collections::BinaryHeap;
 use log::info;
+use std::cmp::Ordering;
+use std::collections::BinaryHeap;
 
 #[derive(Debug, Clone)]
 pub struct Neighbour {
@@ -16,59 +16,70 @@ impl Neighbour {
     }
 }
 
+impl Eq for Neighbour {}
 
-impl  Eq for Neighbour  {}
-
-impl PartialEq for Neighbour  {
+impl PartialEq for Neighbour {
     fn eq(&self, other: &Self) -> bool {
         self.distance == other.distance
     }
 }
 
-impl PartialOrd for Neighbour  {
+impl PartialOrd for Neighbour {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl  Ord for Neighbour  {
+impl Ord for Neighbour {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.distance.partial_cmp(&other.distance).unwrap_or(Ordering::Equal)
+        self.distance
+            .partial_cmp(&other.distance)
+            .unwrap_or(Ordering::Equal)
     }
 }
 
 pub struct KDTreeNearestNeighborIter<'a> {
     target: &'a Vertex,
+    max_dist: Option<f32>,
     heap: BinaryHeap<Neighbour>,
 }
 
 impl<'a> KDTreeNearestNeighborIter<'a> {
-    pub fn new(root: &'a KDNode, target: &'a Vertex) -> Self {
+    pub fn new(root: &'a KDNode, target: &'a Vertex, max_dist: Option<f32>) -> Self {
         let mut heap = BinaryHeap::new();
         heap.push(Neighbour::new(Box::new(root.clone()), root.point().distance(target)));
-        KDTreeNearestNeighborIter { target, heap }
+        KDTreeNearestNeighborIter {
+            target,
+            heap,
+            max_dist,
+        }
     }
 }
 
 impl<'a> Iterator for KDTreeNearestNeighborIter<'a> {
-    type Item = Neighbour ;
+    type Item = Neighbour;
 
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some( Neighbour{ node, distance}) = self.heap.pop() {
-
+        while let Some(Neighbour { node, .. }) = self.heap.pop() {
             match *node {
-                KDNode::Leaf { .. } => {
-                    return Some(Neighbour::new(node, distance));
+                KDNode::Leaf { point, .. } => {
+                    let dist = self.target.distance(&point);
+                    if self.max_dist.map_or(true, |max_dist| dist <= max_dist) {
+                        return Some(Neighbour::new(node, dist));
+                    }
                 }
                 KDNode::Node {
-                    point, ref left, ref right, ..
+                    point,
+                    ref left,
+                    ref right,
+                    ..
                 } => {
                     let dist = self.target.distance(&point);
                     if let Some(left_node) = left {
                         self.heap.push(Neighbour::new(left_node.clone(), dist));
                     }
                     if let Some(right_node) = right {
-                        self.heap.push( Neighbour::new(right_node.clone(), dist));
+                        self.heap.push(Neighbour::new(right_node.clone(), dist));
                     }
                 }
             }

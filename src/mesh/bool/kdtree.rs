@@ -1,10 +1,9 @@
-use crate::mesh::{Mesh, MeshError, MeshResult};
 use crate::mesh::bool::kdtree::query::{InOrderIter, KDTreeNearestNeighborIter};
 use crate::mesh::parts::Vertex;
+use crate::mesh::{Mesh, MeshError, MeshResult};
 
 pub mod build;
 pub mod query;
-
 
 /// A KDTree is a binary tree that splits the space into two parts at each level.
 /// The split is done along one of the axes of the space.
@@ -26,11 +25,15 @@ impl KDTree {
 }
 
 impl KDTree {
-
     /// Find the nearest neighbors of a given point.
     /// The result is an iterator that returns the neighbors in order of increasing distance.
     /// The iterator returns a Neighbour object that contains the node
     /// and the distance of the node from the target.
+    ///
+    /// # Arguments
+    /// * `target` - The target point.
+    /// * `max_dist` - The maximum distance of the neighbors from the target.
+    /// If None, all the neighbors are returned.
     ///
     /// # Example
     /// ```
@@ -44,12 +47,16 @@ impl KDTree {
     /// let mesh = fig.mesh();
     /// let kdtree: KDTree = mesh.try_into().unwrap();
     ///
-    /// for Neighbour { node, distance } in kdtree.nearest_neighbors(&Vertex::default()) {
+    /// for Neighbour { node, distance } in kdtree.nearest_neighbors(&Vertex::default(), None) {
     ///     println!("{:?} - {:?}", node.point(), distance);
     /// }
     /// ```
-    pub fn nearest_neighbors<'a>(&'a self, target: &'a Vertex) -> KDTreeNearestNeighborIter<'a> {
-        KDTreeNearestNeighborIter::new(&self.root, target)
+    pub fn nearest_neighbors<'a>(
+        &'a self,
+        target: &'a Vertex,
+        max_dist: Option<f32>,
+    ) -> KDTreeNearestNeighborIter<'a> {
+        KDTreeNearestNeighborIter::new(&self.root, target,max_dist)
     }
 
     pub fn iter(&self) -> InOrderIter {
@@ -97,24 +104,21 @@ impl KDNode {
 #[cfg(test)]
 mod tests {
     use crate::mesh::bool::kdtree::KDTree;
-    use crate::mesh::bool::kdtree::query::Neighbour;
-    use crate::mesh::HasMesh;
     use crate::mesh::parts::Vertex;
     use crate::mesh::shape::cone::Cone;
-    use crate::turn_on_test_logs;
+    use crate::mesh::HasMesh;
 
     #[test]
     fn smoke_test() {
-        turn_on_test_logs();
         let fig = Cone::default();
         let mesh = fig.mesh();
         let kdtree: KDTree = mesh.try_into().unwrap();
 
-        for Neighbour { node, distance } in kdtree.nearest_neighbors(&Vertex::default()) {
-            println!("{:?} - {:?}", node.point(), distance);
-        }
-        for node in kdtree.iter() {
-            println!("{:?} - {:?}", node.point(), node.axis());
-        }
+        let full_len = kdtree.nearest_neighbors(&Vertex::default(), None).count();
+        let part_len = kdtree.nearest_neighbors(&Vertex::default(), Some(0.7)).count();
+
+        assert_eq!(full_len, 62);
+        assert_eq!(part_len, 14);
+
     }
 }

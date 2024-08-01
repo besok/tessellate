@@ -15,9 +15,38 @@ You can directly read data from these files into the objects for visualization a
 
 #### Creating Basic Geometries.
 
-The library provides functions to create fundamental geometric shapes like spheres, 
-cubes, cylinders, cones, planes, and grids from scratch. 
+The library provides functions to create fundamental geometric shapes like:
+spheres, cubes, cuboids, cylinders, cones, rings, spheres, torus, planes and more from scratch. 
 These objects serve as building blocks for more complex visualizations.
+
+```rust
+
+fn main() -> Result<(), TessError> { 
+
+    let ico = Icosahedron::create([3.0, 2.0, 1.0], 1.0, RgbaColor::CYAN);
+    let ring = Ring::default();
+    let cylinder = Cylinder::create([0.0, 0.0, 4.0], 1.0, 1.0, 3, Color::default());
+    let pyramid = Pyramid::default();
+    let torus = Torus::default();
+    let cube = Cube::create(Vertex::default(), 1.0, FaceType::Quad, Color::default());
+    let sphere = Sphere::create_ico(Vertex::default(), 1.0, 3, RgbaColor::GREEN.into());
+    let cone = Cone::default();
+
+    let meshes = vec![
+        cube.into(),
+        sphere.into(),
+        cone.into(),
+        ico.into(),
+        ring.into(),
+        cylinder.into(),
+        pyramid.into(),
+        torus.into(),
+    ];
+
+    let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
+    Ok(gpu::visualize(meshes, camera)?)
+}
+```
 
 
 ### Mesh Manipulation.
@@ -35,6 +64,56 @@ Tessellate offers a vast array of filters to manipulate and process existing mes
 
 Tessellate allows performing boolean operations like union, intersection, and difference on meshes. 
 This is useful for combining or separating different 3D objects.
+
+##### KDTree.
+
+The library provides a KDTree implementation for efficient nearest neighbor searches in 3D space.
+
+```rust
+use crate::mesh::bool::kdtree::KDTree;
+    use crate::mesh::parts::Vertex;
+    use crate::mesh::shape::cone::Cone;
+    use crate::mesh::HasMesh;
+
+    #[test]
+    fn kdtree_test() {
+        let cone = Cone::default();
+        let mesh = cone.mesh();
+        let kdtree: KDTree = mesh.try_into().unwrap();
+
+        let full_len = kdtree.nearest_neighbors(&Vertex::default(), None).count();
+        let part_len = kdtree.nearest_neighbors(&Vertex::default(), Some(0.7)).count();
+
+        assert_eq!(full_len, 62);
+        assert_eq!(part_len, 14);
+
+    }
+```
+
+##### BSP Tree.
+
+The library provides a BSP Tree implementation for efficient point-in-polygon tests and spatial partitioning of 3D objects.
+
+```rust
+    fn bsp_tree_test() {
+        let cone = Cone::default();
+        let mesh = cone.mesh();
+        let bsp: BSPTree = mesh.try_into().unwrap();
+        for node in bsp.iter_inorder() {
+            println!("{:?}", node);
+        }
+    }
+    fn bsp_to_mesh_test() {
+        turn_on_test_logs();
+        let fig = Cone::default();
+        let mesh = fig.mesh();
+        let bsp: BSPTree = mesh.try_into().unwrap();
+    
+        let bsp_mesh = &bsp.mesh(Default::default());
+        let planes = &bsp.plane_meshes(10.0,Color::default());
+    
+    }
+```
 
 ### Visualization.
 
