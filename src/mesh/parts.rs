@@ -22,8 +22,6 @@ impl From<Vec3> for Vertex {
     }
 }
 
-
-
 impl Into<Vec3> for Vertex {
     fn into(self) -> Vec3 {
         Vec3::new(self.x, self.y, self.z)
@@ -88,7 +86,9 @@ impl Vertex {
         <&Vertex as Into<Vec3>>::into(&self).normalize().into()
     }
     pub fn distance(&self, other: &Vertex) -> f32 {
-        self.flatten().iter().zip(other.flatten().iter())
+        self.flatten()
+            .iter()
+            .zip(other.flatten().iter())
             .map(|(a, b)| (a - b).powi(2))
             .sum::<f32>()
             .sqrt()
@@ -169,17 +169,14 @@ impl Polygon {
         &self.vertices
     }
     pub fn triangulate(&self) -> Vec<Polygon> {
-        let vertices = self.vertices();
-        let mut triangles = Vec::new();
-        if vertices.len() <= 3 {
-            triangles.push(self.clone());
+        let vs = self.vertices();
+        if vs.len() <= 3 {
+            vec![self.clone()]
         } else {
-            for i in 1..(vertices.len() - 1) {
-                let triangle = Polygon::new(vec![&vertices[0], &vertices[i], &vertices[i + 1]]);
-                triangles.push(triangle);
-            }
+            (1..vs.len() - 1)
+                .map(|i| Polygon::new(vec![&vs[0], &vs[i], &vs[i + 1]]))
+                .collect()
         }
-        triangles
     }
     pub fn centroid(&self) -> MeshResult<Vertex> {
         if self.vertices.is_empty() {
