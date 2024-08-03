@@ -1,0 +1,12 @@
+[package]
+name = "tesselate-examples"
+description = "Examples for Tesselate"
+version = "0.1.0"
+edition = "2021"
+authors = ["BorisZhguchev <zhguchev@gmail.com>"]
+license-file = "../LICENSE"
+
+[dependencies]
+tessellate = { path = "../" }
+env_logger = "0.11.3"
+log = "0.4"
