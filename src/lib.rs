@@ -12,6 +12,8 @@ pub fn turn_on_test_logs() {
         .try_init();
 }
 
+pub type TessResult<T> = Result<T, TessError>;
+
 #[derive(Debug)]
 pub enum TessError {
     MeshError(MeshError),
