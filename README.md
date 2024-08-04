@@ -18,35 +18,7 @@ You can directly read data from these files into the objects for visualization a
 The library provides functions to create fundamental geometric shapes like:
 spheres, cubes, cuboids, cylinders, cones, rings, spheres, torus, planes and more from scratch. 
 These objects serve as building blocks for more complex visualizations.
-
-```rust
-
-fn main() -> Result<(), TessError> { 
-
-    let ico = Icosahedron::create([3.0, 2.0, 1.0], 1.0, RgbaColor::CYAN);
-    let ring = Ring::default();
-    let cylinder = Cylinder::create([0.0, 0.0, 4.0], 1.0, 1.0, 3, Color::default());
-    let pyramid = Pyramid::default();
-    let torus = Torus::default();
-    let cube = Cube::create(Vertex::default(), 1.0, FaceType::Quad, Color::default());
-    let sphere = Sphere::create_ico(Vertex::default(), 1.0, 3, RgbaColor::GREEN.into());
-    let cone = Cone::default();
-
-    let meshes = vec![
-        cube.into(),
-        sphere.into(),
-        cone.into(),
-        ico.into(),
-        ring.into(),
-        cylinder.into(),
-        pyramid.into(),
-        torus.into(),
-    ];
-
-    let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
-    Ok(gpu::visualize(meshes, camera)?)
-}
-```
+The detailed example can be found in the [basic_shapes](examples/basic_shapes/README.md) example.
 
 
 ### Mesh Manipulation.
