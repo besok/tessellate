@@ -5,6 +5,24 @@ use glam::Vec3;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Sub};
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum Axis {
+    X,
+    Y,
+    Z,
+}
+
+impl Axis {
+    pub fn get(depth: usize) -> Axis {
+        match depth % 3 {
+            0 => Axis::X,
+            1 => Axis::Y,
+            2 => Axis::Z,
+            _ => unreachable!("Invalid axis index"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vertex {
     pub(crate) x: f32,
@@ -92,6 +110,22 @@ impl Vertex {
             .map(|(a, b)| (a - b).powi(2))
             .sum::<f32>()
             .sqrt()
+    }
+
+    pub fn get(&self, axis: &Axis) -> f32 {
+        match axis {
+            Axis::X => self.x,
+            Axis::Y => self.y,
+            Axis::Z => self.z,
+        }
+    }
+
+    pub fn set(&mut self, axis: &Axis, value: f32) {
+        match axis {
+            Axis::X => self.x = value,
+            Axis::Y => self.y = value,
+            Axis::Z => self.z = value,
+        }
     }
 }
 
@@ -240,7 +274,7 @@ impl Default for FaceType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct BoundingBox {
     min_vertex: Vertex,
     max_vertex: Vertex,
@@ -252,12 +286,43 @@ impl From<(BoundingBox, BoundingBox)> for BoundingBox {
     }
 }
 
+impl From<Vec<BoundingBox>> for BoundingBox {
+    fn from(value: Vec<BoundingBox>) -> Self {
+        value
+            .into_iter()
+            .fold(BoundingBox::default(), |acc, v| BoundingBox::merge(acc, v))
+    }
+}
+
 impl BoundingBox {
     pub fn new(min_vertex: Vertex, max_vertex: Vertex) -> Self {
         Self {
             min_vertex,
             max_vertex,
         }
+    }
+    pub fn from_polygon(polygon: &Polygon) -> BoundingBox {
+        let mut min_v = Vertex::new(f32::MAX, f32::MAX, f32::MAX);
+        let mut max_v = Vertex::new(f32::MIN, f32::MIN, f32::MIN);
+        for vertex in polygon.vertices.iter() {
+            min_v.x = min_v.x.min(vertex.x);
+            min_v.y = min_v.y.min(vertex.y);
+            min_v.z = min_v.z.min(vertex.z);
+            max_v.x = max_v.x.max(vertex.x);
+            max_v.y = max_v.y.max(vertex.y);
+            max_v.z = max_v.z.max(vertex.z);
+        }
+        Self {
+            min_vertex: min_v,
+            max_vertex: max_v,
+        }
+    }
+    pub fn from_polygons(polygons: &Vec<Polygon>) -> BoundingBox {
+        polygons
+            .into_iter()
+            .map(BoundingBox::from_polygon)
+            .collect::<Vec<_>>()
+            .into()
     }
 
     pub fn merge(lhs: BoundingBox, rhs: BoundingBox) -> Self {
@@ -282,6 +347,19 @@ impl BoundingBox {
         C: Into<Color>,
     {
         RectCuboid::create_bbox(self.min_vertex, self.max_vertex, face_type, color)
+    }
+
+    pub fn max(&self) -> &Vertex {
+        &self.max_vertex
+    }
+    pub fn max_mut(&mut self) -> &mut Vertex {
+        &mut self.max_vertex
+    }
+    pub fn min(&self) -> &Vertex {
+        &self.min_vertex
+    }
+    pub fn min_mut(&mut self) -> &mut Vertex {
+        &mut self.min_vertex
     }
 }
 

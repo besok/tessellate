@@ -6,3 +6,4 @@
 pub mod bsp;
 pub mod kdtree;
 pub mod ember;
+pub mod sskdtree;
