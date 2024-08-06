@@ -46,6 +46,9 @@ impl Polygon {
         }
     }
 
+    /// Calculate the winding number of a vertex with respect to the polygon
+    /// The winding number is the number of times the polygon winds around the vertex
+    /// The winding number is normalized to the range [0, 1]
     pub fn wnv(&self, vertex: &Vertex) -> f32 {
         let mut wn = 0.0;
         let v = vertex.clone();
