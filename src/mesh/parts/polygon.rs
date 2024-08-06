@@ -1,6 +1,6 @@
-use crate::mesh::{MeshError, MeshResult};
-use crate::mesh::parts::Edge;
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::parts::Edge;
+use crate::mesh::{MeshError, MeshResult};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Polygon {
@@ -57,15 +57,10 @@ impl Polygon {
                 let v1 = lhs - v;
                 let v2 = rhs - v;
 
-                let cross = v1.cross(&v2);
-                let mag_cross = cross.magnitude();
-                let Vertex{ x, y, z } = v1 * v2;
-                let dot = v1.dot(&v2);
-                let angle = mag_cross.atan2(dot);
-                wn += angle
+                wn += v1.cross(&v2).magnitude().atan2(v1.dot(&v2))
             }
         }
-        wn / (4.0 * std::f32::consts::PI)
+        wn / (2.0 * std::f32::consts::PI)
     }
 
     pub fn edges(&self) -> Vec<Edge> {
@@ -80,28 +75,42 @@ impl Polygon {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::mesh::parts::vertex::Vertex;
     use crate::mesh::parts::polygon::Polygon;
+    use crate::mesh::parts::vertex::Vertex;
 
     #[test]
     fn test_wnv() {
         // Define a polygon
         let polygon = Polygon {
             vertices: vec![
-                Vertex { x: 0.0, y: 0.0, z: 0.0 },
-                Vertex { x: 5.0, y: 0.0, z: 0.0 },
-                Vertex { x: 5.0, y: 5.0, z: 0.0 },
-                Vertex { x: 0.0, y: 5.0, z: 0.0 },
+                Vertex {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                Vertex {
+                    x: 1.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                Vertex {
+                    x: 0.5,
+                    y: 1.0,
+                    z: 0.0,
+                },
             ],
         };
 
         // Define a test vertex
-        let test_vertex = Vertex { x: 3.0, y: 3.0, z: 0.0 };
+        let test_vertex = Vertex {
+            x: 0.5,
+            y: 0.25,
+            z: 0.0,
+        };
 
         // Calculate the winding number
         let winding_number = polygon.wnv(&test_vertex);
 
-        // Assert the result
-        assert_eq!(winding_number, 0.5);
+        assert!((winding_number - 1.0).abs() < 1e-6);
     }
 }
