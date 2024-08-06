@@ -1,4 +1,4 @@
-use crate::mesh::parts::Vertex;
+use crate::mesh::parts::vertex::Vertex;
 use rand::Rng;
 
 pub enum Material {

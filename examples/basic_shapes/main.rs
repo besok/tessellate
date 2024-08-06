@@ -1,13 +1,12 @@
-use glam::{Mat4, Quat, Vec3};
+use glam::{Mat4, Vec3};
+
+use tessellate::{gpu, TessResult};
 use tessellate::gpu::camera::position::CameraPosition;
-use tessellate::mesh::material::{Color, RgbaColor};
-
-use tessellate::mesh::shape::cone::Cone;
-
-use tessellate::mesh::transform::Transform;
 use tessellate::mesh::{HasMesh, Mesh};
-use tessellate::{gpu, TessError, TessResult};
 use tessellate::mesh::bool::sskdtree::SSKDTree;
+use tessellate::mesh::material::Color;
+use tessellate::mesh::shape::cone::Cone;
+use tessellate::mesh::transform::Transform;
 
 fn main() -> TessResult<()> {
     let mut mesh:Mesh = Cone::default().into();

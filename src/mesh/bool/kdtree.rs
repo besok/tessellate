@@ -1,5 +1,5 @@
 use crate::mesh::bool::kdtree::query::{InOrderIter, KDTreeNearestNeighborIter};
-use crate::mesh::parts::Vertex;
+use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 
 pub mod build;
@@ -40,7 +40,7 @@ impl KDTree {
     /// use tessellate::mesh::bool::kdtree::KDTree;
     /// use tessellate::mesh::bool::kdtree::query::Neighbour;
     /// use tessellate::mesh::HasMesh;
-    /// use tessellate::mesh::parts::Vertex;
+    /// use tessellate::mesh::parts::vertex::Vertex;
     /// use tessellate::mesh::shape::cone::Cone;
     ///
     /// let fig = Cone::default();
@@ -104,7 +104,7 @@ impl KDNode {
 #[cfg(test)]
 mod tests {
     use crate::mesh::bool::kdtree::KDTree;
-    use crate::mesh::parts::Vertex;
+    use crate::mesh::parts::vertex::Vertex;
     use crate::mesh::shape::cone::Cone;
     use crate::mesh::HasMesh;
 

@@ -1,9 +1,13 @@
+use crate::mesh::material::Color;
+use crate::mesh::parts::BoundingBox;
+use crate::mesh::{HasMesh, Mesh, MeshError, MeshResult};
+use crate::mesh::bool::sskdtree::query::SSKDTreeNearestNeighborIter;
+use crate::mesh::parts::face::FaceType;
+use crate::mesh::parts::polygon::Polygon;
+use crate::mesh::parts::vertex::{Axis, Vertex};
+
 mod build;
 mod query;
-
-use crate::mesh::material::Color;
-use crate::mesh::parts::{Axis, BoundingBox, FaceType, Polygon};
-use crate::mesh::{HasMesh, Mesh, MeshError, MeshResult};
 
 /// KDTree Spatial Subdivision Mesh Intersection
 ///
@@ -94,6 +98,14 @@ impl SSKDTree {
         query::InOrderIter::new(&self.root)
     }
 
+    pub fn nearest_neighbors<'a>(
+        &'a self,
+        target: &'a Vertex,
+        max_dist: Option<f32>,
+    ) -> SSKDTreeNearestNeighborIter<'a> {
+        SSKDTreeNearestNeighborIter::new(&self.root, target, max_dist)
+    }
+
     pub fn bb_to_mesh(&self) -> Vec<Mesh> {
         self.iter()
             .map(|node| node.bbox())
@@ -102,9 +114,9 @@ impl SSKDTree {
             .collect()
     }
 
+
     pub fn to_mesh(&self, color: Color) -> Mesh {
-        let polygons = self.iter().flat_map(|node| node.polygons()).collect();
-        Mesh::from_polygons(polygons, color)
+        Mesh::from_polygons(self.iter().flat_map(|node| node.polygons()).collect(), color)
     }
 }
 
@@ -117,26 +129,22 @@ impl TryFrom<&Mesh> for SSKDTree {
 
 #[cfg(test)]
 mod tests {
-    use crate::mesh::bool::kdtree::KDTree;
-    use crate::mesh::bool::sskdtree::{SSKDNode, SSKDTree};
-    use crate::mesh::parts::Vertex;
+    use crate::mesh::bool::sskdtree::SSKDTree;
     use crate::mesh::shape::cone::Cone;
     use crate::mesh::HasMesh;
+    use crate::mesh::parts::vertex::Vertex;
 
     #[test]
     fn smoke_test() {
         let fig = Cone::default();
         let mesh = fig.mesh();
         let kdtree: SSKDTree = mesh.try_into().unwrap();
+        assert_eq!(kdtree.nearest_neighbors(&Vertex::default(), Some(1.0)).count(), 153);
+        assert_eq!(kdtree.nearest_neighbors(&Vertex::default(), Some(2.0)).count(), 186);
 
-        for node in kdtree.iter() {
-            match node {
-                SSKDNode::Leaf { polygons, .. } => {
-                    for poly in polygons {
-                        println!("Polygon: {:?}", poly);
-                    }
-                }
-                SSKDNode::Node { .. } => {}
+        for poly in kdtree.iter() {
+            for poly in poly.polygons() {
+                println!(" - {}", poly.wnv(&Vertex::default()));
             }
         }
     }

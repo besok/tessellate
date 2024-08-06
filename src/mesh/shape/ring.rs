@@ -1,8 +1,9 @@
-use crate::mesh::parts::{Face, Vertex};
+use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
 use crate::mesh::material::Color;
+use crate::mesh::parts::vertex::Vertex;
 
 #[derive(Debug, Clone)]
 pub struct Ring {

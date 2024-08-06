@@ -1,9 +1,7 @@
-use crate::mesh;
 use crate::mesh::material::{Color, RgbaColor};
-use crate::mesh::parts::{Face, FaceType};
-use crate::mesh::{Mesh, MeshError};
+use crate::mesh::parts::face::Face;
+use crate::mesh::{Mesh, MeshError, parts};
 use bytemuck::{Pod, Zeroable};
-use rand::Rng;
 use std::iter::zip;
 use std::mem;
 
@@ -15,7 +13,7 @@ pub(crate) struct Vertex {
 }
 
 impl Vertex {
-    fn from(v: &mesh::parts::Vertex, color: &RgbaColor) -> Self {
+    fn from(v: &parts::vertex::Vertex, color: &RgbaColor) -> Self {
         let v = v.flatten();
         Vertex {
             position: [v[0], v[1], v[2], 1.0],
@@ -35,7 +33,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
                 for (col, face) in zip(fs.into_iter(), faces.into_iter()) {
                     let vs = face_to_vertex3(face)
                         .into_iter()
-                        .map(|i| mesh.get_v(i))
+                        .map(|i| mesh.get(i))
                         .collect::<Result<Vec<_>, _>>()?;
                     vertices.extend(vs.into_iter().map(|v| Vertex::from(v, col)))
                 }
@@ -45,7 +43,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
                 .faces()
                 .iter()
                 .flat_map(face_to_vertex3)
-                .map(|i| mesh.get_v(i))
+                .map(|i| mesh.get(i))
                 .into_iter()
                 .collect::<Result<Vec<_>, _>>()?
                 .into_iter()
@@ -56,7 +54,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
                 for face in mesh.faces().into_iter() {
                     let vs = face_to_vertex3(face)
                         .into_iter()
-                        .map(|i| mesh.get_v(i))
+                        .map(|i| mesh.get(i))
                         .collect::<Result<Vec<_>, _>>()?;
                     vertices.extend(
                         vs.into_iter()
@@ -71,7 +69,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
                 for face in mesh.faces().into_iter() {
                     let vs = face_to_vertex3(face)
                         .into_iter()
-                        .map(|i| mesh.get_v(i))
+                        .map(|i| mesh.get(i))
                         .collect::<Result<Vec<_>, _>>()?;
                     vertices.extend(
                         zip(vs.into_iter(), colors.into_iter()).map(|(v, c)| Vertex::from(v, c)),
@@ -96,7 +94,7 @@ fn faces_check(fs: &Vec<RgbaColor>, faces: &Vec<Face>) -> Result<(), MeshError> 
 }
 fn vertices_check(
     vs: &Vec<RgbaColor>,
-    vertices: &Vec<mesh::parts::Vertex>,
+    vertices: &Vec<parts::vertex::Vertex>,
 ) -> Result<(), MeshError> {
     if vs.len() != vertices.len() {
         return Err(MeshError::InvalidIndex(format!(

@@ -1,4 +1,4 @@
-use crate::mesh::parts::Vertex;
+use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{HasMesh, Mesh, MeshResult};
 use glam::{Mat4, Vec3};
 

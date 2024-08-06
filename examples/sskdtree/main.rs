@@ -1,7 +1,7 @@
 use glam::{Mat4, Quat, Vec3};
 use tessellate::gpu::camera::position::CameraPosition;
 use tessellate::mesh::material::{Color, RgbaColor};
-use tessellate::mesh::parts::{BoundingBox, FaceType, Vertex};
+use tessellate::mesh::parts::face::FaceType;
 use tessellate::mesh::shape::cone::Cone;
 use tessellate::mesh::shape::cuboid::cube::Cube;
 use tessellate::mesh::shape::cylinder::Cylinder;
@@ -13,6 +13,7 @@ use tessellate::mesh::shape::torus::Torus;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::HasMesh;
 use tessellate::{gpu, TessError, TessResult};
+use tessellate::mesh::parts::vertex::Vertex;
 
 fn main() -> TessResult<()> {
     let meshes = vec![

@@ -1,9 +1,8 @@
-use crate::mesh::parts::{Edge, Face, FaceType, Vertex};
-
 use crate::mesh::material::Color;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
-use glam::Vec3;
+use crate::mesh::parts::face::{Face, FaceType};
+use crate::mesh::parts::vertex::Vertex;
 
 /// A solid object bounded by six square faces, with three meeting at each vertex.
 /// Regular hexahedron, Platonic solid, consists of 6 faces, 12 edges, and 8 vertices.

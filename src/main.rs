@@ -3,7 +3,7 @@ use glam::{EulerRot, Mat4, Quat, Vec3};
 use log::{info, LevelFilter};
 use tessellate::gpu::camera::position::CameraPosition;
 use tessellate::mesh::material::{Color, RgbaColor};
-use tessellate::mesh::parts::{BoundingBox, FaceType, Vertex};
+use tessellate::mesh::parts::BoundingBox;
 use tessellate::mesh::shape::cone::Cone;
 use tessellate::mesh::shape::cuboid::cube::Cube;
 use tessellate::mesh::shape::cuboid::rect_cuboid::RectCuboid;
@@ -20,6 +20,8 @@ use tessellate::mesh::{HasMesh, Mesh};
 use tessellate::{gpu, TessError};
 use winit::error::EventLoopError;
 use tessellate::mesh::bool::bsp::BSPTree;
+use tessellate::mesh::parts::face::FaceType;
+use tessellate::mesh::parts::vertex::Vertex;
 
 fn init_logger() {
     Builder::new().filter(None, LevelFilter::Info).init();

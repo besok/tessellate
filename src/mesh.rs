@@ -1,12 +1,15 @@
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
-use crate::mesh::parts::{BoundingBox, Face, Polygon, Vertex};
+use crate::mesh::parts::BoundingBox;
 use crate::mesh::tables::MeshTables;
 use parts::Edge;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 use std::ops::Deref;
+use parts::face::Face;
+use parts::polygon::Polygon;
+use parts::vertex::Vertex;
 
 pub mod bool;
 pub mod material;
@@ -41,7 +44,7 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn get_v(&self, idx: usize) -> MeshResult<&Vertex> {
+    pub fn get(&self, idx: usize) -> MeshResult<&Vertex> {
         self.vertices
             .get(idx)
             .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
@@ -193,7 +196,7 @@ impl Mesh {
     fn face_to_polygon(&self, face: &Face) -> MeshResult<Polygon> {
         face.flatten()
             .iter()
-            .map(|i| self.get_v(*i))
+            .map(|i| self.get(*i))
             .into_iter()
             .collect::<Result<Vec<_>, _>>()
             .map(Polygon::new)

@@ -1,11 +1,13 @@
 use crate::mesh::bool::bsp::build::try_build_bsp_tree;
-use crate::mesh::parts::{Face, Polygon, Vertex};
+use crate::mesh::parts::face::Face;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 use glam::Vec3;
 use rand::Rng;
 use std::collections::HashSet;
 use std::ops::Deref;
 use crate::mesh::material::Color;
+use crate::mesh::parts::polygon::Polygon;
+use crate::mesh::parts::vertex::Vertex;
 
 pub mod build;
 pub mod query;
@@ -147,12 +149,8 @@ impl Plane {
 
 #[cfg(test)]
 mod tests {
-    use crate::gpu::camera::position::CameraPosition;
-    use crate::gpu::visualize;
     use crate::mesh::bool::bsp::{BSPNode, BSPTree};
     use crate::mesh::shape::cone::Cone;
-    use crate::mesh::shape::cuboid::cube::Cube;
-    use crate::mesh::shape::sphere::Sphere;
     use crate::mesh::HasMesh;
     use crate::mesh::material::Color;
     use crate::turn_on_test_logs;

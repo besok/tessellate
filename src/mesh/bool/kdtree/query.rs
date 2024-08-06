@@ -1,5 +1,5 @@
 use crate::mesh::bool::kdtree::KDNode;
-use crate::mesh::parts::Vertex;
+use crate::mesh::parts::vertex::Vertex;
 use log::info;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;

@@ -1,9 +1,11 @@
-use crate::mesh::bool::sskdtree::{Axis, SSKDNode, SSKDTree};
-use crate::mesh::parts::{BoundingBox, Polygon, Vertex};
+use crate::mesh::bool::sskdtree::{SSKDNode, SSKDTree};
+use crate::mesh::parts::BoundingBox;
 use crate::mesh::{MeshError, MeshResult};
+use crate::mesh::parts::polygon::Polygon;
+use crate::mesh::parts::vertex::Axis;
 
 const MAX_REC_DEPTH: usize = 90;
-const MIN_POLYGONS: usize = 10;
+const MIN_POLYGONS: usize = 25;
 
 pub fn try_build_sskd_tree(
     polygons: &Vec<Polygon>,

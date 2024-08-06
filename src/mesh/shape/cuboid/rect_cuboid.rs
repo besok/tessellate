@@ -1,7 +1,9 @@
 use crate::mesh::material::Color;
-use crate::mesh::parts::{Edge, Face, FaceType, Vertex};
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
+use crate::mesh::parts::face::{Face, FaceType};
+use crate::mesh::parts::vertex::Vertex;
+
 #[derive(Debug, Clone)]
 pub struct RectCuboid {
     mesh: Mesh,

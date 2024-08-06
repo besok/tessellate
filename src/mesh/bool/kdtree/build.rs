@@ -1,9 +1,8 @@
-use crate::mesh::bool::bsp::BSPTree;
 use crate::mesh::bool::kdtree::{KDNode, KDTree};
-use crate::mesh::parts::{Polygon, Vertex};
+use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::{MeshError, MeshResult};
-use log::debug;
 use std::cmp::Ordering;
+use crate::mesh::parts::vertex::Vertex;
 
 const MAX_REC_DEPTH: usize = 90;
 

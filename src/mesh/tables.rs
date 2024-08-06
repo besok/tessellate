@@ -1,6 +1,8 @@
-use crate::mesh::parts::{Edge, Face, Idx, Vertex};
+use crate::mesh::parts::{Edge, Idx};
 use crate::mesh::{Mesh, MeshError, MeshResult};
 use std::collections::HashMap;
+use crate::mesh::parts::face::Face;
+use crate::mesh::parts::vertex::Vertex;
 
 #[derive(Default)]
 pub struct MeshTables {
@@ -21,14 +23,19 @@ impl MeshTables {
         let mut v_edges = HashMap::new();
         let mut e_faces = HashMap::new();
 
-        let e_map: HashMap<_,_> = edges.iter().enumerate().map(|(i, Edge(v1,v2))| ((*v1,*v2), i)).collect();
+        let e_map: HashMap<_, _> = edges
+            .iter()
+            .enumerate()
+            .flat_map(|(i, edge)| edge.indexes().map(|(l, r)| ((l, r), i)))
+            .collect();
 
-        for (idx, Edge(v1, v2)) in edges.iter().enumerate() {
-            v_edges.entry(*v1).or_insert_with(Vec::new).push(idx);
-            v_edges.entry(*v2).or_insert_with(Vec::new).push(idx);
+        for (idx, edge) in edges.iter().enumerate() {
+            let (v1, v2) = edge.indexes().ok_or(MeshError::idx_edge(idx, idx))?;
+            v_edges.entry(v1).or_insert_with(Vec::new).push(idx);
+            v_edges.entry(v2).or_insert_with(Vec::new).push(idx);
         }
 
-        let i = |k:(usize,usize)| -> MeshResult<usize> {
+        let i = |k: (usize, usize)| -> MeshResult<usize> {
             e_map.get(&k).copied().ok_or(MeshError::idx_edge(k.0, k.1))
         };
 

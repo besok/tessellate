@@ -1,7 +1,8 @@
-use crate::mesh::parts::{Face, Vertex};
+use crate::mesh::parts::face::Face;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 use glam::Vec3;
 use std::collections::HashMap;
+use crate::mesh::parts::vertex::Vertex;
 
 /// Mesh normals
 /// The structure to store normals for vertices and faces
@@ -43,9 +44,9 @@ impl MeshNormals {
         for face in &mesh.faces {
             match face {
                 Face::Triangle(v1_idx, v2_idx, v3_idx) => {
-                    let v1 = mesh.get_v(*v1_idx)?;
-                    let v2 = mesh.get_v(*v2_idx)?;
-                    let v3 = mesh.get_v(*v3_idx)?;
+                    let v1 = mesh.get(*v1_idx)?;
+                    let v2 = mesh.get(*v2_idx)?;
+                    let v3 = mesh.get(*v3_idx)?;
                     let face_normal = calculate_triangle_normal(v1, v2, v3);
                     face_normals.push(face_normal);
                     face_normals_map.insert(face.clone(), face_normal);
@@ -54,10 +55,10 @@ impl MeshNormals {
                     normals[*v3_idx] += face_normal;
                 }
                 Face::Quad(v1_idx, v2_idx, v3_idx, v4_idx) => {
-                    let v1 = mesh.get_v(*v1_idx)?;
-                    let v2 = mesh.get_v(*v2_idx)?;
-                    let v3 = mesh.get_v(*v3_idx)?;
-                    let _v4 = mesh.get_v(*v4_idx)?;
+                    let v1 = mesh.get(*v1_idx)?;
+                    let v2 = mesh.get(*v2_idx)?;
+                    let v3 = mesh.get(*v3_idx)?;
+                    let _v4 = mesh.get(*v4_idx)?;
                     let face_normal = calculate_triangle_normal(v1, v2, v3);
                     face_normals_map.insert(face.clone(), face_normal);
                     face_normals.push(face_normal);
