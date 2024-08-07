@@ -19,41 +19,6 @@ Steps to Implement the EMBER Algorithm
    Output: Annotated polygons (faces) with winding number trace values (Δwt).
    Action: For each polygon t, compute the winding number trace value Δwt by tracing the edges and determining 
            how crossing each edge affects the winding number.
-```python
-class Polygon:
-    def __init__(self, vertices):
-        self.vertices = vertices
-        self.delta_wt = []
-
-def annotate_with_wntv(polygon, reference_point):
-    delta_wt = 0
-    for i in range(len(polygon.vertices)):
-        start_vertex = polygon.vertices[i]
-        end_vertex = polygon.vertices[(i + 1) % len(polygon.vertices)]
-        delta_wt += calculate_segment_wntv(start_vertex, end_vertex, reference_point)
-        polygon.delta_wt.append(delta_wt)
-    return polygon
-
-def calculate_segment_wntv(start, end, reference_point):
-    if is_counter_clockwise(start, end, reference_point):
-        return 1
-    else:
-        return -1
-
-def is_counter_clockwise(start, end, reference_point):
-    start = np.array(start)
-    end = np.array(end)
-    reference_point = np.array(reference_point)
-    edge_vector = end - start
-    ref_vector = reference_point - start
-    cross_product = np.cross(edge_vector, ref_vector)
-    if cross_product[2] > 0:
-        return 1
-    elif cross_product[2] < 0:
-        return -1
-    else:
-        return 0
-```
 4. Classify and Label Regions
    Input: Annotated polygons with Δwt.
    Output: Classified regions as inside, outside, or on the boundary.
@@ -77,54 +42,3 @@ def is_counter_clockwise(start, end, reference_point):
    Action: Clean up the resulting mesh by removing redundant vertices, edges, and faces. 
            Optimize the mesh structure for better performance and appearance.
 
-```python
-class Mesh:
-    def __init__(self, vertices, faces):
-        self.vertices = vertices
-        self.faces = faces
-
-def preprocess_mesh(mesh):
-    # Use SS KD-tree to preprocess and subdivide the mesh
-    return subdivide_aabb(mesh)
-
-def perform_boolean_operation(mesh_a, mesh_b, operation_type):
-    # Preprocess the input meshes
-    mesh_a_subdivided = preprocess_mesh(mesh_a)
-    mesh_b_subdivided = preprocess_mesh(mesh_b)
-    
-    # Construct winding number traces for each polygon
-    reference_point = [0.5, 0.5, 0.5]  # Example reference point
-    for polygon in mesh_a_subdivided.faces:
-        annotate_with_wntv(polygon, reference_point)
-    for polygon in mesh_b_subdivided.faces:
-        annotate_with_wntv(polygon, reference_point)
-    
-    # Classify and label regions based on winding numbers
-    classified_regions = classify_regions(mesh_a_subdivided, mesh_b_subdivided)
-    
-    # Perform local Boolean operations
-    result_mesh = perform_local_boolean_operations(classified_regions, operation_type)
-    
-    # Merge results and resolve ambiguities
-    final_mesh = merge_results(result_mesh)
-    
-    # Post-process the resulting mesh
-    optimized_mesh = post_process_mesh(final_mesh)
-    
-    return optimized_mesh
-
-# Example usage
-vertices_a = [[...]]  # Vertices of mesh A
-faces_a = [[...]]     # Faces of mesh A
-mesh_a = Mesh(vertices_a, faces_a)
-
-vertices_b = [[...]]  # Vertices of mesh B
-faces_b = [[...]]     # Faces of mesh B
-mesh_b = Mesh(vertices_b, faces_b)
-
-operation_type = "union"  # Example Boolean operation type
-result_mesh = perform_boolean_operation(mesh_a, mesh_b, operation_type)
-
-# result_mesh now contains the result of the Boolean operation
-
-```

@@ -42,14 +42,7 @@ pub struct Mesh {
     faces: Vec<Face>,
     color: Color,
 }
-
 impl Mesh {
-    pub fn get(&self, idx: usize) -> MeshResult<&Vertex> {
-        self.vertices
-            .get(idx)
-            .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
-    }
-
     pub fn from_vertices<V, F>(vertices: Vec<V>, faces: Vec<F>, color: Color) -> Self
     where
         V: Into<Vertex>,
@@ -103,29 +96,11 @@ impl Mesh {
         Mesh::from_vertices(vertices, faces, color)
     }
 
-    pub fn try_tables(&self) -> MeshResult<MeshTables> {
-        self.try_into()
+}
+impl Mesh {
+    pub fn bbox(&self) -> BoundingBox {
+        BoundingBox::from(self)
     }
-    pub fn try_normals(&self) -> MeshResult<MeshNormals> {
-        self.try_into()
-    }
-
-    pub fn vertices(&self) -> &Vec<Vertex> {
-        &self.vertices
-    }
-    pub fn edges(&self) -> &Vec<Edge> {
-        &self.edges
-    }
-    pub fn faces(&self) -> &Vec<Face> {
-        &self.faces
-    }
-    pub fn try_polygons(&self) -> MeshResult<Vec<Polygon>> {
-        self.faces
-            .iter()
-            .map(|f| self.face_to_polygon(f))
-            .collect::<Result<Vec<_>, _>>()
-    }
-
     pub fn subdivide(&mut self) -> MeshResult<()> {
         let mut new_vertices = self.vertices.to_vec();
         let mut new_faces = Vec::new();
@@ -184,6 +159,41 @@ impl Mesh {
         *self = Mesh::from_vertices(new_vertices, new_faces, self.color.clone());
         Ok(())
     }
+}
+impl Mesh{
+    pub fn try_tables(&self) -> MeshResult<MeshTables> {
+        self.try_into()
+    }
+    pub fn try_normals(&self) -> MeshResult<MeshNormals> {
+        self.try_into()
+    }
+    pub fn try_polygons(&self) -> MeshResult<Vec<Polygon>> {
+        self.faces
+            .iter()
+            .map(|f| self.face_to_polygon(f))
+            .collect::<Result<Vec<_>, _>>()
+    }`
+}
+impl Mesh {
+    pub fn get(&self, idx: usize) -> MeshResult<&Vertex> {
+        self.vertices
+            .get(idx)
+            .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
+    }
+
+
+
+
+    pub fn vertices(&self) -> &Vec<Vertex> {
+        &self.vertices
+    }
+    pub fn edges(&self) -> &Vec<Edge> {
+        &self.edges
+    }
+    pub fn faces(&self) -> &Vec<Face> {
+        &self.faces
+    }
+
 
     pub fn color(&self) -> &Color {
         &self.color
@@ -202,9 +212,7 @@ impl Mesh {
             .map(Polygon::new)
     }
 
-    pub fn bbox(&self) -> BoundingBox {
-        BoundingBox::from(self)
-    }
+
 }
 
 pub trait HasMesh {

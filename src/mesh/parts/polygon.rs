@@ -63,6 +63,8 @@ impl Polygon {
         wn / (2.0 * std::f32::consts::PI)
     }
 
+    /// Calculate the winding number trace value of a vertex with respect to the polygon
+    /// The winding number trace value is the sum of the winding number of the polygon's edges
     pub fn wntv(&self, reference: &Vertex) -> f32 {
         let mut delta_wt = 0.0;
         let r = reference.clone();
