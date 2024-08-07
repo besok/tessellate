@@ -63,6 +63,17 @@ impl Polygon {
         wn / (2.0 * std::f32::consts::PI)
     }
 
+    pub fn wntv(&self, reference: &Vertex) -> f32 {
+        let mut delta_wt = 0.0;
+        let r = reference.clone();
+        for e in self.edges().iter() {
+            if let Some((start, end)) = e.vertices() {
+                delta_wt += calculate_segment_wntv(start.clone(), end.clone(), r.clone());
+            }
+        }
+        delta_wt
+    }
+
     pub fn edges(&self) -> Vec<Edge> {
         self.vertices
             .iter()
@@ -72,11 +83,23 @@ impl Polygon {
     }
 }
 
+fn calculate_segment_wntv(start: Vertex, end: Vertex, reference: Vertex) -> f32 {
+    let cross = (end - start).cross(&(reference - start));
+    if cross.z > 0.0 {
+        1.0
+    } else {
+        -1.0
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::mesh::HasMesh;
+    use crate::mesh::material::Color;
     use super::*;
     use crate::mesh::parts::polygon::Polygon;
     use crate::mesh::parts::vertex::Vertex;
+    use crate::mesh::shape::icosahedron::Icosahedron;
 
     #[test]
     fn test_wnv() {
@@ -112,5 +135,16 @@ mod tests {
         let winding_number = polygon.wnv(&test_vertex);
 
         assert!((winding_number - 1.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_wntv() {
+        let poly = Icosahedron::create(Vertex::default(), 1.0, Color::default());
+
+        for p in poly.mesh().try_polygons().unwrap() {
+            let wntv = p.wntv(&Vertex::default());
+
+            println!("{wntv}");
+        }
     }
 }
