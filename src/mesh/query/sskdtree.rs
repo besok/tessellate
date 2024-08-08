@@ -1,10 +1,11 @@
 use crate::mesh::material::Color;
 use crate::mesh::parts::BoundingBox;
 use crate::mesh::{HasMesh, Mesh, MeshError, MeshResult};
-use crate::mesh::bool::sskdtree::query::SSKDTreeNearestNeighborIter;
+use crate::mesh::query::sskdtree::query::SSKDTreeNearestNeighborIter;
 use crate::mesh::parts::face::FaceType;
 use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::vertex::{Axis, Vertex};
+use crate::mesh::query::MeshQuery;
 
 mod build;
 mod query;
@@ -120,25 +121,27 @@ impl SSKDTree {
     }
 }
 
-impl TryFrom<&Mesh> for SSKDTree {
+impl<'a> TryFrom<MeshQuery<'a>> for SSKDTree {
     type Error = MeshError;
-    fn try_from(mesh: &Mesh) -> MeshResult<Self> {
-        SSKDTree::try_from_mesh(mesh, None, None)
+    fn try_from(q: MeshQuery<'a>) -> MeshResult<Self> {
+        q.try_sskd_tree(None, None)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::mesh::bool::sskdtree::SSKDTree;
+    use crate::mesh::query::sskdtree::SSKDTree;
     use crate::mesh::shape::cone::Cone;
     use crate::mesh::HasMesh;
     use crate::mesh::parts::vertex::Vertex;
+    use crate::mesh::query::MeshQuery;
 
     #[test]
     fn smoke_test() {
         let fig = Cone::default();
         let mesh = fig.mesh();
-        let kdtree: SSKDTree = mesh.try_into().unwrap();
+        let query:MeshQuery = mesh.into();
+        let kdtree: SSKDTree = query.try_into().unwrap();
         assert_eq!(kdtree.nearest_neighbors(&Vertex::default(), Some(1.0)).count(), 153);
         assert_eq!(kdtree.nearest_neighbors(&Vertex::default(), Some(2.0)).count(), 186);
 

@@ -11,7 +11,7 @@ use parts::face::Face;
 use parts::polygon::Polygon;
 use parts::vertex::Vertex;
 
-pub mod bool;
+pub mod query;
 pub mod material;
 pub mod normals;
 pub mod parts;
@@ -172,7 +172,7 @@ impl Mesh{
             .iter()
             .map(|f| self.face_to_polygon(f))
             .collect::<Result<Vec<_>, _>>()
-    }`
+    }
 }
 impl Mesh {
     pub fn get(&self, idx: usize) -> MeshResult<&Vertex> {

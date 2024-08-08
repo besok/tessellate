@@ -18,7 +18,7 @@ You can directly read data from these files into the objects for visualization a
 The library provides functions to create fundamental geometric shapes like:
 spheres, cubes, cuboids, cylinders, cones, rings, spheres, torus, planes and more from scratch. 
 These objects serve as building blocks for more complex visualizations.
-The detailed example can be found in the [basic_shapes](examples/basic_shapes/README.md) example.
+The detailed example can be found in the [basic_shapes](examples/sskd_tree/README.md) example.
 
 
 ### Mesh Manipulation.
@@ -61,6 +61,9 @@ use crate::mesh::bool::kdtree::KDTree;
 
     }
 ```
+ 
+
+
 
 ##### BSP Tree.
 

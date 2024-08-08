@@ -1,5 +1,6 @@
-use crate::mesh::bool::kdtree::query::{InOrderIter, KDTreeNearestNeighborIter};
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::query::kdtree::query::{InOrderIter, KDTreeNearestNeighborIter};
+use crate::mesh::query::MeshQuery;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 
 pub mod build;
@@ -37,8 +38,8 @@ impl KDTree {
     ///
     /// # Example
     /// ```
-    /// use tessellate::mesh::bool::kdtree::KDTree;
-    /// use tessellate::mesh::bool::kdtree::query::Neighbour;
+    /// use tessellate::mesh::query::kdtree::KDTree;
+    /// use tessellate::mesh::query::kdtree::query::Neighbour;
     /// use tessellate::mesh::HasMesh;
     /// use tessellate::mesh::parts::vertex::Vertex;
     /// use tessellate::mesh::shape::cone::Cone;
@@ -56,7 +57,7 @@ impl KDTree {
         target: &'a Vertex,
         max_dist: Option<f32>,
     ) -> KDTreeNearestNeighborIter<'a> {
-        KDTreeNearestNeighborIter::new(&self.root, target,max_dist)
+        KDTreeNearestNeighborIter::new(&self.root, target, max_dist)
     }
 
     pub fn iter(&self) -> InOrderIter {
@@ -64,10 +65,10 @@ impl KDTree {
     }
 }
 
-impl TryFrom<&Mesh> for KDTree {
+impl<'a> TryFrom<MeshQuery<'a>> for KDTree {
     type Error = MeshError;
-    fn try_from(mesh: &Mesh) -> MeshResult<Self> {
-        KDTree::try_from_mesh(mesh, None)
+    fn try_from(q: MeshQuery) -> MeshResult<Self> {
+        q.try_kd_tree(None)
     }
 }
 
@@ -103,8 +104,9 @@ impl KDNode {
 
 #[cfg(test)]
 mod tests {
-    use crate::mesh::bool::kdtree::KDTree;
     use crate::mesh::parts::vertex::Vertex;
+    use crate::mesh::query::kdtree::KDTree;
+    use crate::mesh::query::MeshQuery;
     use crate::mesh::shape::cone::Cone;
     use crate::mesh::HasMesh;
 
@@ -112,13 +114,14 @@ mod tests {
     fn smoke_test() {
         let fig = Cone::default();
         let mesh = fig.mesh();
-        let kdtree: KDTree = mesh.try_into().unwrap();
+        let kdtree: KDTree = MeshQuery::new(mesh).try_into().unwrap();
 
         let full_len = kdtree.nearest_neighbors(&Vertex::default(), None).count();
-        let part_len = kdtree.nearest_neighbors(&Vertex::default(), Some(0.7)).count();
+        let part_len = kdtree
+            .nearest_neighbors(&Vertex::default(), Some(0.7))
+            .count();
 
         assert_eq!(full_len, 62);
         assert_eq!(part_len, 14);
-
     }
 }

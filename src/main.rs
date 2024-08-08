@@ -19,7 +19,7 @@ use tessellate::mesh::transform::Transform;
 use tessellate::mesh::{HasMesh, Mesh};
 use tessellate::{gpu, TessError};
 use winit::error::EventLoopError;
-use tessellate::mesh::bool::bsp::BSPTree;
+use tessellate::mesh::query::bsp::BSPTree;
 use tessellate::mesh::parts::face::FaceType;
 use tessellate::mesh::parts::vertex::Vertex;
 

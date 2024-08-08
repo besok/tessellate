@@ -1,4 +1,4 @@
-use crate::mesh::bool::kdtree::{KDNode, KDTree};
+use crate::mesh::query::kdtree::{KDNode, KDTree};
 use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::{MeshError, MeshResult};
 use std::cmp::Ordering;

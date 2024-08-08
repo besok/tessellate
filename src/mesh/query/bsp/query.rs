@@ -1,5 +1,5 @@
 use IterNode::{Unvisited, Visited};
-use crate::mesh::bool::bsp::BSPNode;
+use crate::mesh::query::bsp::BSPNode;
 
 pub struct BspPreorderIterator<'a> {
     stack: Vec<&'a BSPNode>,

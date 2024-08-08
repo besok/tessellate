@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
-use crate::mesh::bool::sskdtree::SSKDNode;
+use crate::mesh::query::sskdtree::SSKDNode;
 use crate::mesh::parts::vertex::Vertex;
 
 pub struct InOrderIter<'a> {

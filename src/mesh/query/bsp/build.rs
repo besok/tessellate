@@ -41,7 +41,7 @@
 /// - Once all polygons are assigned to leaf nodes or the recursion depth limit is reached,
 ///     finalize the tree construction and return the root node.
 
-use crate::mesh::bool::bsp::{BSPNode, BSPTree, Plane};
+use crate::mesh::query::bsp::{BSPNode, BSPTree, Plane};
 use crate::mesh::normals::{calculate_normal, MeshNormals};
 use crate::mesh::parts::face::Face;
 use crate::mesh::{Mesh, MeshError, MeshResult};
