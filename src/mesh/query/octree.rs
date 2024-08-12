@@ -25,6 +25,13 @@ impl OctNode {
             OctNode::Node { ref bb, .. } => bb,
         }
     }
+
+    /// Find all polygons in the octree that intersect with the given bounding box.
+    /// This method is used to find all polygons in the octree
+    /// that intersect with the given bounding box.
+    ///
+    /// # Arguments
+    /// bb - The bounding box to check for intersections.
     pub fn find_polygons(&self, bb: &BoundingBox) -> Vec<Polygon> {
         match self {
             OctNode::Leaf { ref polygons, .. } => {
@@ -110,6 +117,23 @@ mod tests {
 
     #[test]
     fn test_find_polygons() {
+        let polygons = vec![
+            Polygon::new(vec![
+                &Vertex::new(0.0, 0.0, 0.0),
+                &Vertex::new(1.0, 0.0, 0.0),
+                &Vertex::new(0.0, 1.0, 0.0),
+            ]),
+            Polygon::new(vec![
+                &Vertex::new(1.0, 1.0, 0.0),
+                &Vertex::new(2.0, 1.0, 0.0),
+                &Vertex::new(1.0, 2.0, 0.0),
+            ]),
+        ];
+        let mesh = Mesh::from_polygons(polygons, Color::default());
+        let octree = Octree::try_from_mesh(&mesh, Some(3)).expect("Failed to build octree");
 
+        let bb = octree.root.bb().clone();
+        let result = octree.find_polygons(&bb);
+        assert_eq!(result.len(), 2);
     }
 }
