@@ -7,6 +7,12 @@ pub struct Polygon {
     vertices: Vec<Vertex>,
 }
 
+impl Default for Polygon {
+    fn default() -> Self {
+        Self { vertices: Vec::new() }
+    }
+}
+
 impl From<Vec<Vertex>> for Polygon {
     fn from(vertices: Vec<Vertex>) -> Self {
         Self { vertices }

@@ -98,7 +98,7 @@ impl Mesh {
 
 }
 impl Mesh {
-    pub fn bbox(&self) -> BoundingBox {
+    pub fn aabb(&self) -> BoundingBox {
         BoundingBox::from(self)
     }
     pub fn subdivide(&mut self) -> MeshResult<()> {

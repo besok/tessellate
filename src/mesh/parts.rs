@@ -93,6 +93,16 @@ impl BoundingBox {
             max_vertex: max_v,
         }
     }
+
+    pub fn intersects_polygon(&self, polygon: &Polygon) -> bool {
+        for vertex in polygon.vertices() {
+            if self.contains(vertex) {
+                return true;
+            }
+        }
+        false
+    }
+
     pub fn from_polygons(polygons: &Vec<Polygon>) -> BoundingBox {
         polygons
             .into_iter()
@@ -137,6 +147,31 @@ impl BoundingBox {
     pub fn min_mut(&mut self) -> &mut Vertex {
         &mut self.min_vertex
     }
+
+    pub(crate) fn center(&self) -> Vertex {
+        Vertex::new(
+            (self.min_vertex.x + self.max_vertex.x) / 2.0,
+            (self.min_vertex.y + self.max_vertex.y) / 2.0,
+            (self.min_vertex.z + self.max_vertex.z) / 2.0,
+        )
+    }
+
+    pub fn intersects(&self, other: &BoundingBox) -> bool {
+        let x_overlap = self.min_vertex.x <= other.max_vertex.x && self.max_vertex.x >= other.min_vertex.x;
+        let y_overlap = self.min_vertex.y <= other.max_vertex.y && self.max_vertex.y >= other.min_vertex.y;
+        let z_overlap = self.min_vertex.z <= other.max_vertex.z && self.max_vertex.z >= other.min_vertex.z;
+
+        x_overlap && y_overlap && z_overlap
+    }
+
+    pub fn contains(&self, vertex: &Vertex) -> bool {
+        let x_within = self.min_vertex.x <= vertex.x && vertex.x <= self.max_vertex.x;
+        let y_within = self.min_vertex.y <= vertex.y && vertex.y <= self.max_vertex.y;
+        let z_within = self.min_vertex.z <= vertex.z && vertex.z <= self.max_vertex.z;
+
+        x_within && y_within && z_within
+    }
+
 }
 
 impl From<&Mesh> for BoundingBox {

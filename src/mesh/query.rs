@@ -2,10 +2,12 @@ use crate::mesh::query::bsp::BSPTree;
 use crate::mesh::query::kdtree::KDTree;
 use crate::mesh::query::sskdtree::SSKDTree;
 use crate::mesh::{Mesh, MeshResult};
+use crate::mesh::query::octree::Octree;
 
 pub mod bsp;
 pub mod kdtree;
 pub mod sskdtree;
+pub mod octree;
 
 /// A query object for a mesh
 pub struct MeshQuery<'a>(&'a Mesh);
@@ -42,6 +44,14 @@ impl<'a> MeshQuery<'a> {
         min_polygons: Option<usize>,
     ) -> MeshResult<SSKDTree> {
         SSKDTree::try_from_mesh(self.0, depth, min_polygons)
+    }
+
+
+    /// Try to build an Octree from the mesh
+    /// # Arguments
+    /// * `depth` - The maximum depth of the tree
+    pub fn try_octree(&self, depth: Option<usize>) -> MeshResult<Octree> {
+        Octree::try_from_mesh(self.0, depth)
     }
 
     /// Try to build a BSPTree from the mesh
