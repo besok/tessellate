@@ -9,7 +9,9 @@ pub struct Polygon {
 
 impl Default for Polygon {
     fn default() -> Self {
-        Self { vertices: Vec::new() }
+        Self {
+            vertices: Vec::new(),
+        }
     }
 }
 
@@ -89,6 +91,17 @@ impl Polygon {
             .map(|(a, b)| Edge::new_vtx(a.clone(), b.clone()))
             .collect()
     }
+
+    pub fn intersects(&self, other: &Polygon) -> MeshResult<bool> {
+        for e1 in self.edges().iter() {
+            for e2 in other.edges().iter() {
+                if e1.intersects(e2)? {
+                    return Ok(true);
+                }
+            }
+        }
+        Ok(false)
+    }
 }
 
 fn calculate_segment_wntv(start: Vertex, end: Vertex, reference: Vertex) -> f32 {
@@ -102,12 +115,12 @@ fn calculate_segment_wntv(start: Vertex, end: Vertex, reference: Vertex) -> f32 
 
 #[cfg(test)]
 mod tests {
-    use crate::mesh::HasMesh;
-    use crate::mesh::material::Color;
     use super::*;
+    use crate::mesh::material::Color;
     use crate::mesh::parts::polygon::Polygon;
     use crate::mesh::parts::vertex::Vertex;
     use crate::mesh::shape::icosahedron::Icosahedron;
+    use crate::mesh::HasMesh;
 
     #[test]
     fn test_wnv() {

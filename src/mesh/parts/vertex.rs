@@ -1,6 +1,7 @@
 use glam::Vec3;
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 use std::hash::{Hash, Hasher};
+use std::num::Div;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Axis {
@@ -92,6 +93,18 @@ impl Sub for Vertex {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
             z: self.z - rhs.z,
+        }
+    }
+}
+
+impl Div for Vertex {
+    type Output = Vertex;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        Vertex {
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+            z: self.z / rhs.z,
         }
     }
 }

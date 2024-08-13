@@ -6,6 +6,7 @@ use crate::mesh::{Mesh, MeshError, MeshResult};
 pub mod build;
 pub mod query;
 
+#[derive(Debug)]
 pub enum OctNode {
     Leaf {
         bb: BoundingBox,
@@ -19,6 +20,13 @@ pub enum OctNode {
 }
 
 impl OctNode {
+    pub fn polygons(&self) -> Vec<Polygon> {
+        match self {
+            OctNode::Leaf { ref polygons, .. } => polygons.clone(),
+            OctNode::Node { .. } => vec![],
+        }
+    }
+
     pub fn bb(&self) -> &BoundingBox {
         match self {
             OctNode::Leaf { ref bb, .. } => bb,
@@ -34,9 +42,11 @@ impl OctNode {
     /// bb - The bounding box to check for intersections.
     pub fn find_polygons(&self, bb: &BoundingBox) -> Vec<Polygon> {
         match self {
-            OctNode::Leaf { ref polygons, .. } => {
-                polygons.iter().filter(|p| bb.intersects_polygon(p)).cloned().collect()
-            }
+            OctNode::Leaf { ref polygons, .. } => polygons
+                .iter()
+                .filter(|p| bb.intersects_polygon(p))
+                .cloned()
+                .collect(),
             OctNode::Node { ref children, .. } => {
                 let mut result = Vec::new();
                 for child in children.iter() {
@@ -47,6 +57,10 @@ impl OctNode {
                 result
             }
         }
+    }
+
+    pub fn is_overlapping(&self, node: &OctNode) -> bool {
+        self.bb().intersects(node.bb())
     }
 }
 
@@ -65,6 +79,14 @@ impl Octree {
 
     pub fn find_polygons(&self, bb: &BoundingBox) -> Vec<Polygon> {
         self.root.find_polygons(bb)
+    }
+
+    pub fn iter(&self) -> query::OctreeIterator {
+        query::OctreeIterator::new(&self.root, false)
+    }
+
+    pub fn iter_leafs(&self) -> query::OctreeIterator {
+        query::OctreeIterator::new(&self.root, true)
     }
 }
 

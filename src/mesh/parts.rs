@@ -1,15 +1,15 @@
 use crate::mesh::material::Color;
 use crate::mesh::shape::cuboid::rect_cuboid::RectCuboid;
-use crate::mesh::Mesh;
-use std::hash::{Hash, Hasher};
-use std::ops::{Add, Mul, Sub};
+use crate::mesh::{Mesh, MeshError, MeshResult};
 use face::FaceType;
 use polygon::Polygon;
+use std::hash::{Hash, Hasher};
+use std::ops::{Add, Mul, Sub};
 use vertex::Vertex;
 
-pub mod vertex;
-pub mod polygon;
 pub mod face;
+pub mod polygon;
+pub mod vertex;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Edge {
@@ -37,6 +37,37 @@ impl Edge {
     }
     pub fn new_vtx(a: Vertex, b: Vertex) -> Self {
         Edge::Vertex(a, b)
+    }
+
+    pub fn intersects(&self, edge: &Edge) -> MeshResult<bool> {
+        match (*self, *edge) {
+            (Edge::Vertex(a1, b1), Edge::Vertex(a2, b2)) => {
+                let d1 = b1 - a1;
+                let d2 = b2 - a2;
+                let cross = d1.cross(&d2);
+
+                if cross.magnitude() == 0.0 {
+                    return Ok(false); // Parallel lines
+                }
+
+                let t = (a2 - a1).cross(&d2) / cross;
+                let u = (a2 - a1).cross(&d1) / cross;
+
+                Ok(t.x >= 0.0
+                    && t.x <= 1.0
+                    && t.y >= 0.0
+                    && t.y <= 1.0
+                    && t.z >= 0.0
+                    && t.z <= 1.0
+                    && u.x >= 0.0
+                    && u.y >= 0.0
+                    && u.z >= 0.0
+                    && u.x <= 1.0
+                    && u.y <= 1.0
+                    && u.z <= 1.0)
+            }
+            _ => Err(MeshError::WrongIntersection("Invalid intersection".to_string())),
+        }
     }
 }
 
@@ -157,9 +188,12 @@ impl BoundingBox {
     }
 
     pub fn intersects(&self, other: &BoundingBox) -> bool {
-        let x_overlap = self.min_vertex.x <= other.max_vertex.x && self.max_vertex.x >= other.min_vertex.x;
-        let y_overlap = self.min_vertex.y <= other.max_vertex.y && self.max_vertex.y >= other.min_vertex.y;
-        let z_overlap = self.min_vertex.z <= other.max_vertex.z && self.max_vertex.z >= other.min_vertex.z;
+        let x_overlap =
+            self.min_vertex.x <= other.max_vertex.x && self.max_vertex.x >= other.min_vertex.x;
+        let y_overlap =
+            self.min_vertex.y <= other.max_vertex.y && self.max_vertex.y >= other.min_vertex.y;
+        let z_overlap =
+            self.min_vertex.z <= other.max_vertex.z && self.max_vertex.z >= other.min_vertex.z;
 
         x_overlap && y_overlap && z_overlap
     }
@@ -171,7 +205,6 @@ impl BoundingBox {
 
         x_within && y_within && z_within
     }
-
 }
 
 impl From<&Mesh> for BoundingBox {
