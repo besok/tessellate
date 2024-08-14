@@ -1,8 +1,10 @@
+use std::ops::Deref;
 use crate::mesh::Mesh;
 use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::shape::cylinder::Cylinder;
 
 #[derive(Debug, Clone)]
 pub struct Grid {
@@ -11,7 +13,13 @@ pub struct Grid {
     spacing: f32,
     mesh: Mesh,
 }
+impl Deref for Grid {
+    type Target = Mesh;
 
+    fn deref(&self) -> &Self::Target {
+        &self.mesh
+    }
+}
 impl Grid {
     pub fn create(rows: usize, columns: usize, spacing: f32,color: Color) -> Self {
         let mut vertices: Vec<Vertex> = Vec::new();

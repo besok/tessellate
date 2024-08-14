@@ -1,8 +1,10 @@
+use std::ops::Deref;
 use crate::mesh::material::Color;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use crate::mesh::parts::face::{Face, FaceType};
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::shape::cuboid::cube::Cube;
 
 #[derive(Debug, Clone)]
 pub struct RectCuboid {
@@ -12,7 +14,13 @@ pub struct RectCuboid {
     size_y: f32,
     size_z: f32,
 }
+impl Deref for RectCuboid {
+    type Target = Mesh;
 
+    fn deref(&self) -> &Self::Target {
+        &self.mesh
+    }
+}
 impl HasMesh for RectCuboid {
     fn mesh(&self) -> &Mesh {
         &self.mesh

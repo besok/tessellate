@@ -2,23 +2,23 @@ use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
 use crate::mesh::parts::BoundingBox;
 use crate::mesh::tables::MeshTables;
+use parts::face::Face;
+use parts::polygon::Polygon;
+use parts::vertex::Vertex;
 use parts::Edge;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 use std::ops::Deref;
-use parts::face::Face;
-use parts::polygon::Polygon;
-use parts::vertex::Vertex;
 
-pub mod query;
+pub mod bool;
 pub mod material;
 pub mod normals;
 pub mod parts;
+pub mod query;
 pub mod shape;
 pub mod tables;
 pub mod transform;
-pub mod bool;
 
 type MeshResult<T> = Result<T, MeshError>;
 
@@ -81,7 +81,8 @@ impl Mesh {
         for polygon in polygons.iter() {
             let vertices = polygon.vertices();
 
-            let faces_poly = polygon.triangulate()
+            let faces_poly = polygon
+                .triangulate()
                 .iter()
                 .map(|p| {
                     p.vertices()
@@ -96,7 +97,6 @@ impl Mesh {
 
         Mesh::from_vertices(vertices, faces, color)
     }
-
 }
 impl Mesh {
     pub fn aabb(&self) -> BoundingBox {
@@ -161,7 +161,7 @@ impl Mesh {
         Ok(())
     }
 }
-impl Mesh{
+impl Mesh {
     pub fn try_tables(&self) -> MeshResult<MeshTables> {
         self.try_into()
     }
@@ -174,17 +174,53 @@ impl Mesh{
             .map(|f| self.face_to_polygon(f))
             .collect::<Result<Vec<_>, _>>()
     }
+    pub fn query(&self) -> query::MeshQuery {
+        query::MeshQuery::from(self)
+    }
 }
+
+impl  Mesh {
+    pub fn union<T:Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
+        bool::perform_bool(self, &other.into(), bool::BoolType::Union, None, None)
+    }
+    pub fn union_with<T:Into<Mesh>>(
+        &self,
+        other: T,
+        depth: Option<usize>,
+        color: Option<Color>,
+    ) -> MeshResult<Mesh> {
+        bool::perform_bool(self, &other.into(), bool::BoolType::Union, depth, color)
+    }
+    pub fn intersection_with<T:Into<Mesh>>(
+        &self,
+        other: T,
+        depth: Option<usize>,
+        color: Option<Color>,
+    ) -> MeshResult<Mesh> {
+        bool::perform_bool(self, &other.into(), bool::BoolType::Intersection, depth, color)
+    }
+    pub fn intersection<T:Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
+        bool::perform_bool(self, &other.into(), bool::BoolType::Intersection, None, None)
+    }
+    pub fn difference_with<T:Into<Mesh>>(
+        &self,
+        other: T,
+        depth: Option<usize>,
+        color: Option<Color>,
+    ) -> MeshResult<Mesh> {
+        bool::perform_bool(self, &other.into(), bool::BoolType::Difference, depth, color)
+    }
+    pub fn difference<T:Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
+        bool::perform_bool(self, &other.into(), bool::BoolType::Difference, None, None)
+    }
+}
+
 impl Mesh {
     pub fn get(&self, idx: usize) -> MeshResult<&Vertex> {
         self.vertices
             .get(idx)
             .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
     }
-
-
-
-
     pub fn vertices(&self) -> &Vec<Vertex> {
         &self.vertices
     }
@@ -194,7 +230,6 @@ impl Mesh {
     pub fn faces(&self) -> &Vec<Face> {
         &self.faces
     }
-
 
     pub fn color(&self) -> &Color {
         &self.color
@@ -212,15 +247,12 @@ impl Mesh {
             .collect::<Result<Vec<_>, _>>()
             .map(Polygon::new)
     }
-
-
 }
 
 pub trait HasMesh {
     fn mesh(&self) -> &Mesh;
     fn mesh_mut(&mut self) -> &mut Mesh;
 }
-
 
 impl<T: HasMesh> From<T> for Mesh {
     fn from(item: T) -> Self {
@@ -242,8 +274,6 @@ pub fn dedup<T: Hash + Eq>(items: Vec<T>) -> Vec<T> {
         .into_iter()
         .collect::<Vec<_>>()
 }
-
-
 
 #[cfg(test)]
 mod tests {

@@ -1,8 +1,10 @@
+use std::ops::Deref;
 use crate::mesh::Mesh;
 use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::shape::icosahedron::Icosahedron;
 
 #[derive(Debug, Clone)]
 pub struct Plane {
@@ -11,7 +13,13 @@ pub struct Plane {
     height: f32,
     mesh: Mesh,
 }
+impl Deref for Plane {
+    type Target = Mesh;
 
+    fn deref(&self) -> &Self::Target {
+        &self.mesh
+    }
+}
 impl Plane {
 
     pub fn create<V,C>(center: V, width: f32, height: f32,color: C) -> Self

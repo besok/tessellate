@@ -3,7 +3,9 @@ use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
+use std::ops::Deref;
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::shape::sphere::Sphere;
 
 #[derive(Debug, Clone)]
 pub struct Torus {
@@ -12,7 +14,13 @@ pub struct Torus {
     minor_radius: f32,
     mesh: Mesh,
 }
+impl Deref for Torus {
+    type Target = Mesh;
 
+    fn deref(&self) -> &Self::Target {
+        &self.mesh
+    }
+}
 impl Default for Torus {
     fn default() -> Self {
         Torus::create(Vertex::default(), 1.0, 0.5, 32, 16, Color::default())

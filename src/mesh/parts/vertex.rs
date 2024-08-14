@@ -1,7 +1,6 @@
 use glam::Vec3;
 use std::ops::{Add, Div, Mul, Sub};
 use std::hash::{Hash, Hasher};
-use std::num::Div;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Axis {

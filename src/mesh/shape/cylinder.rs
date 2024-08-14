@@ -1,9 +1,11 @@
 use std::f32::consts::PI;
+use std::ops::Deref;
 use crate::mesh::Mesh;
 use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::shape::cone::Cone;
 
 #[derive(Debug, Clone)]
 pub struct Cylinder {
@@ -12,7 +14,13 @@ pub struct Cylinder {
     height: f32,
     mesh: Mesh,
 }
+impl Deref for Cylinder {
+    type Target = Mesh;
 
+    fn deref(&self) -> &Self::Target {
+        &self.mesh
+    }
+}
 impl Default for Cylinder{
     fn default() -> Self {
         Cylinder::create(Vertex::default(), 1.0, 2.0, 32, Color::default())

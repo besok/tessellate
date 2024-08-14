@@ -1,8 +1,10 @@
+use std::ops::Deref;
 use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::shape::plane::Plane;
 
 #[derive(Debug, Clone)]
 pub struct Pyramid {
@@ -11,7 +13,13 @@ pub struct Pyramid {
     height: f32,
     mesh: Mesh,
 }
+impl Deref for Pyramid {
+    type Target = Mesh;
 
+    fn deref(&self) -> &Self::Target {
+        &self.mesh
+    }
+}
 impl Default for Pyramid {
     fn default() -> Self {
         Pyramid::create(Vertex::default(), 1.0, 3.0,Color::default())

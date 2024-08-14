@@ -3,8 +3,10 @@ use crate::mesh::shape::icosahedron::Icosahedron;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
+use std::ops::Deref;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::shape::ring::Ring;
 
 #[derive(Debug, Clone)]
 pub struct Sphere {
@@ -13,7 +15,13 @@ pub struct Sphere {
     segments: usize,
     mesh: Mesh,
 }
+impl Deref for Sphere {
+    type Target = Mesh;
 
+    fn deref(&self) -> &Self::Target {
+        &self.mesh
+    }
+}
 impl HasMesh for Sphere {
     fn mesh(&self) -> &Mesh {
         &self.mesh

@@ -3,7 +3,9 @@ use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
+use std::ops::Deref;
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::shape::cuboid::rect_cuboid::RectCuboid;
 
 #[derive(Debug, Clone)]
 pub struct Cone {
@@ -13,7 +15,13 @@ pub struct Cone {
     mesh: Mesh,
 }
 
+impl Deref for Cone {
+    type Target = Mesh;
 
+    fn deref(&self) -> &Self::Target {
+        &self.mesh
+    }
+}
 impl Default for Cone {
     fn default() -> Self {
         Cone::create(Vertex::default(), 1.0, 2.0, 32, Color::default())

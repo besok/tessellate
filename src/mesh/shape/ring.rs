@@ -2,8 +2,10 @@ use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
+use std::ops::Deref;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::shape::pyramid::Pyramid;
 
 #[derive(Debug, Clone)]
 pub struct Ring {
@@ -13,7 +15,13 @@ pub struct Ring {
     height: f32,
     mesh: Mesh,
 }
+impl Deref for Ring {
+    type Target = Mesh;
 
+    fn deref(&self) -> &Self::Target {
+        &self.mesh
+    }
+}
 impl Default for Ring {
     fn default() -> Self {
         Ring::create(Vertex::default(), 1.0, 0.5, 1.0, 32, Color::default())

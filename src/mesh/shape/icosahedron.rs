@@ -1,8 +1,10 @@
+use std::ops::Deref;
 use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::shape::grid::Grid;
 
 #[derive(Debug, Clone)]
 pub struct Icosahedron {
@@ -19,7 +21,13 @@ impl HasMesh for Icosahedron {
         &mut self.mesh
     }
 }
+impl Deref for Icosahedron {
+    type Target = Mesh;
 
+    fn deref(&self) -> &Self::Target {
+        &self.mesh
+    }
+}
 impl Icosahedron {
     pub fn create<V,C>(center: V, size: f32,color: C) -> Self
     where V: Into<Vertex>,

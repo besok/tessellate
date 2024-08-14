@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use crate::mesh::material::Color;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
@@ -12,6 +13,14 @@ pub struct Cube {
     mesh: Mesh,
     center: Vertex,
     size: f32,
+}
+
+impl Deref for Cube {
+    type Target = Mesh;
+
+    fn deref(&self) -> &Self::Target {
+        &self.mesh
+    }
 }
 
 impl HasMesh for Cube {
