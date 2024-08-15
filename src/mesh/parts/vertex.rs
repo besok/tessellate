@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use glam::Vec3;
 use std::ops::{Add, Div, Mul, Sub};
 use std::hash::{Hash, Hasher};
@@ -25,6 +26,12 @@ pub struct Vertex {
     pub(crate) x: f32,
     pub(crate) y: f32,
     pub(crate) z: f32,
+}
+
+impl Display for Vertex {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "V({:.1}, {:.1}, {:.1})", self.x, self.y, self.z)
+    }
 }
 
 impl From<Vec3> for Vertex {

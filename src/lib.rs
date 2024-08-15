@@ -2,6 +2,7 @@ use log::LevelFilter;
 use crate::gpu::error::GpuError;
 use crate::mesh::MeshError;
 pub mod gpu;
+#[macro_use]
 pub mod mesh;
 pub fn turn_on_test_logs() {
     let _ = env_logger::builder()

@@ -2,6 +2,7 @@ use crate::mesh::material::Color;
 use crate::mesh::shape::cuboid::rect_cuboid::RectCuboid;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 use face::FaceType;
+use glam::{Mat2, Vec2, Vec3};
 use polygon::Polygon;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Sub};
@@ -10,6 +11,7 @@ use vertex::Vertex;
 pub mod face;
 pub mod polygon;
 pub mod vertex;
+mod r#macro;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Edge {
@@ -39,32 +41,29 @@ impl Edge {
         Edge::Vertex(a, b)
     }
 
-    pub fn intersects(&self, edge: &Edge) -> MeshResult<bool> {
+    /// Validate if the edge intersects with another edge
+    pub fn is_intersected(&self, edge: &Edge) -> MeshResult<bool> {
         match (*self, *edge) {
             (Edge::Vertex(a1, b1), Edge::Vertex(a2, b2)) => {
-                let d1 = b1 - a1;
-                let d2 = b2 - a2;
-                let cross = d1.cross(&d2);
+                let diff_e1:Vec3 = (b1 - a1).into();
+                let diff_e2:Vec3 = (b2 - a2).into();
+                let cross = diff_e1.cross(diff_e2);
 
-                if cross.magnitude() == 0.0 {
-                    return Ok(false); // Parallel lines
+                if cross.length_squared() == 0.0 {
+                    // Lines are parallel, no intersection unless they are collinear
+                    return Ok(false);
                 }
 
-                let t = (a2 - a1).cross(&d2) / cross;
-                let u = (a2 - a1).cross(&d1) / cross;
+                // Parameterize lines a1 + t * de1 and a2 + u * de2 and solve for t and u
+                let denom = cross.dot(cross);
+                let diff:Vec3 = (a2 - a1).into();
 
-                Ok(t.x >= 0.0
-                    && t.x <= 1.0
-                    && t.y >= 0.0
-                    && t.y <= 1.0
-                    && t.z >= 0.0
-                    && t.z <= 1.0
-                    && u.x >= 0.0
-                    && u.y >= 0.0
-                    && u.z >= 0.0
-                    && u.x <= 1.0
-                    && u.y <= 1.0
-                    && u.z <= 1.0)
+                let t = diff.cross(diff_e2).dot(cross) / denom;
+                let u = diff.cross(diff_e1).dot(cross) / denom;
+
+                // Check if t and u are within [0, 1] which means the intersection lies within both segments
+                Ok(t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0 )
+
             }
             _ => Err(MeshError::WrongIntersection("Invalid intersection".to_string())),
         }

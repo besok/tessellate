@@ -91,11 +91,18 @@ impl Polygon {
             .map(|(a, b)| Edge::new_vtx(a.clone(), b.clone()))
             .collect()
     }
-
+    pub fn coincides(&self, other: &Polygon) -> bool {
+        self.vertices.len() == other.vertices.len()
+            && self.vertices.iter().all(|v| other.vertices.contains(v))
+    }
     pub fn intersects(&self, other: &Polygon) -> MeshResult<bool> {
+        if self.coincides(other) {
+            return Ok(true);
+        }
         for e1 in self.edges().iter() {
             for e2 in other.edges().iter() {
-                if e1.intersects(e2)? {
+                println!("{:?} {:?}", e1, e2);
+                if e1.is_intersected(e2)? {
                     return Ok(true);
                 }
             }
@@ -121,36 +128,37 @@ mod tests {
     use crate::mesh::parts::vertex::Vertex;
     use crate::mesh::shape::icosahedron::Icosahedron;
     use crate::mesh::HasMesh;
+    use crate::{edge, v};
+
+    #[test]
+    fn edge_intersects() {
+        let e1 = edge!(v!(), v!(1, 1, 1));
+        let e2 = edge!(v!(1,,), v!(,1,1));
+        assert!(e1.is_intersected(&e2).unwrap());
+    }
+    #[test]
+    fn intersects_coincides() {
+        let p1 = Polygon::new(vec![&v!(), &v!(1,,), &v!(0.5, 1,)]);
+        let p2 = Polygon::new(vec![&v!(), &v!(1,,), &v!(0.5, 1,)]);
+        assert!(p1.intersects(&p2).unwrap());
+    }
+
+    #[test]
+    fn intersects() {
+        let p1 = Polygon::new(vec![&v!(), &v!(, 1,), &v!(1,,)]);
+        let p2 = Polygon::new(vec![&v!(1.5,,), &v!(0.5,,), &v!(1.5, 1.5,)]);
+        assert!(p1.intersects(&p2).unwrap());
+    }
 
     #[test]
     fn test_wnv() {
         // Define a polygon
         let polygon = Polygon {
-            vertices: vec![
-                Vertex {
-                    x: 0.0,
-                    y: 0.0,
-                    z: 0.0,
-                },
-                Vertex {
-                    x: 1.0,
-                    y: 0.0,
-                    z: 0.0,
-                },
-                Vertex {
-                    x: 0.5,
-                    y: 1.0,
-                    z: 0.0,
-                },
-            ],
+            vertices: vec![v!(), v!(1,,), v!(0.5, 1,)],
         };
 
         // Define a test vertex
-        let test_vertex = Vertex {
-            x: 0.5,
-            y: 0.25,
-            z: 0.0,
-        };
+        let test_vertex = v!(0.5,0.25,);
 
         // Calculate the winding number
         let winding_number = polygon.wnv(&test_vertex);

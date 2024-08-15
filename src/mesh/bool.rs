@@ -1,3 +1,4 @@
+use log::info;
 use crate::mesh::material::Color;
 use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::vertex::Vertex;
