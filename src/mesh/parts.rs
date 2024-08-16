@@ -9,9 +9,9 @@ use std::ops::{Add, Mul, Sub};
 use vertex::Vertex;
 
 pub mod face;
+mod r#macro;
 pub mod polygon;
 pub mod vertex;
-mod r#macro;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Edge {
@@ -43,29 +43,34 @@ impl Edge {
 
     /// Validate if the edge intersects with another edge
     pub fn is_intersected(&self, edge: &Edge) -> MeshResult<bool> {
-        match (*self, *edge) {
-            (Edge::Vertex(a1, b1), Edge::Vertex(a2, b2)) => {
-                let diff_e1:Vec3 = (b1 - a1).into();
-                let diff_e2:Vec3 = (b2 - a2).into();
-                let cross = diff_e1.cross(diff_e2);
+        if self == edge {
+            Ok(true)
+        } else {
+            match (*self, *edge) {
+                (Edge::Vertex(a1, b1), Edge::Vertex(a2, b2)) => {
+                    let diff_e1: Vec3 = (b1 - a1).into();
+                    let diff_e2: Vec3 = (b2 - a2).into();
+                    let cross = diff_e1.cross(diff_e2);
 
-                if cross.length_squared() == 0.0 {
-                    // Lines are parallel, no intersection unless they are collinear
-                    return Ok(false);
+                    if cross.length_squared() == 0.0 {
+                        // Lines are parallel, no intersection unless they are collinear
+                        return Ok(false);
+                    }
+
+                    // Parameterize lines a1 + t * de1 and a2 + u * de2 and solve for t and u
+                    let denom = cross.dot(cross);
+                    let diff: Vec3 = (a2 - a1).into();
+
+                    let t = diff.cross(diff_e2).dot(cross) / denom;
+                    let u = diff.cross(diff_e1).dot(cross) / denom;
+                    // Check if t and u are within [0, 1] which means the intersection lies within both segments
+                    Ok(t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0)
                 }
-
-                // Parameterize lines a1 + t * de1 and a2 + u * de2 and solve for t and u
-                let denom = cross.dot(cross);
-                let diff:Vec3 = (a2 - a1).into();
-
-                let t = diff.cross(diff_e2).dot(cross) / denom;
-                let u = diff.cross(diff_e1).dot(cross) / denom;
-
-                // Check if t and u are within [0, 1] which means the intersection lies within both segments
-                Ok(t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0 )
-
+                _ => Err(MeshError::WrongIntersection(
+                    "Invalid intersection. Impossible to find the intersection from indexes"
+                        .to_string(),
+                )),
             }
-            _ => Err(MeshError::WrongIntersection("Invalid intersection".to_string())),
         }
     }
 }
@@ -222,5 +227,31 @@ impl From<&Mesh> for BoundingBox {
             min_vertex: min_v,
             max_vertex: max_v,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::mesh::Edge;
+    use crate::mesh::Vertex;
+    use crate::{edge, v};
+
+    #[test]
+    fn is_intersected_edges() {
+        let e1 = edge!(v!(), v!(1, 1, 1));
+        let e2 = edge!(v!(1,,), v!(,1,1));
+        assert!(e1.is_intersected(&e2).unwrap());
+    }
+    #[test]
+    fn is_intersected_parallel_edges() {
+        let e1 = edge!(v!(,1,), v!(1, 2, 1));
+        let e2 = edge!(v!(), v!(1, 1, 1));
+        assert!(!e1.is_intersected(&e2).unwrap());
+    }
+    #[test]
+    fn is_intersected_identical_edges() {
+        let e1 = edge!(v!(), v!(1, 1, 1));
+
+        assert!(e1.is_intersected(&e1).unwrap());
     }
 }
