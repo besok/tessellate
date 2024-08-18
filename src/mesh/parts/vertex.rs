@@ -171,6 +171,10 @@ impl Vertex {
     pub fn magnitude(&self) -> f32 {
         self.flatten().iter().map(|v| v.powi(2)).sum::<f32>().sqrt()
     }
+
+    pub fn length_squared(&self) -> f32 {
+        self.flatten().iter().map(|v| v.powi(2)).sum::<f32>()
+    }
 }
 
 impl From<[f32; 3]> for Vertex {

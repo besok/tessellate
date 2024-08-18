@@ -73,6 +73,78 @@ impl Edge {
             }
         }
     }
+
+    pub fn find_intersection(&self, edge: &Edge) -> Option<Vertex> {
+        match (*self, *edge) {
+            (Edge::Vertex(a1, b1), Edge::Vertex(a2, b2)) => {
+                let diff_e1: Vec3 = (b1 - a1).into();
+                let diff_e2: Vec3 = (b2 - a2).into();
+                let cross = diff_e1.cross(diff_e2);
+
+                if cross.length_squared() == 0.0 {
+                    // Lines are parallel, no intersection unless they are collinear
+                    return None;
+                }
+
+                // Parameterize lines a1 + t * de1 and a2 + u * de2 and solve for t and u
+                let denom = cross.dot(cross);
+                let diff: Vec3 = (a2 - a1).into();
+
+                let t = diff.cross(diff_e2).dot(cross) / denom;
+                let u = diff.cross(diff_e1).dot(cross) / denom;
+                // Check if t and u are within [0, 1] which means the intersection lies within both segments
+                if t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0 {
+                    Some(a1 + (diff_e1 * t).into())
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+
+    /// Find the overlapping segment between two edges
+    /// Returns None if the edges are not collinear
+    /// Returns the overlapping segment if the edges are collinear
+    pub fn find_collinear_segment(&self, edge: &Edge) -> Option<(Vertex, Vertex)> {
+        match (*self, *edge) {
+            (Edge::Vertex(a1, b1), Edge::Vertex(a2, b2)) => {
+                let diff_e1: Vec3 = (b1 - a1).into();
+                let diff_e2: Vec3 = (b2 - a2).into();
+                let cross = diff_e1.cross(diff_e2);
+
+                if cross.length_squared() != 0.0 {
+                    // Edges are not parallel
+                    None
+                } else {
+                    // Check if the edges are collinear
+                    let diff = a2 - a1;
+                    let diff_e1 = diff_e1.into();
+                    if diff.cross(diff_e1).length_squared() != 0.0 {
+                        None
+                    } else {
+                        // Find the overlapping segment
+                        let t0 = 0.0;
+                        let t1 = 1.0;
+                        let u0 = (a2 - a1).dot(diff_e1) / diff_e1.dot(diff_e1);
+                        let u1 = (b2 - a1).dot(diff_e1) / diff_e1.dot(diff_e1);
+
+                        let t_min = t0.max(u0.min(u1));
+                        let t_max = t1.min(u0.max(u1));
+
+                        if t_min <= t_max {
+                            let start = a1 + diff_e1 * t_min;
+                            let end = a1 + diff_e1 * t_max;
+                            Some((start.into(), end.into()))
+                        } else {
+                            None
+                        }
+                    }
+                }
+            }
+            _ => None,
+        }
+    }
 }
 
 impl<V> From<(V, V)> for Edge

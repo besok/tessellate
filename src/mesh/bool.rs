@@ -1,9 +1,13 @@
-use log::info;
+mod split_poly;
+
 use crate::mesh::material::Color;
 use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::query::MeshQuery;
 use crate::mesh::{Mesh, MeshResult};
+use log::info;
+use std::collections::HashSet;
+use crate::mesh::bool::split_poly::split_polygons;
 
 pub enum BoolType {
     Union,
@@ -11,28 +15,19 @@ pub enum BoolType {
     Difference,
 }
 
-impl BoolType {
-    pub fn is_union(&self) -> bool {
-        match self {
-            BoolType::Union => true,
-            _ => false,
-        }
-    }
-}
-
 pub fn perform_bool(
     mesh_a: &Mesh,
     mesh_b: &Mesh,
     op: BoolType,
     depth: Option<usize>,
-    color: Option<Color>
+    color: Option<Color>,
 ) -> MeshResult<Mesh> {
     let a_tree = MeshQuery::new(mesh_a).try_octree(depth)?;
     let b_tree = MeshQuery::new(mesh_b).try_octree(depth)?;
 
     let mut inter_polygons = Vec::new();
-    let mut non_inter_polygons_a = Vec::new();
-    let mut non_inter_polygons_b = Vec::new();
+    let mut non_inter_polygons_a = HashSet::new();
+    let mut non_inter_polygons_b = HashSet::new();
 
     for a_leaf in a_tree.iter_leafs() {
         for b_leaf in b_tree.iter_leafs() {
@@ -40,17 +35,13 @@ pub fn perform_bool(
                 let a_polygons = a_leaf.polygons();
                 let b_polygons = b_leaf.polygons();
                 for a_poly in a_polygons.iter() {
-                    let mut already = false;
                     for b_poly in b_polygons.iter() {
                         if a_poly.intersects(b_poly)? {
                             let split_polygons: Vec<Polygon> = split_polygons(a_poly, b_poly)?;
                             inter_polygons.extend(split_polygons)
                         } else {
-                            if !already {
-                                non_inter_polygons_a.push(a_poly.clone());
-                                already = true;
-                            }
-                            non_inter_polygons_b.push(b_poly.clone());
+                            non_inter_polygons_a.insert(a_poly.clone());
+                            non_inter_polygons_b.insert(b_poly.clone());
                         }
                     }
                 }
@@ -86,9 +77,7 @@ pub fn perform_bool(
     Ok(reconstruct(final_polygons, color)?)
 }
 
-fn split_polygons(lhs: &Polygon, rhs: &Polygon) -> MeshResult<Vec<Polygon>> {
-    Ok(vec![lhs.clone(), rhs.clone()])
-}
+
 
 fn is_outside(p: &Polygon, mesh: &Mesh) -> MeshResult<bool> {
     Ok(!is_inside(p, mesh)?)
@@ -105,13 +94,13 @@ fn is_inside(p: &Polygon, mesh: &Mesh) -> MeshResult<bool> {
 
     Ok(intersections % 2 == 1)
 }
+
 /// Möller–Trumbore intersection algorithm
 fn ray_intersects_triangle(origin: &Vertex, direction: &Vertex, triangle: &Polygon) -> bool {
     let epsilon = 1e-8;
-    let vertices = triangle.vertices();
-    let v0 = vertices[0];
-    let v1 = vertices[1];
-    let v2 = vertices[2];
+    let [v0, v1, v2] = triangle.vertices()[..] else {
+        return false;
+    };
 
     let edge1 = v1 - v0;
     let edge2 = v2 - v0;

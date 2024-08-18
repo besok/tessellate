@@ -35,3 +35,13 @@ macro_rules! edge {
         Edge::new_idx($v1, $v2)
     };
 }
+
+#[macro_export]
+macro_rules! poly {
+    ($($v:expr),*) => {
+        Polygon::take(vec![$($v),*])
+    };
+    (ref $($v:expr),*) => {
+        Polygon::new(vec![$($v),*])
+    };
+}

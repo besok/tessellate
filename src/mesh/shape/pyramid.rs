@@ -4,7 +4,6 @@ use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
-use crate::mesh::shape::plane::Plane;
 
 #[derive(Debug, Clone)]
 pub struct Pyramid {
