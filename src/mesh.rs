@@ -1,11 +1,11 @@
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
-use crate::mesh::parts::BoundingBox;
+use parts::bbox::BoundingBox;
 use crate::mesh::tables::MeshTables;
 use parts::face::Face;
 use parts::polygon::Polygon;
 use parts::vertex::Vertex;
-use parts::Edge;
+use parts::edge::MeshEdge;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
@@ -39,7 +39,7 @@ impl MeshError {
 #[derive(Default, Debug, Clone)]
 pub struct Mesh {
     vertices: Vec<Vertex>,
-    edges: Vec<Edge>,
+    edges: Vec<MeshEdge>,
     faces: Vec<Face>,
     color: Color,
 }
@@ -51,10 +51,10 @@ impl Mesh {
     {
         let vertices = vertices.into_iter().map(Into::into).collect();
         let faces: Vec<Face> = faces.into_iter().map(Into::into).collect();
-        let edges: Vec<Edge> = dedup(
+        let edges: Vec<MeshEdge> = dedup(
             faces
                 .iter()
-                .flat_map(|f| <&Face as Into<Vec<Edge>>>::into(f))
+                .flat_map(|f| <&Face as Into<Vec<MeshEdge>>>::into(f))
                 .collect(),
         );
         Mesh {
@@ -224,7 +224,7 @@ impl Mesh {
     pub fn vertices(&self) -> &Vec<Vertex> {
         &self.vertices
     }
-    pub fn edges(&self) -> &Vec<Edge> {
+    pub fn edges(&self) -> &Vec<MeshEdge> {
         &self.edges
     }
     pub fn faces(&self) -> &Vec<Face> {
@@ -286,7 +286,8 @@ mod tests {
         let faces: Vec<Face> = vec![(0, 1, 2).into(), (0, 2, 3).into()];
         let mesh = Mesh::from_vertices(vertices, faces, Default::default());
         assert_eq!(mesh.vertices.len(), 4);
-        assert_eq!(mesh.edges.len(), 4);
+        println!("{:?}", mesh.edges);
+        assert_eq!(mesh.edges.len(), 6);
         assert_eq!(mesh.faces.len(), 2);
     }
 

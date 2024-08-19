@@ -1,6 +1,6 @@
 use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::vertex::Vertex;
-use crate::mesh::parts::BoundingBox;
+use crate::mesh::parts::bbox::BoundingBox;
 use crate::mesh::query::octree::{OctNode, Octree};
 use crate::mesh::{MeshError, MeshResult};
 

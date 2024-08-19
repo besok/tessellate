@@ -1,6 +1,7 @@
+use crate::mesh::parts::edge::{MeshEdge, Edge};
 use crate::mesh::parts::vertex::Vertex;
-use crate::mesh::parts::Edge;
 use crate::mesh::{MeshError, MeshResult};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Polygon {
@@ -12,6 +13,19 @@ impl Default for Polygon {
         Self {
             vertices: Vec::new(),
         }
+    }
+}
+impl Display for Polygon {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Polygon({})",
+            self.vertices
+                .iter()
+                .map(|v| v.to_string())
+                .collect::<Vec<String>>()
+                .join(", ")
+        )
     }
 }
 
@@ -33,6 +47,14 @@ impl Polygon {
 
     pub fn vertices(&self) -> &Vec<Vertex> {
         &self.vertices
+    }
+
+    pub fn has_v(&self, v:&Vertex) -> bool {
+        self.vertices.contains(v)
+    }
+
+    pub fn contains(&self, vertex: &Vertex) -> bool {
+        self.edges().iter().any(|e| e.contains(vertex))
     }
     pub fn triangulate(&self) -> Vec<Polygon> {
         let vs = self.vertices();
@@ -64,7 +86,7 @@ impl Polygon {
         let mut wn = 0.0;
         let v = vertex.clone();
         for e in self.edges().iter() {
-            if let Some((lhs, rhs)) = e.vertices() {
+            if let (lhs, rhs) = e.vertices() {
                 let v1 = lhs - v;
                 let v2 = rhs - v;
 
@@ -80,7 +102,7 @@ impl Polygon {
         let mut delta_wt = 0.0;
         let r = reference.clone();
         for e in self.edges().iter() {
-            if let Some((start, end)) = e.vertices() {
+            if let (start, end) = e.vertices() {
                 delta_wt += calculate_segment_wntv(start.clone(), end.clone(), r.clone());
             }
         }
@@ -91,7 +113,7 @@ impl Polygon {
         self.vertices
             .iter()
             .zip(self.vertices.iter().cycle().skip(1))
-            .map(|(a, b)| Edge::new_vtx(a.clone(), b.clone()))
+            .map(|(a, b)| Edge::new(a.clone(), b.clone()))
             .collect()
     }
     pub fn coincides(&self, other: &Polygon) -> bool {
@@ -130,7 +152,7 @@ mod tests {
     use crate::mesh::parts::vertex::Vertex;
     use crate::mesh::shape::icosahedron::Icosahedron;
     use crate::mesh::HasMesh;
-    use crate::{edge, poly, v};
+    use crate::{mesh_edge, poly, v};
 
     #[test]
     fn intersects_coincides() {

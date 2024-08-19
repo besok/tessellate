@@ -1,6 +1,7 @@
-use crate::mesh::parts::{Edge, Idx};
+use crate::mesh::parts::Idx;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 use std::collections::HashMap;
+use crate::mesh::parts::edge::MeshEdge;
 use crate::mesh::parts::face::Face;
 use crate::mesh::parts::vertex::Vertex;
 
@@ -19,7 +20,7 @@ impl TryFrom<&Mesh> for MeshTables {
 }
 
 impl MeshTables {
-    fn new(vertices: &Vec<Vertex>, edges: &Vec<Edge>, faces: &Vec<Face>) -> MeshResult<Self> {
+    fn new(vertices: &Vec<Vertex>, edges: &Vec<MeshEdge>, faces: &Vec<Face>) -> MeshResult<Self> {
         let mut v_edges = HashMap::new();
         let mut e_faces = HashMap::new();
 

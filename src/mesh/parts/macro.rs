@@ -1,3 +1,5 @@
+use crate::mesh::parts::edge::Edge;
+
 #[macro_export]
 macro_rules! v {
 
@@ -27,12 +29,19 @@ macro_rules! v {
     };
 }
 #[macro_export]
-macro_rules! edge {
+macro_rules! mesh_edge {
     ($v1:expr, $v2:expr) => {
         Edge::new_vtx($v1, $v2)
     };
     (i$v1:expr, i$v2:expr) => {
         Edge::new_idx($v1, $v2)
+    };
+}
+
+#[macro_export]
+macro_rules! edge {
+    ($v1:expr, $v2:expr) => {
+        Edge::new($v1, $v2)
     };
 }
 
@@ -43,5 +52,8 @@ macro_rules! poly {
     };
     (ref $($v:expr),*) => {
         Polygon::new(vec![$($v),*])
+    };
+    ($($x:expr, $y:expr, $z:expr);*) => {
+        Polygon::take(vec![$(v!($x, $y, $z)),*])
     };
 }

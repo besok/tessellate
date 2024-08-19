@@ -1,7 +1,7 @@
 The code taken from [this](https://www.gianmarcocherchi.com/pdf/interactive_exact_booleans.pdf#page=5.58)
 
 
-```  
+```python
 def BooleanOperation(mesh_A, mesh_B, operation_type):
     # Step 1: Preprocessing
     octree_A = buildOctree(mesh_A)
@@ -214,189 +214,131 @@ def createFinalMesh(vertices, faces):
 ## Split triangles
 
 ```python
-def split_polygons(polygon_A, polygon_B):
-    # Initialize an empty list to store the resulting polygons
-    result_polygons = []
+def splitTriangles(triangle_A, triangle_B):
+    """
+    Splits two intersecting triangles into smaller triangles based on their intersection.
+    
+    :param triangle_A: The first triangle to be split.
+    :param triangle_B: The second triangle to be split.
+    :return: A list of resulting sub-triangles after the split.
+    """
 
-    # Step 1: Detect and process intersections and coinciding edges
+    # Step 1: Initialize an empty list to store intersection points
     intersection_points = []
-    coinciding_segments = []
 
-    for edge_A in polygon_A.edges:
-        for edge_B in polygon_B.edges:
-            if edges_coincide(edge_A, edge_B):
-                # Handle coinciding edges
-                coinciding_segment = get_coinciding_segment(edge_A, edge_B)
-                coinciding_segments.append(coinciding_segment)
-                process_coinciding_edges(polygon_A, polygon_B, coinciding_segment)
-            else:
-                intersection_point = find_edge_intersection(edge_A, edge_B)
-                if intersection_point:
-                    # Handle the intersection point
-                    process_intersection_point(polygon_A, polygon_B, intersection_point)
-                    intersection_points.append(intersection_point)
+    # Step 2: Iterate over each edge of triangle_A and triangle_B to find intersection points
+    for edge_A in edges_of(triangle_A):
+        for edge_B in edges_of(triangle_B):
+            # Find the intersection point between edge_A and edge_B
+            intersection_point = findEdgeIntersection(edge_A, edge_B)
 
-    # Step 2: Merge intersection points with the original vertices
-    vertices_A = merge_vertices_with_intersections(polygon_A, intersection_points)
-    vertices_B = merge_vertices_with_intersections(polygon_B, intersection_points)
+            # If an intersection point is found, add it to the list
+            if intersection_point is not None:
+                intersection_points.append(intersection_point)
 
-    # Step 3: Sort the vertices to form valid polygon segments
-    sorted_vertices_A = sort_vertices(vertices_A)
-    sorted_vertices_B = sort_vertices(vertices_B)
+    # Step 3: If no intersection points are found, return the original triangles
+    if len(intersection_points) == 0:
+        return [triangle_A, triangle_B]
 
-    # Step 4: Split polygon_A using the sorted vertices
-    split_polygons_A = split_polygon_by_vertices(polygon_A, sorted_vertices_A)
+    # Step 4: Sort the intersection points to form valid intersection segments
+    sorted_intersection_segments = sortIntersectionPoints(intersection_points)
 
-    # Step 5: Split polygon_B using the sorted vertices
-    split_polygons_B = split_polygon_by_vertices(polygon_B, sorted_vertices_B)
+    # Step 5: Split triangle_A using the sorted intersection segments
+    split_triangles_A = splitTriangleBySegments(triangle_A, sorted_intersection_segments)
 
-    # Step 6: Add all resulting split polygons to the result list
-    result_polygons.extend(split_polygons_A)
-    result_polygons.extend(split_polygons_B)
+    # Step 6: Split triangle_B using the sorted intersection segments
+    split_triangles_B = splitTriangleBySegments(triangle_B, sorted_intersection_segments)
 
-    # Step 7: Return the list of resulting polygons
-    return result_polygons
+    # Step 7: Combine the split triangles from both triangle_A and triangle_B
+    resulting_triangles = split_triangles_A + split_triangles_B
+
+    # Step 8: Return the list of resulting sub-triangles
+    return resulting_triangles
 
 
-def edges_coincide(edge_A, edge_B):
-    # Check if the edges coincide along a segment
-    return are_edges_parallel(edge_A, edge_B) and is_overlapping(edge_A, edge_B)
+def edges_of(triangle):
+    """
+    Returns the edges of a triangle.
+    
+    :param triangle: A triangle object.
+    :return: A list of edges (each edge is a pair of vertices).
+    """
+    return [
+        (triangle.vertices[0], triangle.vertices[1]),
+        (triangle.vertices[1], triangle.vertices[2]),
+        (triangle.vertices[2], triangle.vertices[0])
+    ]
 
 
-def get_coinciding_segment(edge_A, edge_B):
-    # Calculate the overlapping segment of the coinciding edges
-    start_point = max(edge_A.start, edge_B.start, key=lambda p: p.position)
-    end_point = min(edge_A.end, edge_B.end, key=lambda p: p.position)
-    if start_point < end_point:
-        return Edge(start_point, end_point)
-    return None
-
-
-def process_coinciding_edges(polygon_A, polygon_B, coinciding_segment):
-    # Split the polygons at the coinciding segment
-    split_polygon_at_segment(polygon_A, coinciding_segment)
-    split_polygon_at_segment(polygon_B, coinciding_segment)
-
-
-def find_edge_intersection(edge_A, edge_B):
-    # Implement edge intersection detection logic
+def findEdgeIntersection(edge_A, edge_B):
+    """
+    Finds the intersection point between two edges, if any.
+    
+    :param edge_A: The first edge (pair of vertices).
+    :param edge_B: The second edge (pair of vertices).
+    :return: The intersection point, or None if they do not intersect.
+    """
+    # Implement geometric intersection test between the two edges
+    # Use parametric equations or other methods to find the intersection point
     # Return the intersection point if they intersect, otherwise return None
-    return calculate_intersection(edge_A, edge_B)
+    pass  # Replace with actual implementation
 
 
-def process_intersection_point(polygon_A, polygon_B, intersection_point):
-    # Add the intersection point to the list of vertices
-    add_intersection_point(polygon_A, intersection_point)
-    add_intersection_point(polygon_B, intersection_point)
-
-
-def merge_vertices_with_intersections(polygon, intersection_points):
-    # Merge original vertices with intersection points
-    return polygon.vertices + intersection_points
-
-
-def sort_vertices(vertices):
-    # Sort vertices to ensure they form a valid polygon
-    return sorted(vertices, key=lambda v: (v.x, v.y, v.z))
-
-
-def split_polygon_by_vertices(polygon, sorted_vertices):
-    # Use the sorted vertices to split the polygon into smaller polygons
-    return create_sub_polygons(polygon, sorted_vertices)
-
-
-def split_polygon_at_segment(polygon, coinciding_segment):
-    # Split the polygon at the coinciding segment
-    if coinciding_segment:
-        new_polygons = generate_polygons_from_segment(polygon, coinciding_segment)
-        return new_polygons
-    return [polygon]  # No splitting needed if no coinciding segment
-
-
-def generate_polygons_from_segment(polygon, segment):
-    # Generate new polygons by splitting the original polygon at the segment
-    new_polygons = []
-
-    # Logic to create new polygons from the split, for example:
-    # new_polygons.append(new_polygon1)
-    # new_polygons.append(new_polygon2)
-    # ...
-
-    return new_polygons
-
-
-def add_intersection_point(polygon, intersection_point):
-    # Add the intersection point to the polygon's vertex list
-    polygon.vertices.append(intersection_point)
-
-def create_sub_polygons(polygon, sorted_vertices):
+def sortIntersectionPoints(intersection_points):
     """
-    Create sub-polygons from a given polygon using sorted vertices.
-
-    :param polygon: The original polygon to be split.
-    :param sorted_vertices: The list of sorted vertices (including intersection points) used to split the polygon.
-    :return: A list of sub-polygons generated from the original polygon.
+    Sorts the intersection points to form valid intersection segments.
+    
+    :param intersection_points: A list of intersection points.
+    :return: A list of sorted intersection segments.
     """
-
-    sub_polygons = []
-    current_polygon = []
-
-    # Initialize the first vertex
-    current_polygon.append(sorted_vertices[0])
-
-    # Iterate over the sorted vertices and create edges between them
-    for i in range(1, len(sorted_vertices)):
-        current_vertex = sorted_vertices[i]
-
-        # Add the current vertex to the current sub-polygon
-        current_polygon.append(current_vertex)
-
-        # Check if this vertex closes a sub-polygon (by checking if it's on the original polygon)
-        if is_vertex_on_polygon(current_vertex, polygon):
-            # Add the sub-polygon to the list and start a new sub-polygon
-            sub_polygons.append(current_polygon)
-            current_polygon = [current_vertex]
-
-    # Final sub-polygon
-    if current_polygon:
-        sub_polygons.append(current_polygon)
-
-    return sub_polygons
+    # Sort the points based on their position on the edges (e.g., using distance along the edge)
+    # Return the sorted list of points or segments
+    pass  # Replace with actual implementation
 
 
-def is_vertex_on_polygon(vertex, polygon):
+def splitTriangleBySegments(triangle, segments):
     """
-    Check if a vertex is on the boundary of the polygon.
-
-    :param vertex: The vertex to check.
-    :param polygon: The polygon whose boundary is being checked.
-    :return: True if the vertex is on the boundary, False otherwise.
+    Splits a triangle into smaller triangles based on intersection segments.
+    
+    :param triangle: The original triangle to be split.
+    :param segments: The intersection segments that divide the triangle.
+    :return: A list of smaller triangles resulting from the split.
     """
-    for edge in polygon.edges:
-        if is_point_on_edge(vertex, edge):
-            return True
-    return False
+    split_triangles = []
+
+    # Step 1: For each segment, determine how it splits the triangle
+    for segment in segments:
+        # Check how the segment intersects the triangle's edges
+        # Determine the new vertices and edges formed by the segment
+
+        # Generate new triangles based on the split
+        new_triangles = generateTrianglesFromSegment(triangle, segment)
+
+        # Add the new triangles to the list of split triangles
+        split_triangles.extend(new_triangles)
+
+    # Step 2: Return the list of resulting sub-triangles
+    return split_triangles
 
 
-def is_point_on_edge(point, edge):
+def generateTrianglesFromSegment(triangle, segment):
     """
-    Check if a point is on a given edge.
-
-    :param point: The point to check.
-    :param edge: The edge to check against.
-    :return: True if the point is on the edge, False otherwise.
+    Generates new triangles from a triangle split by a segment.
+    
+    :param triangle: The original triangle.
+    :param segment: The segment that splits the triangle.
+    :return: A list of new triangles formed by the split.
     """
-    # Edge direction vector
-    edge_vector = edge.end - edge.start
-    point_vector = point - edge.start
+    new_triangles = []
 
-    # Cross product must be zero (point must be collinear with the edge)
-    cross_product = edge_vector.cross(point_vector)
-    if cross_product.magnitude() > 1e-8:
-        return False
+    # Logic to create new triangles based on the split
+    # Example: If a segment splits two edges of the triangle, create two new triangles
+    # This typically involves finding new vertices and forming new edges
 
-    # Check if the point lies within the segment range
-    t = point_vector.dot(edge_vector) / edge_vector.dot(edge_vector)
-    return 0 <= t <= 1
+    # Placeholder for the actual implementation logic
+    pass  # Replace with actual implementation
+
+    return new_triangles
+
 
 ```

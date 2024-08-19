@@ -42,11 +42,12 @@ impl KDTree {
     /// use tessellate::mesh::query::kdtree::query::Neighbour;
     /// use tessellate::mesh::HasMesh;
     /// use tessellate::mesh::parts::vertex::Vertex;
+    /// use tessellate::mesh::query::MeshQuery;
     /// use tessellate::mesh::shape::cone::Cone;
     ///
     /// let fig = Cone::default();
     /// let mesh = fig.mesh();
-    /// let kdtree: KDTree = mesh.try_into().unwrap();
+    /// let kdtree: KDTree = MeshQuery::new(mesh).try_into().unwrap();
     ///
     /// for Neighbour { node, distance } in kdtree.nearest_neighbors(&Vertex::default(), None) {
     ///     println!("{:?} - {:?}", node.point(), distance);

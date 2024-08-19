@@ -1,19 +1,20 @@
 use std::hash::{Hash, Hasher};
-use crate::mesh::parts::{Edge, Idx};
+use crate::mesh::parts::Idx;
+use crate::mesh::parts::edge::MeshEdge;
 
-impl From<&Face> for Vec<Edge> {
+impl From<&Face> for Vec<MeshEdge> {
     fn from(face: &Face) -> Self {
         match face {
             Face::Triangle(a, b, c) => vec![
-                Edge::new_idx(*a, *b),
-                Edge::new_idx(*b, *c),
-                Edge::new_idx(*c, *a),
+                MeshEdge::new_idx(*a, *b),
+                MeshEdge::new_idx(*b, *c),
+                MeshEdge::new_idx(*c, *a),
             ],
             Face::Quad(a, b, c, d) => vec![
-                Edge::new_idx(*a, *b),
-                Edge::new_idx(*b, *c),
-                Edge::new_idx(*c, *d),
-                Edge::new_idx(*d, *a),
+                MeshEdge::new_idx(*a, *b),
+                MeshEdge::new_idx(*b, *c),
+                MeshEdge::new_idx(*c, *d),
+                MeshEdge::new_idx(*d, *a),
             ],
         }
     }

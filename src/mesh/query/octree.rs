@@ -1,5 +1,5 @@
 use crate::mesh::parts::polygon::Polygon;
-use crate::mesh::parts::BoundingBox;
+use crate::mesh::parts::bbox::BoundingBox;
 use crate::mesh::query::MeshQuery;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 

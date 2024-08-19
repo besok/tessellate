@@ -1,14 +1,12 @@
 use crate::mesh::material::Color;
-use crate::mesh::parts::face::Face;
 use crate::mesh::parts::polygon::Polygon;
-use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::query::bsp::build::try_build_bsp_tree;
 use crate::mesh::query::MeshQuery;
 use crate::mesh::{Mesh, MeshError, MeshResult};
-use glam::Vec3;
 use rand::Rng;
 use std::collections::HashSet;
 use std::ops::Deref;
+use crate::mesh::parts::plane::Plane;
 
 pub mod build;
 pub mod query;
@@ -102,45 +100,6 @@ impl BSPNode {
             BSPNode::Leaf { polygons } => polygons,
             BSPNode::Node { polygons, .. } => polygons,
         }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-struct Plane {
-    normal: Vec3,
-    point: Vec3,
-    dist: f32,
-}
-
-impl Plane {
-    fn new(normal: Vec3, point: Vec3) -> Self {
-        let dist = normal.dot(point);
-        Self {
-            normal,
-            point,
-            dist,
-        }
-    }
-
-    fn distance<T: Into<Vec3>>(&self, point: T) -> f32 {
-        let point = point.into();
-        self.normal.dot(point) - self.dist
-    }
-
-    pub fn to_mesh(&self, size: f32, color: Color) -> Mesh {
-        let right = self.normal.cross(Vec3::Y).normalize() * size;
-        let up = self.normal.cross(right).normalize() * size;
-
-        let vertices: Vec<Vertex> = vec![
-            (self.point - right - up).into(),
-            (self.point + right - up).into(),
-            (self.point + right + up).into(),
-            (self.point - right + up).into(),
-        ];
-
-        let faces = vec![Face::Triangle(0, 1, 2), Face::Triangle(2, 3, 0)];
-
-        Mesh::from_vertices(vertices, faces, color)
     }
 }
 

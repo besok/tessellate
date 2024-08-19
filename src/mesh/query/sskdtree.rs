@@ -1,5 +1,5 @@
 use crate::mesh::material::Color;
-use crate::mesh::parts::BoundingBox;
+use crate::mesh::parts::bbox::BoundingBox;
 use crate::mesh::{HasMesh, Mesh, MeshError, MeshResult};
 use crate::mesh::query::sskdtree::query::SSKDTreeNearestNeighborIter;
 use crate::mesh::parts::face::FaceType;

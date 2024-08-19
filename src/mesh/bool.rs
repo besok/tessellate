@@ -5,7 +5,6 @@ use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::query::MeshQuery;
 use crate::mesh::{Mesh, MeshResult};
-use log::info;
 use std::collections::HashSet;
 use crate::mesh::bool::split_poly::split_polygons;
 
@@ -37,8 +36,7 @@ pub fn perform_bool(
                 for a_poly in a_polygons.iter() {
                     for b_poly in b_polygons.iter() {
                         if a_poly.intersects(b_poly)? {
-                            let split_polygons: Vec<Polygon> = split_polygons(a_poly, b_poly)?;
-                            inter_polygons.extend(split_polygons)
+                            inter_polygons.extend(split_polygons(a_poly, b_poly)?)
                         } else {
                             non_inter_polygons_a.insert(a_poly.clone());
                             non_inter_polygons_b.insert(b_poly.clone());

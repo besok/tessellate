@@ -1,7 +1,8 @@
-use std::fmt::Display;
 use glam::Vec3;
-use std::ops::{Add, Div, Mul, Sub};
+use std::cmp::Ordering;
+use std::fmt::Display;
 use std::hash::{Hash, Hasher};
+use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Axis {
@@ -21,13 +22,38 @@ impl Axis {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vertex {
     pub(crate) x: f32,
     pub(crate) y: f32,
     pub(crate) z: f32,
 }
 
+impl PartialEq for Vertex {
+    fn eq(&self, other: &Self) -> bool {
+        (self.x - other.x).abs() < f32::EPSILON &&
+            (self.y - other.y).abs() < f32::EPSILON &&
+            (self.z - other.z).abs() < f32::EPSILON
+    }
+}
+
+impl Ord for Vertex {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
+
+impl PartialOrd for Vertex {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(
+            self.x
+                .partial_cmp(&other.x)
+                .unwrap_or(Ordering::Equal)
+                .then_with(|| self.y.partial_cmp(&other.y).unwrap_or(Ordering::Equal))
+                .then_with(|| self.z.partial_cmp(&other.z).unwrap_or(Ordering::Equal)),
+        )
+    }
+}
 impl Display for Vertex {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "V({:.1}, {:.1}, {:.1})", self.x, self.y, self.z)
@@ -157,14 +183,14 @@ impl Vertex {
     }
 
     pub fn cross(&self, other: &Vertex) -> Vertex {
-        let a:Vec3 = self.into();
-        let b:Vec3 = other.into();
+        let a: Vec3 = self.into();
+        let b: Vec3 = other.into();
         a.cross(b).into()
     }
 
     pub fn dot(&self, other: &Vertex) -> f32 {
-        let a:Vec3 = self.into();
-        let b:Vec3 = other.into();
+        let a: Vec3 = self.into();
+        let b: Vec3 = other.into();
         a.dot(b)
     }
 
@@ -173,7 +199,7 @@ impl Vertex {
     }
 
     pub fn length_squared(&self) -> f32 {
-        self.flatten().iter().map(|v| v.powi(2)).sum::<f32>()
+        self.dot(&self)
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::mesh::query::sskdtree::{SSKDNode, SSKDTree};
-use crate::mesh::parts::BoundingBox;
+use crate::mesh::parts::bbox::BoundingBox;
 use crate::mesh::{MeshError, MeshResult};
 use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::vertex::Axis;

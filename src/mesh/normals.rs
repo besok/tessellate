@@ -86,7 +86,18 @@ impl MeshNormals {
 }
 
 fn calculate_triangle_normal(v1: &Vertex, v2: &Vertex, v3: &Vertex) -> Vec3 {
-    let u:Vec3 = (*v2 - *v1).into();
-    let v:Vec3 = (*v3 - *v1).into();
-    u.cross(v).normalize()
+    let u: Vec3 = (*v2 - *v1).into();
+    let v: Vec3 = (*v3 - *v1).into();
+
+    if u.length() == 0.0 || v.length() == 0.0 {
+        return Vec3::new(0.0, 0.0, 0.0);
+    }
+
+    let cross_product = u.cross(v);
+
+    if cross_product.length() == 0.0 {
+        return Vec3::new(0.0, 0.0, 0.0);
+    }
+
+    cross_product.normalize()
 }

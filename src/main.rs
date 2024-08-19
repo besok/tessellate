@@ -3,7 +3,7 @@ use glam::{EulerRot, Mat4, Quat, Vec3};
 use log::{info, LevelFilter};
 use tessellate::gpu::camera::position::CameraPosition;
 use tessellate::mesh::material::{Color, RgbaColor};
-use tessellate::mesh::parts::BoundingBox;
+use tessellate::mesh::parts::bbox::BoundingBox;
 use tessellate::mesh::shape::cone::Cone;
 use tessellate::mesh::shape::cuboid::cube::Cube;
 use tessellate::mesh::shape::cuboid::rect_cuboid::RectCuboid;
