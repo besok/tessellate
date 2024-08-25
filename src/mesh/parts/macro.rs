@@ -45,6 +45,17 @@ macro_rules! edge {
     };
 }
 
+/// Create a polygon from a list of vertices
+///
+/// # Examples
+///
+/// ```
+/// use tessellate::mesh::parts::polygon::Polygon;
+/// use tessellate::poly;
+/// use tessellate::v;
+///
+/// let poly1 = poly!(v!(0, 0, 0), v!(1, 0, 0), v!(1, 1, 0));
+/// let poly2 = poly!(1,1,1; 0,0,0; 1,1,1);
 #[macro_export]
 macro_rules! poly {
     ($($v:expr),*) => {

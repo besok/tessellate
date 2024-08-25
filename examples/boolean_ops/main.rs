@@ -12,16 +12,13 @@ use tessellate::{gpu, TessResult};
 fn main() -> TessResult<()> {
 
     let cube = Cube::create(Vertex::default(), 3.0, FaceType::Quad, Color::default());
-    let cube = Cube::create(Vertex::default(), 3.0, FaceType::Quad, Color::default());
     let pyramid = Pyramid::create(Vertex::default(), 5.0, 5.0, Color::default());
 
-    let union1 = pyramid.difference(cube.clone())?;
-    let mut union2 = cube.difference(pyramid)?;
-    union2.transform(Mat4::from_translation(Vec3::new(2., 3., 4.)))?;
+    let bool_op = cube.difference(pyramid)?;
+
 
     let meshes = vec![
-        union1,
-        union2
+        bool_op, 
     ];
 
     let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);

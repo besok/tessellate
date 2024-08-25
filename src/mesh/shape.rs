@@ -10,5 +10,6 @@ pub mod ring;
 pub mod pyramid;
 pub mod plane;
 pub mod grid;
+pub mod beam;
 
 

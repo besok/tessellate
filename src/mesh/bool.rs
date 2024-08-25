@@ -87,6 +87,7 @@ fn is_inside(p: &Polygon, mesh: &Mesh) -> MeshResult<bool> {
     let intersections = mesh
         .try_polygons()?
         .into_iter()
+        .flat_map(|poly| poly.triangulate())
         .filter(|poly| ray_intersects_triangle(&centroid, &ray_direction, poly))
         .count();
 
@@ -129,4 +130,17 @@ fn ray_intersects_triangle(origin: &Vertex, direction: &Vertex, triangle: &Polyg
 
 fn reconstruct(polygon: Vec<Polygon>, color: Color) -> MeshResult<Mesh> {
     Ok(Mesh::from_polygons(polygon, color))
+}
+
+#[cfg(test)]
+mod tests{
+    use crate::poly;
+    use crate::v;
+    use crate::mesh::Polygon;
+    use crate::mesh::Vertex;
+    #[test]
+    fn ray_intersects_triangle_test() {
+        poly!(0,0,0; 1,0,0; 1,1,0);
+    }
+
 }

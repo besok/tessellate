@@ -117,14 +117,11 @@ impl GpuHandler {
                 button: MouseButton::Left,
                 state,
                 ..
-            } => {
-                self.camera
-                    .set_mouse_pressed(*state == ElementState::Pressed);
-                true
-            }
+            } => self
+                .camera
+                .set_mouse_pressed(*state == ElementState::Pressed),
             WindowEvent::CursorMoved { position, .. } if self.camera.is_mouse_pressed() => {
-                self.camera.process_mouse(position);
-                true
+                self.camera.process_mouse(position)
             }
             _ => false,
         }

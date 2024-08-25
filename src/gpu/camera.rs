@@ -138,12 +138,13 @@ impl Camera {
         self.camera_controller.process_scroll(delta);
     }
 
-    pub fn process_mouse(&mut self, position:&PhysicalPosition<f64>) {
-        self.camera_controller.process_mouse(position);
+    pub fn process_mouse(&mut self, position:&PhysicalPosition<f64>) -> bool{
+        self.camera_controller.process_mouse(position)
     }
 
-    pub fn set_mouse_pressed(&mut self, pressed: bool) {
+    pub fn set_mouse_pressed(&mut self, pressed: bool) -> bool {
         self.mouse_pressed = pressed;
+        true
     }
 }
 

@@ -18,6 +18,9 @@ pub struct CameraController {
     scroll: f32,
     speed: f32,
     sensitivity: f32,
+    radius: f32,
+    hor_angle: f32,
+    ver_angle: f32,
     last_mouse_pos: PhysicalPosition<f64>,
 }
 
@@ -35,6 +38,9 @@ impl CameraController {
             scroll: 0.0,
             speed,
             sensitivity,
+            radius: 5.0,
+            hor_angle: 0.0,
+            ver_angle: 0.0,
             last_mouse_pos: PhysicalPosition::new(0.0, 0.0),
         }
     }
@@ -46,6 +52,7 @@ impl CameraController {
             0.0
         };
         match key {
+
             KeyCode::KeyW | KeyCode::ArrowUp => {
                 self.forward = amount;
                 true
@@ -70,11 +77,35 @@ impl CameraController {
                 self.down = amount;
                 true
             }
+            KeyCode::KeyR => {
+                self.radius += amount * self.speed;
+                true
+            }
+            KeyCode::KeyF => {
+                self.radius -= amount * self.speed;
+                true
+            }
+            KeyCode::KeyT => {
+                self.hor_angle += amount * self.sensitivity;
+                true
+            }
+            KeyCode::KeyG => {
+                self.hor_angle -= amount * self.sensitivity;
+                true
+            }
+            KeyCode::KeyY => {
+                self.ver_angle += amount * self.sensitivity;
+                true
+            }
+            KeyCode::KeyH => {
+                self.ver_angle -= amount * self.sensitivity;
+                true
+            }
             _ => false,
         }
     }
 
-    pub fn process_mouse(&mut self, position:&PhysicalPosition<f64>) {
+    pub fn process_mouse(&mut self, position:&PhysicalPosition<f64>) -> bool {
 
         let mouse_dx = position.x - self.last_mouse_pos.x;
         let mouse_dy = position.y - self.last_mouse_pos.y;
@@ -82,6 +113,8 @@ impl CameraController {
 
         self.rotate_hor = mouse_dx as f32;
         self.rotate_ver = mouse_dy as f32;
+
+        true
     }
 
     pub fn process_scroll(&mut self, delta: &MouseScrollDelta) {
@@ -93,6 +126,29 @@ impl CameraController {
 
     pub fn update_camera(&mut self, camera: &mut CameraPosition) {
 
+        // Apply circular movement
+
+        println!("radius: {}", self.radius);
+        println!("hor_angle: {}", self.hor_angle);
+        println!("ver_angle: {}", self.ver_angle);
+
+        println!("camera position: {:?}", camera.position());
+
+        let new_x = self.radius * self.hor_angle.cos();
+        let new_z = self.radius * self.hor_angle.sin();
+        let new_y = self.radius * self.ver_angle.sin();
+        let new_position = Vec3::new(new_x, new_y, new_z);
+        camera.set_position(new_position);
+
+        println!("new position: {:?}", new_position);
+
+        // Calculate the new direction vector
+        let direction = (Vec3::ZERO - new_position).normalize();
+        camera.set_yaw(direction.z.atan2(direction.x));
+        camera.set_pitch(direction.y.asin());
+
+        println!("new yaw: {}", direction.z.atan2(direction.x));
+        println!("new pitch: {}", direction.y.asin());
 
         // Move forward/backward and left/right
         let (yaw_sin, yaw_cos) = camera.yaw().sin_cos();
@@ -116,9 +172,12 @@ impl CameraController {
         camera.update_yaw(self.rotate_hor * self.sensitivity );
         camera.update_pitch(-self.rotate_ver * self.sensitivity);
 
-        // If process_mouse isn't called every frame, these values
-        // will not get set to zero, and the camera will rotate
-        // when moving in a non-cardinal direction.
+
+
+
+        // // If process_mouse isn't called every frame, these values
+        // // will not get set to zero, and the camera will rotate
+        // // when moving in a non-cardinal direction.
         self.rotate_hor = 0.0;
         self.rotate_ver = 0.0;
 

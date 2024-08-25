@@ -41,9 +41,19 @@ impl CameraPosition {
     pub fn update_position(&mut self, shift: Vec3) {
         self.position += shift;
     }
+
+    pub fn set_position(&mut self, shift: Vec3) {
+        self.position = shift;
+    }
+
     pub fn update_yaw(&mut self, shift: f32) {
         self.yaw = self.yaw + shift / 300.;
     }
+
+    pub fn set_yaw(&mut self, shift: f32) {
+        self.yaw = shift;
+    }
+
     pub fn update_pitch(&mut self, shift: f32) {
         self.pitch = self.pitch + shift / 300.;
     }
@@ -60,6 +70,10 @@ impl CameraPosition {
 
     pub fn pitch(&self) -> f32 {
         self.pitch
+    }
+
+    pub fn position(&self) -> Vec3 {
+        self.position
     }
 
     pub fn calc_matrix(&self) -> Mat4 {
