@@ -6,11 +6,11 @@ use winit::dpi::PhysicalPosition;
 use winit::event::{ElementState, MouseScrollDelta};
 use winit::keyboard::KeyCode;
 
-use crate::gpu::camera::controller::CameraController;
+use crate::gpu::camera::coordinator::{CameraCoordinator};
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::projection::Projection;
 
-pub mod controller;
+pub mod coordinator;
 pub mod position;
 pub mod projection;
 
@@ -22,7 +22,7 @@ pub struct Camera {
     uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
-    camera_controller: CameraController,
+    camera_coord: CameraCoordinator,
     camera_bind_layout: BindGroupLayout,
     mouse_pressed: bool,
 }
@@ -63,7 +63,7 @@ impl Camera {
             }],
             label: Some("camera_bind_group"),
         });
-        let controller = CameraController::new(0.1, 0.1);
+        let coordinator = CameraCoordinator::new(0.1, 0.0005);
 
         Self::new(
             camera_pos,
@@ -71,7 +71,7 @@ impl Camera {
             camera_buffer,
             camera_bind_group,
             projection,
-            controller,
+            coordinator,
             camera_bind_group_layout,
         )
     }
@@ -82,7 +82,7 @@ impl Camera {
         camera_buffer: wgpu::Buffer,
         camera_bind_group: wgpu::BindGroup,
         projection: Projection,
-        camera_controller: CameraController,
+        camera_coord: CameraCoordinator,
         camera_bind_layout: BindGroupLayout,
     ) -> Self {
         Self {
@@ -90,7 +90,7 @@ impl Camera {
             uniform,
             camera_buffer,
             camera_bind_group,
-            camera_controller,
+            camera_coord,
             projection,
             camera_bind_layout,
             mouse_pressed: false,
@@ -108,8 +108,8 @@ impl Camera {
         &self.camera_bind_layout
     }
 
-    pub fn camera_controller(&mut self) -> &mut CameraController {
-        &mut self.camera_controller
+    pub fn camera_coordinator(&mut self) -> &mut CameraCoordinator {
+        &mut self.camera_coord
     }
     pub fn camera(&mut self) -> &mut CameraPosition {
         &mut self.camera
@@ -121,7 +121,7 @@ impl Camera {
         &self.camera_buffer
     }
     pub fn update_camera(&mut self) {
-        self.camera_controller.update_camera(&mut self.camera);
+        self.camera_coord.update_camera(&mut self.camera);
         self.uniform
             .update_view_proj(&self.camera, &self.projection);
 
@@ -131,19 +131,22 @@ impl Camera {
     pub fn resize(&mut self, width: u32, height: u32) {
         self.projection.resize(width, height);
     }
-    pub fn process_keyboard(&mut self, key: KeyCode, state: ElementState) -> bool {
-        self.camera_controller.process_keyboard(key, state)
-    }
+    // pub fn process_keyboard(&mut self, key: KeyCode, state: ElementState) -> bool {
+    //     self.camera_coord.process_keyboard(key, state)
+    // }
     pub fn process_scroll(&mut self, delta: &MouseScrollDelta) {
-        self.camera_controller.process_scroll(delta);
+        self.camera_coord.process_scroll(delta);
     }
 
     pub fn process_mouse(&mut self, position:&PhysicalPosition<f64>) -> bool{
-        self.camera_controller.process_mouse(position)
+        self.camera_coord.process_mouse(position)
     }
 
     pub fn set_mouse_pressed(&mut self, pressed: bool) -> bool {
         self.mouse_pressed = pressed;
+        if !pressed {
+            self.camera_coord.clean_mouse_pos();
+        }
         true
     }
 }

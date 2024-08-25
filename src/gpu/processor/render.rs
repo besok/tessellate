@@ -100,15 +100,15 @@ impl GpuHandler {
     }
     pub fn input(&mut self, event: &WindowEvent) -> bool {
         match event {
-            WindowEvent::KeyboardInput {
-                event:
-                    KeyEvent {
-                        physical_key: PhysicalKey::Code(key),
-                        state,
-                        ..
-                    },
-                ..
-            } => self.camera.process_keyboard(*key, *state),
+            // WindowEvent::KeyboardInput {
+            //     event:
+            //         KeyEvent {
+            //             physical_key: PhysicalKey::Code(key),
+            //             state,
+            //             ..
+            //         },
+            //     ..
+            // } => self.camera.process_keyboard(*key, *state),
             WindowEvent::MouseWheel { delta, .. } => {
                 self.camera.process_scroll(delta);
                 true
