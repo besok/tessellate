@@ -30,9 +30,10 @@ impl Default for Beam {
 }
 
 impl Beam {
-    pub fn create<V, C>(start: V, end: V, diam:f32, color: C) -> Self
+    pub fn create<V1,V2, C>(start: V1, end: V2, diam:f32, color: C) -> Self
     where
-        V: Into<Vertex>,
+        V1: Into<Vertex>,
+        V2: Into<Vertex>,
         C: Into<Color>,
     {
         let start = start.into();

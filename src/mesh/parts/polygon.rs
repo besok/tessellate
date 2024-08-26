@@ -1,4 +1,5 @@
-use crate::mesh::parts::edge::{MeshEdge, Edge};
+use crate::mesh::normals::calculate_normal;
+use crate::mesh::parts::edge::{Edge, MeshEdge};
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{MeshError, MeshResult};
 use std::fmt::Display;
@@ -49,7 +50,7 @@ impl Polygon {
         &self.vertices
     }
 
-    pub fn has_v(&self, v:&Vertex) -> bool {
+    pub fn has_v(&self, v: &Vertex) -> bool {
         self.vertices.contains(v)
     }
 
@@ -77,6 +78,10 @@ impl Polygon {
 
             Ok(centroid * (1.0 / self.vertices.len() as f32))
         }
+    }
+
+    pub fn normal(&self) -> Vertex {
+        calculate_normal(self.vertices()).into()
     }
 
     /// Calculate the winding number of a vertex with respect to the polygon
@@ -191,5 +196,12 @@ mod tests {
 
             println!("{wntv}");
         }
+    }
+
+    #[test]
+    fn test_centroid() {
+        let p = poly!(0,0,0; 3,3,3 ; 0,3,0);
+        let c = p.centroid().unwrap();
+        assert_eq!(c, v!(1.0, 2.0, 1.0));
     }
 }

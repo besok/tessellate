@@ -2,6 +2,7 @@ use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::bbox::BoundingBox;
 use crate::mesh::query::MeshQuery;
 use crate::mesh::{Mesh, MeshError, MeshResult};
+use crate::mesh::parts::vertex::Vertex;
 
 pub mod build;
 pub mod query;
@@ -27,7 +28,7 @@ impl OctNode {
         }
     }
 
-    pub fn bb(&self) -> &BoundingBox {
+    pub fn aabb(&self) -> &BoundingBox {
         match self {
             OctNode::Leaf { ref bb, .. } => bb,
             OctNode::Node { ref bb, .. } => bb,
@@ -50,7 +51,7 @@ impl OctNode {
             OctNode::Node { ref children, .. } => {
                 let mut result = Vec::new();
                 for child in children.iter() {
-                    if child.bb().intersects(bb) {
+                    if child.aabb().intersects(bb) {
                         result.extend(child.find_polygons(bb));
                     }
                 }
@@ -60,7 +61,7 @@ impl OctNode {
     }
 
     pub fn is_overlapping(&self, node: &OctNode) -> bool {
-        self.bb().intersects(node.bb())
+        self.aabb().intersects(node.aabb())
     }
 }
 
@@ -87,6 +88,10 @@ impl Octree {
 
     pub fn iter_leafs(&self) -> query::OctreeIterator {
         query::OctreeIterator::new(&self.root, true)
+    }
+
+    pub fn max_coords(&self) -> &Vertex {
+        self.root.aabb().max()
     }
 }
 
@@ -154,7 +159,7 @@ mod tests {
         let mesh = Mesh::from_polygons(polygons, Color::default());
         let octree = Octree::try_from_mesh(&mesh, Some(3)).expect("Failed to build octree");
 
-        let bb = octree.root.bb().clone();
+        let bb = octree.root.aabb().clone();
         let result = octree.find_polygons(&bb);
         assert_eq!(result.len(), 2);
     }

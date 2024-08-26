@@ -1,12 +1,14 @@
 mod split_poly;
 
+use crate::mesh::bool::split_poly::split_polygons;
 use crate::mesh::material::Color;
+use crate::mesh::normals::calculate_normal;
 use crate::mesh::parts::polygon::Polygon;
-use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::parts::vertex::{Axis, Vertex};
 use crate::mesh::query::MeshQuery;
+use crate::mesh::shape::beam::Beam;
 use crate::mesh::{Mesh, MeshResult};
 use std::collections::HashSet;
-use crate::mesh::bool::split_poly::split_polygons;
 
 pub enum BoolType {
     Union,
@@ -49,6 +51,9 @@ pub fn perform_bool(
 
     let mut final_polygons = Vec::new();
 
+    let max_coord_a = a_tree.max_coords();
+    let max_coord_b = b_tree.max_coords();
+
     match op {
         BoolType::Union => {
             final_polygons.extend(non_inter_polygons_a);
@@ -57,7 +62,7 @@ pub fn perform_bool(
         }
         BoolType::Intersection => {
             for p in inter_polygons.iter() {
-                if is_inside(p, mesh_b)? && is_inside(p, mesh_a)? {
+                if is_inside(p, max_coord_a, mesh_b)? && is_inside(p, max_coord_b, mesh_a)? {
                     final_polygons.push(p.clone());
                 }
             }
@@ -65,7 +70,7 @@ pub fn perform_bool(
         BoolType::Difference => {
             final_polygons.extend(non_inter_polygons_a);
             for p in inter_polygons.iter() {
-                if is_outside(p, mesh_b)? {
+                if is_outside(p, max_coord_a, mesh_b)? {
                     final_polygons.push(p.clone());
                 }
             }
@@ -75,27 +80,26 @@ pub fn perform_bool(
     Ok(reconstruct(final_polygons, color)?)
 }
 
-
-
-fn is_outside(p: &Polygon, mesh: &Mesh) -> MeshResult<bool> {
-    Ok(!is_inside(p, mesh)?)
+fn is_outside(p: &Polygon, max_coord_p: &Vertex, mesh: &Mesh) -> MeshResult<bool> {
+    Ok(!is_inside(p, max_coord_p, mesh)?)
 }
-fn is_inside(p: &Polygon, mesh: &Mesh) -> MeshResult<bool> {
-    let centroid = p.centroid()?;
-    let ray_direction = Vertex::new(1.0, 0.0, 0.0); // Arbitrary direction
+fn is_inside(p: &Polygon, max_coord_p: &Vertex, mesh: &Mesh) -> MeshResult<bool> {
+    let ray = Ray::from_poly(p, max_coord_p)?;
 
     let intersections = mesh
         .try_polygons()?
         .into_iter()
         .flat_map(|poly| poly.triangulate())
-        .filter(|poly| ray_intersects_triangle(&centroid, &ray_direction, poly))
+        .filter(|poly| ray_intersects_triangle(&ray, poly))
         .count();
 
     Ok(intersections % 2 == 1)
 }
 
 /// Möller–Trumbore intersection algorithm
-fn ray_intersects_triangle(origin: &Vertex, direction: &Vertex, triangle: &Polygon) -> bool {
+fn ray_intersects_triangle(ray: &Ray, triangle: &Polygon) -> bool {
+    let Ray { origin, direction } = ray;
+
     let epsilon = 1e-8;
     let [v0, v1, v2] = triangle.vertices()[..] else {
         return false;
@@ -105,7 +109,7 @@ fn ray_intersects_triangle(origin: &Vertex, direction: &Vertex, triangle: &Polyg
     let edge2 = v2 - v0;
     let h = direction.cross(&edge2);
     let a = edge1.dot(&h);
-
+    println!("a: {}", a);
     if a > -epsilon && a < epsilon {
         return false; // This ray is parallel to this triangle.
     }
@@ -114,12 +118,16 @@ fn ray_intersects_triangle(origin: &Vertex, direction: &Vertex, triangle: &Polyg
     let s = *origin - v0;
     let u = f * s.dot(&h);
 
+    println!("u: {}", u);
+
     if u < 0.0 || u > 1.0 {
         return false;
     }
 
     let q = s.cross(&edge1);
     let v = f * direction.dot(&q);
+
+    println!("v: {}", v);
 
     if v < 0.0 || u + v > 1.0 {
         return false;
@@ -132,15 +140,58 @@ fn reconstruct(polygon: Vec<Polygon>, color: Color) -> MeshResult<Mesh> {
     Ok(Mesh::from_polygons(polygon, color))
 }
 
-#[cfg(test)]
-mod tests{
-    use crate::poly;
-    use crate::v;
-    use crate::mesh::Polygon;
-    use crate::mesh::Vertex;
-    #[test]
-    fn ray_intersects_triangle_test() {
-        poly!(0,0,0; 1,0,0; 1,1,0);
+pub struct Ray {
+    origin: Vertex,
+    direction: Vertex,
+}
+
+impl Ray {
+    pub fn new(origin: Vertex, direction: Vertex) -> Self {
+        Self { origin, direction }
     }
 
+    pub fn to_beam<C: Into<Color>>(&self,   diam: f32, color: C,) -> Beam {
+        Beam::create(self.origin, self.direction, diam, color)
+    }
+
+    pub fn from_poly(p: &Polygon, max_coords: &Vertex) -> MeshResult<Self> {
+        let centroid = p.centroid()?;
+        match dominant_normal_component(p.normal()) {
+            Axis::X => Ok(Ray::new(centroid, Vertex::new(max_coords.x, centroid.y, centroid.z))),
+            Axis::Y => Ok(Ray::new(centroid, Vertex::new(centroid.x, max_coords.y, centroid.z))),
+            Axis::Z => Ok(Ray::new(centroid, Vertex::new(centroid.x, centroid.y, max_coords.z))),
+        }
+    }
+}
+
+fn dominant_normal_component(normal: Vertex) -> Axis {
+    let abs_x = normal.x.abs();
+    let abs_y = normal.y.abs();
+    let abs_z = normal.z.abs();
+
+    if abs_x > abs_y && abs_x > abs_z {
+        Axis::X
+    } else if abs_y > abs_x && abs_y > abs_z {
+        Axis::Y
+    } else {
+        Axis::Z
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::mesh::bool::{ray_intersects_triangle, Ray};
+    use crate::mesh::Polygon;
+    use crate::mesh::Vertex;
+    use crate::poly;
+    use crate::v;
+
+    #[test]
+    fn ray_intersects_triangle_test() {
+        let p1 = poly!(1, 0, 0; 0, 1, 0; 0, 0, 1);
+        let p2 = poly!(1, 0, 0; 0, 2, 0; 1, 1, 1);
+
+        let r = ray_intersects_triangle(&Ray::from_poly(&p1, &v!(1, 1, 1)).unwrap(), &p2);
+        assert_eq!(r, true);
+    }
 }

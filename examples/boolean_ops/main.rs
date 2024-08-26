@@ -14,7 +14,7 @@ fn main() -> TessResult<()> {
     let cube = Cube::create(Vertex::default(), 3.0, FaceType::Quad, Color::default());
     let pyramid = Pyramid::create(Vertex::default(), 5.0, 5.0, Color::default());
 
-    let bool_op = cube.difference(pyramid)?;
+    let bool_op = pyramid.difference(cube)?;
 
 
     let meshes = vec![
