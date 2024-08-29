@@ -3,8 +3,7 @@ use log::{info};
 use wgpu::util::DeviceExt;
 use wgpu::{BindGroupLayout, Device, SurfaceConfiguration};
 use winit::dpi::PhysicalPosition;
-use winit::event::{ElementState, MouseScrollDelta};
-use winit::keyboard::KeyCode;
+use winit::event::{ MouseScrollDelta};
 
 use crate::gpu::camera::coordinator::{CameraCoordinator};
 use crate::gpu::camera::position::CameraPosition;

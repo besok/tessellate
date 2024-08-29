@@ -1,5 +1,5 @@
 use crate::mesh::normals::calculate_normal;
-use crate::mesh::parts::edge::{Edge, MeshEdge};
+use crate::mesh::parts::edge::Edge;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{MeshError, MeshResult};
 use std::fmt::Display;
@@ -91,12 +91,11 @@ impl Polygon {
         let mut wn = 0.0;
         let v = vertex.clone();
         for e in self.edges().iter() {
-            if let (lhs, rhs) = e.vertices() {
-                let v1 = lhs - v;
-                let v2 = rhs - v;
+            let (lhs, rhs) = e.vertices();
+            let v1 = lhs - v;
+            let v2 = rhs - v;
 
-                wn += v1.cross(&v2).magnitude().atan2(v1.dot(&v2))
-            }
+            wn += v1.cross(&v2).magnitude().atan2(v1.dot(&v2))
         }
         wn / (2.0 * std::f32::consts::PI)
     }
@@ -107,9 +106,8 @@ impl Polygon {
         let mut delta_wt = 0.0;
         let r = reference.clone();
         for e in self.edges().iter() {
-            if let (start, end) = e.vertices() {
-                delta_wt += calculate_segment_wntv(start.clone(), end.clone(), r.clone());
-            }
+            let (start, end) = e.vertices();
+            delta_wt += calculate_segment_wntv(start.clone(), end.clone(), r.clone());
         }
         delta_wt
     }
@@ -126,17 +124,42 @@ impl Polygon {
             && self.vertices.iter().all(|v| other.vertices.contains(v))
     }
     pub fn intersects(&self, other: &Polygon) -> MeshResult<bool> {
-        if self.coincides(other) {
-            return Ok(true);
-        }
-        for e1 in self.edges().iter() {
-            for e2 in other.edges().iter() {
-                if e1.is_intersected(e2)? {
-                    return Ok(true);
-                }
+        let axes = self.get_axes().into_iter().chain(other.get_axes().into_iter());
+
+        for axis in axes {
+            let (min_a, max_a) = self.project(&axis);
+            let (min_b, max_b) = other.project(&axis);
+
+            if max_a < min_b || max_b < min_a {
+                return Ok(false);
             }
         }
-        Ok(false)
+        Ok(true)
+    }
+    fn get_axes(&self) -> Vec<Vertex> {
+        self.edges()
+            .iter()
+            .map(|edge| {
+                let (start, end) = edge.vertices();
+                let edge_vector = end - start;
+                Vertex::new(-edge_vector.y, edge_vector.x, 0.0).normalize()
+            })
+            .collect()
+    }
+
+    fn project(&self, axis: &Vertex) -> (f32, f32) {
+        let mut min = axis.dot(&self.vertices[0]);
+        let mut max = min;
+
+        for vertex in &self.vertices {
+            let projection = axis.dot(vertex);
+            if projection < min {
+                min = projection;
+            } else if projection > max {
+                max = projection;
+            }
+        }
+        (min, max)
     }
 }
 
@@ -204,4 +227,22 @@ mod tests {
         let c = p.centroid().unwrap();
         assert_eq!(c, v!(1.0, 2.0, 1.0));
     }
+
+    #[test]
+    fn test_intersects_sat() {
+        let p1 = Polygon::new(vec![&Vertex::new(0.0, 0.0, 0.0), &Vertex::new(1.0, 0.0, 0.0), &Vertex::new(0.5, 1.0, 0.0)]);
+        let p2 = Polygon::new(vec![&Vertex::new(0.5, 0.5, 0.0), &Vertex::new(1.5, 0.5, 0.0), &Vertex::new(1.0, 1.5, 0.0)]);
+        assert!(p1.intersects(&p2).unwrap());
+
+        let p3 = Polygon::new(vec![&Vertex::new(2.0, 2.0, 0.0), &Vertex::new(3.0, 2.0, 0.0), &Vertex::new(2.5, 3.0, 0.0)]);
+        assert!(!p1.intersects(&p3).unwrap());
+    }
+    #[test]
+    fn test_intersects() {
+        let p1 = poly!(-2.5, -2.5, 0; 2.5, -2.5, 0; 0, 0, 5);
+        let p2 = poly!(2.5, 2.5, 0; 2.5, -2.5, 0; 0, 0, 5);
+
+        assert!(p1.intersects(&p2).unwrap());
+    }
+
 }

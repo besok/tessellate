@@ -6,7 +6,6 @@ use std::f32::consts::PI;
 use std::ops::Deref;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
-use crate::mesh::shape::ring::Ring;
 
 #[derive(Debug, Clone)]
 pub struct Sphere {
@@ -71,7 +70,7 @@ impl Sphere {
     pub fn create_ico<V: Into<Vertex>>(center: V, radius: f32, subdivisions: usize, color: Color) -> Self {
         let center = center.into();
         let mut ico = Icosahedron::create(center, radius,color);
-        let mesh = (0..subdivisions).fold(ico.mesh_mut(), |mut acc, _| {
+        let mesh = (0..subdivisions).fold(ico.mesh_mut(), |acc, _| {
             let _ = acc.subdivide();
             acc
         });

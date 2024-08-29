@@ -42,11 +42,8 @@
 ///     finalize the tree construction and return the root node.
 
 use crate::mesh::query::bsp::{BSPNode, BSPTree};
-use crate::mesh::normals::{calculate_normal, MeshNormals};
-use crate::mesh::parts::face::Face;
-use crate::mesh::{parts, Mesh, MeshError, MeshResult};
-use glam::Vec3;
-use log::{debug, info};
+use crate::mesh::{ MeshError, MeshResult};
+use log::{debug};
 use rand::Rng;
 ///
 ///

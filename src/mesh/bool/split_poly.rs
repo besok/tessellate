@@ -1,11 +1,10 @@
 use crate::mesh::normals::calculate_normal;
-use crate::mesh::parts::edge::{MeshEdge, Edge};
+use crate::mesh::parts::edge::{Edge};
 use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{MeshError, MeshResult};
 use glam::Vec3;
 use std::cmp::Ordering;
-use std::hash::Hash;
 use std::vec;
 
 pub(crate) fn split_polygons(lhs: &Polygon, rhs: &Polygon) -> MeshResult<Vec<Polygon>> {
@@ -36,8 +35,6 @@ fn sort_inter_points(inter_points: Vec<Vertex>) -> Vec<Edge> {
         vec![]
     } else {
         let normal = calculate_normal(&inter_points);
-        println!("Normal = {:?}", normal);
-        println!("inter_points = {:?}", inter_points);
         let points_2d: Vec<(f32, f32)> = inter_points
             .iter()
             .map(|v| {
@@ -49,7 +46,6 @@ fn sort_inter_points(inter_points: Vec<Vertex>) -> Vec<Edge> {
 
         let mut sorted_points_2d = points_2d.clone();
         sorted_points_2d.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
-        println!("2d = > {:?}", &sorted_points_2d);
 
         let mut sorted_points_3d = Vec::new();
         for point_2d in sorted_points_2d {
@@ -62,7 +58,6 @@ fn sort_inter_points(inter_points: Vec<Vertex>) -> Vec<Edge> {
                 }
             }
         }
-        println!("3d = > {:?}", sorted_points_3d);
         (0..sorted_points_3d.len() - 1)
             .step_by(2)
             .map(|i| Edge::new(sorted_points_3d[i], sorted_points_3d[i + 1]))

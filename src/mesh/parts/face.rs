@@ -27,6 +27,27 @@ pub enum Face {
 }
 
 impl Face {
+
+    pub fn edges(&self) -> Vec<MeshEdge> {
+        match self {
+            Face::Triangle(a, b, c) => {
+                vec![
+                    MeshEdge::new_idx(*a, *b),
+                    MeshEdge::new_idx(*b, *c),
+                    MeshEdge::new_idx(*c, *a),
+                ]
+            }
+            Face::Quad(a, b, c, d) => {
+                vec![
+                    MeshEdge::new_idx(*a, *b),
+                    MeshEdge::new_idx(*b, *c),
+                    MeshEdge::new_idx(*c, *d),
+                    MeshEdge::new_idx(*d, *a),
+                ]
+            }
+        }
+    }
+
     pub fn flatten(&self) -> Vec<usize> {
         match self {
             Face::Triangle(a, b, c) => vec![*a, *b, *c],

@@ -8,7 +8,7 @@ use std::sync::Arc;
 use wgpu::{Buffer, RenderPipeline, Surface};
 use winit::application::ApplicationHandler;
 use winit::dpi;
-use winit::event::{DeviceEvent, ElementState, Event, KeyEvent, MouseButton, WindowEvent};
+use winit::event::{ElementState, KeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowId};
@@ -127,8 +127,8 @@ impl ApplicationHandler for GpuProcessor {
                 }
             }
 
-            e => {
-                info!("GPU processor already initialized");
+            _ => {
+                info!("GPU processor already initialized ",);
                 return;
             }
         }

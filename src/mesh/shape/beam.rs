@@ -1,12 +1,9 @@
 use crate::mesh::material::Color;
 use crate::mesh::parts::face::Face;
 use crate::mesh::parts::vertex::Vertex;
-use crate::mesh::shape::cuboid::rect_cuboid::RectCuboid;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
-use std::f32::consts::PI;
 use std::ops::Deref;
-use std::os::raw::c_float;
 
 #[derive(Debug, Clone)]
 pub struct Beam {

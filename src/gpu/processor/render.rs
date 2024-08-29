@@ -1,12 +1,10 @@
 use crate::gpu::error::GpuResult;
 use crate::gpu::processor::GpuHandler;
-use crate::gpu::vertex::{face_to_vertex3, Vertex};
+use crate::gpu::vertex::{face_to_vertex3};
 use log::info;
 use std::iter;
 use std::sync::Arc;
-use winit::dpi::PhysicalPosition;
-use winit::event::{ElementState, KeyEvent, MouseButton, WindowEvent};
-use winit::keyboard::PhysicalKey;
+use winit::event::{ElementState, MouseButton, WindowEvent};
 use winit::window::Window;
 
 impl GpuHandler {

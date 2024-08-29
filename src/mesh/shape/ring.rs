@@ -5,7 +5,6 @@ use std::f32::consts::PI;
 use std::ops::Deref;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
-use crate::mesh::shape::pyramid::Pyramid;
 
 #[derive(Debug, Clone)]
 pub struct Ring {

@@ -3,9 +3,7 @@ use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::query::bsp::build::try_build_bsp_tree;
 use crate::mesh::query::MeshQuery;
 use crate::mesh::{Mesh, MeshError, MeshResult};
-use rand::Rng;
 use std::collections::HashSet;
-use std::ops::Deref;
 use crate::mesh::parts::plane::Plane;
 
 pub mod build;

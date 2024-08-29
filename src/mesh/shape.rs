@@ -1,4 +1,3 @@
-use crate::mesh::Mesh;
 
 pub mod cuboid;
 pub mod sphere;

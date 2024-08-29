@@ -20,7 +20,7 @@ impl TryFrom<&Mesh> for MeshTables {
 }
 
 impl MeshTables {
-    fn new(vertices: &Vec<Vertex>, edges: &Vec<MeshEdge>, faces: &Vec<Face>) -> MeshResult<Self> {
+    fn new(_vertices: &Vec<Vertex>, edges: &Vec<MeshEdge>, faces: &Vec<Face>) -> MeshResult<Self> {
         let mut v_edges = HashMap::new();
         let mut e_faces = HashMap::new();
 

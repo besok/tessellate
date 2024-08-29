@@ -6,32 +6,19 @@ use glam::Vec3;
 /// The structure to store the edge of a mesh
 /// The edge can be represented by indexes or vertices
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum MeshEdge {
-    Index(usize, usize),
-    Vertex(Vertex, Vertex),
-}
+pub struct  MeshEdge(pub usize, pub usize);
 
 impl MeshEdge {
     pub fn indexes(&self) -> Option<(usize, usize)> {
-        match self {
-            MeshEdge::Index(a, b) => Some((*a, *b)),
-            MeshEdge::Vertex(a, b) => None,
-        }
+        Some((self.0, self.1))
     }
 
-    pub fn vertices(&self) -> Option<(Vertex, Vertex)> {
-        match self {
-            MeshEdge::Index(_, _) => None,
-            MeshEdge::Vertex(a, b) => Some((*a, *b)),
-        }
-    }
+
 
     pub fn new_idx(a: usize, b: usize) -> Self {
-        MeshEdge::Index(a, b)
+        MeshEdge(a, b)
     }
-    pub fn new_vtx(a: Vertex, b: Vertex) -> Self {
-        MeshEdge::Vertex(a, b)
-    }
+
 }
 
 impl<V> From<(V, V)> for MeshEdge
@@ -43,12 +30,7 @@ where
     }
 }
 
-impl<T: Into<Edge>> From<T> for MeshEdge {
-    fn from(edge: T) -> Self {
-        let edge = edge.into();
-        MeshEdge::new_vtx(edge.a, edge.b)
-    }
-}
+
 
 /// Edge
 /// The structure to store an edge
@@ -57,18 +39,6 @@ impl<T: Into<Edge>> From<T> for MeshEdge {
 pub struct Edge {
     pub a: Vertex,
     pub b: Vertex,
-}
-
-impl TryFrom<MeshEdge> for Edge {
-    type Error = MeshError;
-    fn try_from(edge: MeshEdge) -> Result<Self, Self::Error> {
-        match edge {
-            MeshEdge::Vertex(a, b) => Ok(Self::new(a, b)),
-            _ => Err(MeshError::WrongIntersection(
-                "Impossible to create a VertexEdge from indexes".to_string(),
-            )),
-        }
-    }
 }
 
 impl Edge {

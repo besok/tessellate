@@ -5,7 +5,6 @@ use crate::mesh::Mesh;
 use std::f32::consts::PI;
 use std::ops::Deref;
 use crate::mesh::parts::vertex::Vertex;
-use crate::mesh::shape::sphere::Sphere;
 
 #[derive(Debug, Clone)]
 pub struct Torus {

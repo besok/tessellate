@@ -1,5 +1,3 @@
-use std::hash::{Hash, Hasher};
-use std::ops::{Add, Mul, Sub};
 pub mod bbox;
 pub mod edge;
 pub mod face;

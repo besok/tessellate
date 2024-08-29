@@ -4,7 +4,6 @@ use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use crate::mesh::parts::face::{Face, FaceType};
 use crate::mesh::parts::vertex::Vertex;
-use crate::mesh::shape::cuboid::cube::Cube;
 
 #[derive(Debug, Clone)]
 pub struct RectCuboid {

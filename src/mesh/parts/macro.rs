@@ -1,4 +1,3 @@
-use crate::mesh::parts::edge::Edge;
 
 #[macro_export]
 macro_rules! v {

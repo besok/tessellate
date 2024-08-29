@@ -1,20 +1,19 @@
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
-use parts::bbox::BoundingBox;
 use crate::mesh::tables::MeshTables;
+use parts::bbox::BoundingBox;
+use parts::edge::MeshEdge;
 use parts::face::Face;
 use parts::polygon::Polygon;
 use parts::vertex::Vertex;
-use parts::edge::MeshEdge;
 use std::collections::{HashMap, HashSet};
-use std::fmt::Display;
-use std::hash::{Hash, Hasher};
-use std::ops::Deref;
+use std::hash::Hash;
 
 pub mod bool;
 pub mod material;
 pub mod normals;
 pub mod parts;
+mod properties;
 pub mod query;
 pub mod shape;
 pub mod tables;
@@ -27,6 +26,7 @@ pub enum MeshError {
     InvalidIndex(String),
     InvalidFaceType(String),
     WrongIntersection(String),
+    WrongMesh(String),
     Custom(String),
 }
 
@@ -79,7 +79,7 @@ impl Mesh {
         }
 
         for polygon in polygons.iter() {
-            let vertices = polygon.vertices();
+            let _vertices = polygon.vertices();
 
             let faces_poly = polygon
                 .triangulate()
@@ -179,11 +179,11 @@ impl Mesh {
     }
 }
 
-impl  Mesh {
-    pub fn union<T:Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
+impl Mesh {
+    pub fn union<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
         bool::perform_bool(self, &other.into(), bool::BoolType::Union, None, None)
     }
-    pub fn union_with<T:Into<Mesh>>(
+    pub fn union_with<T: Into<Mesh>>(
         &self,
         other: T,
         depth: Option<usize>,
@@ -191,7 +191,7 @@ impl  Mesh {
     ) -> MeshResult<Mesh> {
         bool::perform_bool(self, &other.into(), bool::BoolType::Union, depth, color)
     }
-    pub fn intersection_with<T:Into<Mesh>>(
+    pub fn intersection_with<T: Into<Mesh>>(
         &self,
         other: T,
         depth: Option<usize>,
@@ -199,10 +199,10 @@ impl  Mesh {
     ) -> MeshResult<Mesh> {
         bool::perform_bool(self, &other.into(), bool::BoolType::Intersection, depth, color)
     }
-    pub fn intersection<T:Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
+    pub fn intersection<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
         bool::perform_bool(self, &other.into(), bool::BoolType::Intersection, None, None)
     }
-    pub fn difference_with<T:Into<Mesh>>(
+    pub fn difference_with<T: Into<Mesh>>(
         &self,
         other: T,
         depth: Option<usize>,
@@ -210,7 +210,7 @@ impl  Mesh {
     ) -> MeshResult<Mesh> {
         bool::perform_bool(self, &other.into(), bool::BoolType::Difference, depth, color)
     }
-    pub fn difference<T:Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
+    pub fn difference<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
         bool::perform_bool(self, &other.into(), bool::BoolType::Difference, None, None)
     }
 }
@@ -237,6 +237,10 @@ impl Mesh {
 
     pub fn set_color(&mut self, color: Color) {
         self.color = color;
+    }
+
+    pub fn props(&self) -> properties::MeshProperties {
+        properties::MeshProperties::new(self)
     }
 
     fn face_to_polygon(&self, face: &Face) -> MeshResult<Polygon> {

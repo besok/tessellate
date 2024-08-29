@@ -4,7 +4,6 @@ use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
-use crate::mesh::shape::icosahedron::Icosahedron;
 
 #[derive(Debug, Clone)]
 pub struct Plane {
