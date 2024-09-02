@@ -18,4 +18,4 @@ polygon2 = trimesh.creation.Polygon(p2[:, :2])
 
 intersection_result = polygon2.intersects(polygon1)
 # Print the result
-print("Do polygons intersect?", intersection_result)
+print(f"Do polygons intersect {intersection_result}")

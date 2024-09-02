@@ -10,16 +10,13 @@ use tessellate::mesh::HasMesh;
 use tessellate::{gpu, TessResult};
 
 fn main() -> TessResult<()> {
-
     let cube = Cube::create(Vertex::default(), 3.0, FaceType::Quad, Color::default());
     let pyramid = Pyramid::create(Vertex::default(), 5.0, 5.0, Color::default());
 
-    let bool_op = pyramid.difference(cube)?;
+    let mut diff = pyramid.difference(cube.clone())?;
+    diff.transform(Mat4::from_translation(Vec3::new(3.0, 0.0, 0.0)))?;
 
-
-    let meshes = vec![
-        bool_op, 
-    ];
+    let meshes = vec![diff.into(), cube.into(), pyramid.into()];
 
     let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
     Ok(gpu::visualize(meshes, camera)?)

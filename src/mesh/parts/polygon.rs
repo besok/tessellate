@@ -123,46 +123,94 @@ impl Polygon {
         self.vertices.len() == other.vertices.len()
             && self.vertices.iter().all(|v| other.vertices.contains(v))
     }
+    pub fn vertices_are_colinear(&self) -> bool {
+        let ps = self.triangulate();
+        ps.iter().any(|p| {
+            let v0 = p.vertices()[0];
+            let v1 = p.vertices()[1];
+            let v2 = p.vertices()[2];
+            triangle_is_colinear(&v0, &v1, &v2)
+        })
+    }
+
     pub fn intersects(&self, other: &Polygon) -> MeshResult<bool> {
-        let axes = self.get_axes().into_iter().chain(other.get_axes().into_iter());
+        if self.vertices_are_colinear() || other.vertices_are_colinear() {
+            Err(MeshError::Custom("colinear vertices".to_string()))
+        } else {
+            for self_tri in self.triangulate().iter() {
+                for other_tri in other.triangulate().iter() {
+                    if matches!(
+                        polys_tri_intersect(self_tri, other_tri),
+                        SimplexIntersection::Intersect
+                    ) {
+                        return Ok(true);
+                    }
+                }
+            }
+            Ok(false)
+        }
+    }
+}
+enum SimplexIntersection {
+    DoNotIntersect,
+    SimplicialComplex,
+    Intersect,
+    Overlap,
+}
 
-        for axis in axes {
-            let (min_a, max_a) = self.project(&axis);
-            let (min_b, max_b) = other.project(&axis);
+fn polys_tri_intersect(p1: &Polygon, p2: &Polygon) -> SimplexIntersection {
+    triangle_intersects_triangle(
+        (&p1.vertices()[0], &p1.vertices()[1], &p1.vertices()[2]),
+        (&p2.vertices()[0], &p2.vertices()[1], &p2.vertices()[2]),
+    )
+}
 
-            if max_a < min_b || max_b < min_a {
-                return Ok(false);
+fn triangle_intersects_triangle(
+    (a0, a1, a2): (&Vertex, &Vertex, &Vertex),
+    (b0, b1, b2): (&Vertex, &Vertex, &Vertex),
+) -> SimplexIntersection {
+    let mut t0_shared = [false; 3];
+    let mut t1_shared = [false; 3];
+
+    for (i, a) in [a0, a1, a2].iter().enumerate() {
+        for (j, b) in [b0, b1, b2].iter().enumerate() {
+            if a == b {
+                t0_shared[i] = true;
+                t1_shared[j] = true;
             }
         }
-        Ok(true)
     }
-    fn get_axes(&self) -> Vec<Vertex> {
-        self.edges()
-            .iter()
-            .map(|edge| {
-                let (start, end) = edge.vertices();
-                let edge_vector = end - start;
-                Vertex::new(-edge_vector.y, edge_vector.x, 0.0).normalize()
-            })
-            .collect()
-    }
-
-    fn project(&self, axis: &Vertex) -> (f32, f32) {
-        let mut min = axis.dot(&self.vertices[0]);
-        let mut max = min;
-
-        for vertex in &self.vertices {
-            let projection = axis.dot(vertex);
-            if projection < min {
-                min = projection;
-            } else if projection > max {
-                max = projection;
-            }
-        }
-        (min, max)
+    match t0_shared.iter().copied().filter(|&f| f).count() {
+        3 => SimplexIntersection::SimplicialComplex,
+        2 => SimplexIntersection::SimplicialComplex,
+        1 => SimplexIntersection::SimplicialComplex,
+        0 => SimplexIntersection::SimplicialComplex,
+        _ => unreachable!("Invalid number of shared vertices"),
     }
 }
 
+fn triangle_is_colinear(v0: &Vertex, v1: &Vertex, v2: &Vertex) -> bool {
+    let v0_drop_x = [v0[1], v0[2]];
+    let v0_drop_y = [v0[0], v0[2]];
+    let v0_drop_z = [v0[0], v0[1]];
+    let v1_drop_x = [v1[1], v1[2]];
+    let v1_drop_y = [v1[0], v1[2]];
+    let v1_drop_z = [v1[0], v1[1]];
+    let v2_drop_x = [v2[1], v2[2]];
+    let v2_drop_y = [v2[0], v2[2]];
+    let v2_drop_z = [v2[0], v2[1]];
+
+    triangle_is_colinear2d(&v0_drop_x, &v1_drop_x, &v2_drop_x)
+        && triangle_is_colinear2d(&v0_drop_y, &v1_drop_y, &v2_drop_y)
+        && triangle_is_colinear2d(&v0_drop_z, &v1_drop_z, &v2_drop_z)
+}
+fn triangle_is_colinear2d(
+    (x0, y0): &(f32, f32),
+    (x1, y1): &(f32, f32),
+    (x2, y2): &(f32, f32),
+) -> bool {
+    (x1 - x0) * (y2 - y0) == (x2 - x0) * (y1 - y0)
+}
 fn calculate_segment_wntv(start: Vertex, end: Vertex, reference: Vertex) -> f32 {
     let cross = (end - start).cross(&(reference - start));
     if cross.z > 0.0 {
@@ -230,11 +278,23 @@ mod tests {
 
     #[test]
     fn test_intersects_sat() {
-        let p1 = Polygon::new(vec![&Vertex::new(0.0, 0.0, 0.0), &Vertex::new(1.0, 0.0, 0.0), &Vertex::new(0.5, 1.0, 0.0)]);
-        let p2 = Polygon::new(vec![&Vertex::new(0.5, 0.5, 0.0), &Vertex::new(1.5, 0.5, 0.0), &Vertex::new(1.0, 1.5, 0.0)]);
+        let p1 = Polygon::new(vec![
+            &Vertex::new(0.0, 0.0, 0.0),
+            &Vertex::new(1.0, 0.0, 0.0),
+            &Vertex::new(0.5, 1.0, 0.0),
+        ]);
+        let p2 = Polygon::new(vec![
+            &Vertex::new(0.5, 0.5, 0.0),
+            &Vertex::new(1.5, 0.5, 0.0),
+            &Vertex::new(1.0, 1.5, 0.0),
+        ]);
         assert!(p1.intersects(&p2).unwrap());
 
-        let p3 = Polygon::new(vec![&Vertex::new(2.0, 2.0, 0.0), &Vertex::new(3.0, 2.0, 0.0), &Vertex::new(2.5, 3.0, 0.0)]);
+        let p3 = Polygon::new(vec![
+            &Vertex::new(2.0, 2.0, 0.0),
+            &Vertex::new(3.0, 2.0, 0.0),
+            &Vertex::new(2.5, 3.0, 0.0),
+        ]);
         assert!(!p1.intersects(&p3).unwrap());
     }
     #[test]
@@ -244,5 +304,4 @@ mod tests {
 
         assert!(p1.intersects(&p2).unwrap());
     }
-
 }

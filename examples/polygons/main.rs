@@ -10,7 +10,7 @@ use tessellate::mesh::bool::Ray;
 
 fn main() -> TessResult<()> {
     let p1 = poly!(-2.5, -2.5, 0; 2.5, -2.5, 0; 0, 0, 5);
-    let p2 = poly!(2.5, 2.5, 0; 2.5, -2.5, 0; 0, 0, 5);
+    let p2 = poly!(2.5, -2.5, 0; 2.5, 2.5, 0; 0, 0, 5);
     println!("{:?}", p1.intersects(&p2)?);
     let mesh1 = Mesh::from_polygons(vec![p1.clone()], Color::default());
     let mesh2 = Mesh::from_polygons(vec![p2.clone()], Color::default());
