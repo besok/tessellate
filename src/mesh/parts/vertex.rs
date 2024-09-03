@@ -23,6 +23,44 @@ impl Axis {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub struct Vertex2 {
+    pub(crate) x: f32,
+    pub(crate) y: f32,
+}
+
+impl From<Vertex> for Vertex2 {
+    fn from(value: Vertex) -> Self {
+        Vertex2 {
+            x: value.x,
+            y: value.y,
+        }
+    }
+}
+
+impl PartialEq for Vertex2 {
+    fn eq(&self, other: &Self) -> bool {
+        (self.x - other.x).abs() < f32::EPSILON && (self.y - other.y).abs() < f32::EPSILON
+    }
+}
+
+impl Vertex2 {
+    pub fn new(x: f32, y: f32) -> Self {
+        Vertex2 { x, y }
+    }
+
+    pub fn yz(v:&Vertex) -> Self {
+        Vertex2::new(v.y, v.z)
+    }
+    pub fn xz(v:&Vertex) -> Self {
+        Vertex2::new(v.x, v.z)
+    }
+    pub fn xy(v:&Vertex) -> Self {
+        Vertex2::new(v.x, v.y)
+    }
+
+}
+
+#[derive(Debug, Clone, Copy)]
 pub struct Vertex {
     pub(crate) x: f32,
     pub(crate) y: f32,
@@ -31,9 +69,9 @@ pub struct Vertex {
 
 impl PartialEq for Vertex {
     fn eq(&self, other: &Self) -> bool {
-        (self.x - other.x).abs() < f32::EPSILON &&
-            (self.y - other.y).abs() < f32::EPSILON &&
-            (self.z - other.z).abs() < f32::EPSILON
+        (self.x - other.x).abs() < f32::EPSILON
+            && (self.y - other.y).abs() < f32::EPSILON
+            && (self.z - other.z).abs() < f32::EPSILON
     }
 }
 
