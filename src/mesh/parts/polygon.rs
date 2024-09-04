@@ -1,11 +1,14 @@
-mod geometry;
+mod intersection;
 
 use crate::mesh::normals::calculate_normal;
 use crate::mesh::parts::edge::Edge;
-use crate::mesh::parts::vertex::{Vertex, Vertex2};
+use crate::mesh::parts::polygon::intersection::{
+    calculate_segment_wntv, polys_tri_intersect, triangle_is_colinear, vertices_are_colinear,
+    SimplexIntersection,
+};
+use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{MeshError, MeshResult};
 use std::fmt::Display;
-use crate::mesh::parts::polygon::geometry::{polys_tri_intersect, triangle_is_colinear, SimplexIntersection};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Polygon {
@@ -126,26 +129,19 @@ impl Polygon {
         self.vertices.len() == other.vertices.len()
             && self.vertices.iter().all(|v| other.vertices.contains(v))
     }
-    pub fn vertices_are_colinear(&self) -> bool {
-        let ps = self.triangulate();
-        ps.iter().any(|p| {
-            let v0 = p.vertices()[0];
-            let v1 = p.vertices()[1];
-            let v2 = p.vertices()[2];
-            triangle_is_colinear(&v0, &v1, &v2)
-        })
-    }
 
+    /// Check if the polygon intersects another polygon
     pub fn intersects(&self, other: &Polygon) -> MeshResult<bool> {
-        if self.vertices_are_colinear() || other.vertices_are_colinear() {
-            Err(MeshError::Custom("colinear vertices".to_string()))
+        if vertices_are_colinear(&self) || vertices_are_colinear(&other) {
+            return Err(MeshError::Custom("collinear vertices".to_string()));
+        }
+
+        if self.coincides(other) {
+            Ok(true)
         } else {
             for self_tri in self.triangulate().iter() {
                 for other_tri in other.triangulate().iter() {
-                    if matches!(
-                        polys_tri_intersect(self_tri, other_tri)?,
-                        SimplexIntersection::Intersect
-                    ) {
+                    if polys_tri_intersect(self_tri, other_tri)?.intersect() {
                         return Ok(true);
                     }
                 }
@@ -153,8 +149,22 @@ impl Polygon {
             Ok(false)
         }
     }
-}
+    pub fn intersects_precise(&self, other: &Polygon) -> MeshResult<SimplexIntersection> {
+        if vertices_are_colinear(&self) || vertices_are_colinear(&other) {
+            return Err(MeshError::Custom("collinear vertices".to_string()));
+        }
 
+        for self_tri in self.triangulate().iter() {
+            for other_tri in other.triangulate().iter() {
+                match polys_tri_intersect(self_tri, other_tri)? {
+                    SimplexIntersection::DoNotIntersect => continue,
+                    e => return Ok(e),
+                }
+            }
+        }
+        Ok(SimplexIntersection::DoNotIntersect)
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -164,19 +174,19 @@ mod tests {
     use crate::mesh::parts::vertex::Vertex;
     use crate::mesh::shape::icosahedron::Icosahedron;
     use crate::mesh::HasMesh;
-    use crate::{mesh_edge, poly, v};
+    use crate::{poly, v};
 
     #[test]
     fn intersects_coincides() {
-        let p1 = poly!(ref &v!(), &v!(1,,), &v!(0.5, 1,));
-        let p2 = poly!(ref &v!(), &v!(1,,), &v!(0.5, 1,));
+        let p1 = poly!(ref &v!(), &v!(1,0,0), &v!(0.5, 1,));
+        let p2 = poly!(ref &v!(), &v!(1,0,0), &v!(0.5, 1,));
         assert!(p1.intersects(&p2).unwrap());
     }
 
     #[test]
     fn intersects() {
-        let p1 = poly!(ref &v!(), &v!(, 1,), &v!(1,,));
-        let p2 = poly!(ref &v!(1.5,,), &v!(0.5,,), &v!(1.5, 1.5,));
+        let p1 = poly!(ref &v!(0,0,0), &v!(0, 1,0), &v!(1,0,0));
+        let p2 = poly!(ref &v!(1.5,0,0), &v!(0.5,0,0), &v!(1.5, 1.5,0));
         assert!(p1.intersects(&p2).unwrap());
     }
 
