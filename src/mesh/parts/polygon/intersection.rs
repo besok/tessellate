@@ -2,6 +2,7 @@ use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::vertex::{Vertex, Vertex2};
 use crate::mesh::{MeshError, MeshResult};
 
+/// The result of a simplex intersection test.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SimplexIntersection {
     DoNotIntersect,
@@ -17,6 +18,13 @@ impl SimplexIntersection {
 
     pub fn intersect(&self) -> bool {
         !self.do_not_intersect()
+    }
+
+    pub fn strict_intersect(&self) -> bool {
+        match self {
+            SimplexIntersection::Intersect | SimplexIntersection::Overlap => true,
+            _ => false,
+        }
     }
 }
 #[derive(Debug, PartialEq)]
@@ -35,7 +43,7 @@ impl PointInSimplex {
     pub fn is_outside(&self) -> bool {
         matches!(self, PointInSimplex::StrictlyOutside)
     }
-    pub fn not_outside(&self) -> bool {
+    pub fn is_inside(&self) -> bool {
         !self.is_outside()
     }
 }
@@ -54,6 +62,7 @@ pub(crate) fn triangle_intersects_triangle(
     let mut shared_vs = Vec::new();
     let a_vs = [a0, a1, a2];
     let b_vs = [b0, b1, b2];
+
     for a in [a0, a1, a2].iter() {
         for b in [b0, b1, b2].iter() {
             if a == b {
@@ -61,6 +70,7 @@ pub(crate) fn triangle_intersects_triangle(
             }
         }
     }
+
     match &shared_vs[..] {
         [_, _, _] => Ok(SimplexIntersection::SimplicialComplex),
         [x1, x2] => {
@@ -84,6 +94,7 @@ pub(crate) fn triangle_intersects_triangle(
                     let opp1 = drop_fn(b_opposite);
                     let opp0_wrt_e = orient2d(&e0, &e1, &opp0);
                     let opp1_wrt_e = orient2d(&e0, &e1, &opp1);
+                    // if the opposite vertices are on opposite sides of the edge, then the triangles intersect
                     (opp0_wrt_e > 0.0 && opp1_wrt_e < 0.0) || (opp0_wrt_e < 0.0 && opp1_wrt_e > 0.0)
                 };
 
@@ -108,17 +119,38 @@ pub(crate) fn triangle_intersects_triangle(
             let a_inter = segment_triangle_intersect_3d(ao1, ao2, b0, b1, b2)?;
             let b_inter = segment_triangle_intersect_3d(bo1, bo2, a0, a1, a2)?;
 
-            if a_inter == SimplexIntersection::Intersect
-                || a_inter == SimplexIntersection::Overlap
-                || b_inter == SimplexIntersection::Intersect
-                || b_inter == SimplexIntersection::Overlap
-            {
+            if a_inter.strict_intersect() || b_inter.strict_intersect() {
                 Ok(SimplexIntersection::Intersect)
             } else {
                 Ok(SimplexIntersection::SimplicialComplex)
             }
         }
-        [] => Ok(SimplexIntersection::SimplicialComplex),
+        [] => {
+            fn any_segment_triangle_intersect(
+                pairs: &[(&Vertex, &Vertex, &Vertex, &Vertex, &Vertex)],
+            ) -> MeshResult<bool> {
+                for &(s0, s1, t0, t1, t2) in pairs {
+                    if segment_triangle_intersect_3d(s0, s1, t0, t1, t2)?.intersect() {
+                        return Ok(true);
+                    }
+                }
+                Ok(false)
+            }
+            let pairs = [
+                (a0, a1, b0, b1, b2),
+                (a1, a2, b0, b1, b2),
+                (a2, a0, b0, b1, b2),
+                (b0, b1, a0, a1, a2),
+                (b1, b2, a0, a1, a2),
+                (b2, b0, a0, a1, a2),
+            ];
+
+            if any_segment_triangle_intersect(&pairs)? {
+                Ok(SimplexIntersection::Intersect)
+            } else {
+                Ok(SimplexIntersection::DoNotIntersect)
+            }
+        }
         _ => unreachable!("Invalid number of shared vertices"),
     }
 }
@@ -161,7 +193,6 @@ pub(crate) fn segment_triangle_intersect_3d(
     t1: &Vertex,
     t2: &Vertex,
 ) -> MeshResult<SimplexIntersection> {
-    println!("segment_triangle_intersect_3d: {} {} {} {} {}", s0, s1, t0, t1, t2);
     if s0 == s1 && triangle_is_colinear(t0, t1, t2) {
         return Err(MeshError::Custom("colinear vertices".to_string()));
     }
@@ -180,8 +211,8 @@ pub(crate) fn segment_triangle_intersect_3d(
     }
     if vol_s0_t == 0.0 && vol_s1_t == 0.0 {
         // s and t are coplanar
-        if point_in_triangle_3d(s0, t0, t1, t2).not_outside()
-            || point_in_triangle_3d(s1, t0, t1, t2).not_outside()
+        if point_in_triangle_3d(s0, t0, t1, t2).is_inside()
+            || point_in_triangle_3d(s1, t0, t1, t2).is_inside()
         {
             return Ok(SimplexIntersection::Intersect);
         }
@@ -236,7 +267,6 @@ pub(crate) fn segment_triangle_intersect_3d(
 
     Ok(SimplexIntersection::Intersect)
 }
-
 pub(crate) fn orient3d(a: &Vertex, b: &Vertex, c: &Vertex, d: &Vertex) -> f32 {
     let adx = a.x - d.x;
     let bdx = b.x - d.x;
@@ -477,7 +507,6 @@ pub(crate) fn segment_segment_intersect_2d(
         let (y_min_s1, y_max_s1) = (s10.y.min(s11.y), s10.y.max(s11.y));
         let (x_min_s0, x_max_s0) = (s00.x.min(s01.x), s00.x.max(s01.x));
         let (y_min_s0, y_max_s0) = (s00.y.min(s01.y), s00.y.max(s01.y));
-
 
         if (s00.x > x_min_s1 && s00.x < x_max_s1)
             || (s00.y > y_min_s1 && s00.y < y_max_s1)
