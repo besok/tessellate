@@ -93,20 +93,6 @@ impl<'a> MeshProperties<'a> {
 
         loops
     }
-    pub fn has_self_intersections(&self) -> MeshResult<bool> {
-        let polygons = self.mesh.try_polygons()?;
-
-        for i in 0..polygons.len() {
-            for j in 0..polygons.len() {
-                if i != j {
-                    if polygons[i].intersects(&polygons[j])? {
-                        return Ok(true);
-                    }
-                }
-            }
-        }
-        Ok(false)
-    }
     pub fn isolated_vertices(&self) -> Vec<&Vertex> {
         let mut all_vertices: HashSet<_> = self.mesh.vertices().into_iter().collect();
         for face in self.mesh.faces() {
@@ -120,7 +106,9 @@ impl<'a> MeshProperties<'a> {
     }
 
     pub fn is_volume(&self) -> MeshResult<bool> {
-        Ok(self.is_watertight() && !self.has_self_intersections()?)
+        Ok(self.is_watertight()
+            && self.is_manifold()
+        )
     }
 }
 

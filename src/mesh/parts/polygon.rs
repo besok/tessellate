@@ -3,7 +3,7 @@ mod intersection;
 use crate::mesh::normals::calculate_normal;
 use crate::mesh::parts::edge::Edge;
 use crate::mesh::parts::polygon::intersection::{
-    calculate_segment_wntv, polys_tri_intersect, triangle_is_colinear, vertices_are_colinear,
+    calculate_segment_wntv, polys_tri_intersect, triangle_is_colinear, vertices_are_collinear,
     SimplexIntersection,
 };
 use crate::mesh::parts::vertex::Vertex;
@@ -43,10 +43,10 @@ impl From<Vec<Vertex>> for Polygon {
 }
 
 impl Polygon {
-    pub fn take(vertices: Vec<Vertex>) -> Self {
+    pub fn new(vertices: Vec<Vertex>) -> Self {
         Self { vertices }
     }
-    pub fn new(vertices: Vec<&Vertex>) -> Self {
+    pub fn new_ref(vertices: Vec<&Vertex>) -> Self {
         Self {
             vertices: vertices.into_iter().map(|v| v.clone()).collect(),
         }
@@ -69,7 +69,7 @@ impl Polygon {
             vec![self.clone()]
         } else {
             (1..vs.len() - 1)
-                .map(|i| Polygon::new(vec![&vs[0], &vs[i], &vs[i + 1]]))
+                .map(|i| Polygon::new_ref(vec![&vs[0], &vs[i], &vs[i + 1]]))
                 .collect()
         }
     }
@@ -132,7 +132,7 @@ impl Polygon {
 
     /// Check if the polygon intersects another polygon
     pub fn intersects(&self, other: &Polygon) -> MeshResult<bool> {
-        if vertices_are_colinear(&self) || vertices_are_colinear(&other) {
+        if vertices_are_collinear(&self) || vertices_are_collinear(&other) {
             return Err(MeshError::Custom("collinear vertices".to_string()));
         }
 
@@ -150,7 +150,7 @@ impl Polygon {
         }
     }
     pub fn intersects_precise(&self, other: &Polygon) -> MeshResult<SimplexIntersection> {
-        if vertices_are_colinear(&self) || vertices_are_colinear(&other) {
+        if vertices_are_collinear(&self) || vertices_are_collinear(&other) {
             return Err(MeshError::Custom("collinear vertices".to_string()));
         }
 
@@ -224,19 +224,19 @@ mod tests {
 
     #[test]
     fn test_intersects_sat() {
-        let p1 = Polygon::new(vec![
+        let p1 = Polygon::new_ref(vec![
             &Vertex::new(0.0, 0.0, 0.0),
             &Vertex::new(1.0, 0.0, 0.0),
             &Vertex::new(0.5, 1.0, 0.0),
         ]);
-        let p2 = Polygon::new(vec![
+        let p2 = Polygon::new_ref(vec![
             &Vertex::new(0.5, 0.5, 0.0),
             &Vertex::new(1.5, 0.5, 0.0),
             &Vertex::new(1.0, 1.5, 0.0),
         ]);
         assert!(p1.intersects(&p2).unwrap());
 
-        let p3 = Polygon::new(vec![
+        let p3 = Polygon::new_ref(vec![
             &Vertex::new(2.0, 2.0, 0.0),
             &Vertex::new(3.0, 2.0, 0.0),
             &Vertex::new(2.5, 3.0, 0.0),

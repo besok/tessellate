@@ -249,7 +249,7 @@ impl Mesh {
             .map(|i| self.get(*i))
             .into_iter()
             .collect::<Result<Vec<_>, _>>()
-            .map(Polygon::new)
+            .map(Polygon::new_ref)
     }
 }
 

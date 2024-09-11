@@ -58,12 +58,12 @@ macro_rules! edge {
 #[macro_export]
 macro_rules! poly {
     ($($v:expr),*) => {
-        Polygon::take(vec![$($v),*])
-    };
-    (ref $($v:expr),*) => {
         Polygon::new(vec![$($v),*])
     };
+    (ref $($v:expr),*) => {
+        Polygon::new_ref(vec![$($v),*])
+    };
     ($($x:expr, $y:expr, $z:expr);*) => {
-        Polygon::take(vec![$(v!($x, $y, $z)),*])
+        Polygon::new(vec![$(v!($x, $y, $z)),*])
     };
 }

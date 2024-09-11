@@ -113,12 +113,12 @@ mod tests {
     #[test]
     fn smoke() {
         let polygons = vec![
-            Polygon::new(vec![
+            Polygon::new_ref(vec![
                 &Vertex::new(0.0, 0.0, 0.0),
                 &Vertex::new(1.0, 0.0, 0.0),
                 &Vertex::new(0.0, 1.0, 0.0),
             ]),
-            Polygon::new(vec![
+            Polygon::new_ref(vec![
                 &Vertex::new(1.0, 1.0, 0.0),
                 &Vertex::new(2.0, 1.0, 0.0),
                 &Vertex::new(1.0, 2.0, 0.0),
@@ -145,12 +145,12 @@ mod tests {
     #[test]
     fn test_find_polygons() {
         let polygons = vec![
-            Polygon::new(vec![
+            Polygon::new_ref(vec![
                 &Vertex::new(0.0, 0.0, 0.0),
                 &Vertex::new(1.0, 0.0, 0.0),
                 &Vertex::new(0.0, 1.0, 0.0),
             ]),
-            Polygon::new(vec![
+            Polygon::new_ref(vec![
                 &Vertex::new(1.0, 1.0, 0.0),
                 &Vertex::new(2.0, 1.0, 0.0),
                 &Vertex::new(1.0, 2.0, 0.0),

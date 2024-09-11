@@ -66,6 +66,8 @@ impl BoundingBox {
         false
     }
 
+
+
     pub fn from_polygons(polygons: &Vec<Polygon>) -> BoundingBox {
         polygons
             .into_iter()

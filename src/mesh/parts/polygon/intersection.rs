@@ -87,11 +87,11 @@ pub(crate) fn triangle_intersects_triangle(
             if orient3d(a0, a1, a2, b_opposite) == 0.0 {
                 Ok(SimplexIntersection::SimplicialComplex)
             } else {
-                let check_intersection = |drop_fn: fn(&Vertex) -> Vertex2| -> bool {
-                    let e0 = drop_fn(*x1);
-                    let e1 = drop_fn(*x2);
-                    let opp0 = drop_fn(a_opposite);
-                    let opp1 = drop_fn(b_opposite);
+                let check_intersection = |to_2d : fn(&Vertex) -> Vertex2| -> bool {
+                    let e0 = to_2d(*x1);
+                    let e1 = to_2d(*x2);
+                    let opp0 = to_2d(a_opposite);
+                    let opp1 = to_2d(b_opposite);
                     let opp0_wrt_e = orient2d(&e0, &e1, &opp0);
                     let opp1_wrt_e = orient2d(&e0, &e1, &opp1);
                     // if the opposite vertices are on opposite sides of the edge, then the triangles intersect
@@ -523,7 +523,7 @@ pub(crate) fn segment_segment_intersect_2d(
 
     SimplexIntersection::DoNotIntersect
 }
-pub fn vertices_are_colinear(p: &Polygon) -> bool {
+pub fn vertices_are_collinear(p: &Polygon) -> bool {
     let ps = p.triangulate();
     ps.iter().any(|p| {
         let v0 = p.vertices()[0];

@@ -1,14 +1,11 @@
-use tessellate::mesh::parts::face::Face;
-use tessellate::mesh::parts::vertex::Vertex;
-use tessellate::mesh::parts::polygon::Polygon;
 use glam::Vec3;
 use tessellate::gpu::camera::position::CameraPosition;
 use tessellate::mesh::material::Color;
+use tessellate::mesh::parts::face::Face;
+use tessellate::mesh::parts::vertex::Vertex;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::{HasMesh, Mesh};
-use tessellate::{gpu, poly,v, TessResult};
-use tessellate::mesh::bool::Ray;
-use tessellate::mesh::shape::beam::Beam;
+use tessellate::{gpu, TessResult};
 
 fn main() -> TessResult<()> {
     let vertices = vec![
