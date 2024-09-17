@@ -1,8 +1,8 @@
-use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::bbox::BoundingBox;
+use crate::mesh::parts::polygon::Polygon;
+use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::query::MeshQuery;
 use crate::mesh::{Mesh, MeshError, MeshResult};
-use crate::mesh::parts::vertex::Vertex;
 
 pub mod build;
 pub mod query;
@@ -26,6 +26,13 @@ impl OctNode {
             OctNode::Leaf { ref polygons, .. } => polygons.clone(),
             OctNode::Node { .. } => vec![],
         }
+    }
+
+    pub fn triangles(&self) -> Vec<Polygon> {
+        self.polygons()
+            .into_iter()
+            .flat_map(|p| p.triangulate())
+            .collect()
     }
 
     pub fn aabb(&self) -> &BoundingBox {

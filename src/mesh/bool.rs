@@ -1,3 +1,6 @@
+mod intersections;
+
+use crate::mesh::bool::intersections::IntersectionAnalyzer;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::query::MeshQuery;
@@ -24,32 +27,7 @@ pub fn perform_bool(
     if !props_a.is_volume()? || !props_b.is_volume()? {
         Err(MeshError::WrongMesh("Meshes must be volumes".to_string()))
     } else {
-        let a_tree = MeshQuery::new(mesh_a).try_octree(depth)?;
-        let b_tree = MeshQuery::new(mesh_b).try_octree(depth)?;
-        let mut inter_polys = Vec::new();
-        let mut other_polys_a = HashSet::new();
-        let mut other_polys_b = HashSet::new();
-        for a_leaf in a_tree.iter_leafs() {
-            for b_leaf in b_tree.iter_leafs() {
-                let a_polygons = a_leaf.polygons();
-                let b_polygons = b_leaf.polygons();
-                if a_leaf.is_overlapping(b_leaf) {
-                    for a_poly in a_polygons.iter() {
-                        for b_poly in b_polygons.iter() {
-                            if a_poly.intersects_precise(b_poly)? {
-                                inter_polys.push((a_poly.clone(), b_poly.clone()));
-                            } else {
-                                other_polys_a.insert(a_poly.clone());
-                                other_polys_b.insert(b_poly.clone());
-                            }
-                        }
-                    }
-                }else {
-                    other_polys_a.extend(a_polygons.iter().cloned());
-                    other_polys_b.extend(b_polygons.iter().cloned());
-                }
-            }
-        }
+        let mut in_analyzer = IntersectionAnalyzer::new(mesh_a, mesh_b, depth)?;
 
         Err(MeshError::Custom("Boolean operations are not implemented yet".to_string()))
     }

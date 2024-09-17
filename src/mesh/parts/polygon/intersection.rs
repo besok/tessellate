@@ -267,7 +267,7 @@ pub(crate) fn segment_triangle_intersect_3d(
 
     Ok(SimplexIntersection::Intersect)
 }
-pub(crate) fn orient3d(a: &Vertex, b: &Vertex, c: &Vertex, d: &Vertex) -> f32 {
+pub fn orient3d(a: &Vertex, b: &Vertex, c: &Vertex, d: &Vertex) -> f32 {
     let adx = a.x - d.x;
     let bdx = b.x - d.x;
     let cdx = c.x - d.x;

@@ -1,4 +1,4 @@
-mod intersection;
+pub mod intersection;
 
 use crate::mesh::normals::calculate_normal;
 use crate::mesh::parts::edge::Edge;
@@ -83,6 +83,14 @@ impl Polygon {
             }
 
             Ok(centroid * (1.0 / self.vertices.len() as f32))
+        }
+    }
+
+    pub fn to_triangle(&self) -> MeshResult<(&Vertex, &Vertex, &Vertex)> {
+        if self.vertices.len() != 3 {
+            Err(MeshError::Custom("Polygon must have 3 vertices".to_string()))
+        } else {
+            Ok((&self.vertices[0], &self.vertices[1], &self.vertices[2]))
         }
     }
 
