@@ -3,12 +3,42 @@ pub mod intersection;
 use crate::mesh::normals::calculate_normal;
 use crate::mesh::parts::edge::Edge;
 use crate::mesh::parts::polygon::intersection::{
-    calculate_segment_wntv, polys_tri_intersect, triangle_is_colinear, vertices_are_collinear,
-    SimplexIntersection,
+    calculate_segment_wntv, point_in_triangle_3d, polys_tri_intersect, triangle_is_colinear,
+    vertices_are_collinear, PointInSimplex, SimplexIntersection,
 };
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{MeshError, MeshResult};
 use std::fmt::Display;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Triangle {
+    v0: Vertex,
+    v1: Vertex,
+    v2: Vertex,
+}
+
+impl Triangle {
+    pub fn new(v0: Vertex, v1: Vertex, v2: Vertex) -> Self {
+        Self { v0, v1, v2 }
+    }
+
+    pub fn check_point(&self, p: &Vertex) -> PointInSimplex {
+        point_in_triangle_3d(p, &self.v0, &self.v1, &self.v2)
+    }
+}
+
+impl TryFrom<Polygon> for Triangle {
+    type Error = MeshError;
+
+    fn try_from(value: Polygon) -> Result<Self, Self::Error> {
+        let polys = value.triangulate();
+        if polys.len() != 1 {
+            Err(MeshError::Custom("Polygon is not a triangle".to_string()))
+        } else {
+            Ok(Self::new(polys[0].vertices[0], polys[0].vertices[1], polys[0].vertices[2]))
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Polygon {
@@ -56,10 +86,6 @@ impl Polygon {
         &self.vertices
     }
 
-    pub fn has_v(&self, v: &Vertex) -> bool {
-        self.vertices.contains(v)
-    }
-
     pub fn contains(&self, vertex: &Vertex) -> bool {
         self.edges().iter().any(|e| e.contains(vertex))
     }
@@ -83,14 +109,6 @@ impl Polygon {
             }
 
             Ok(centroid * (1.0 / self.vertices.len() as f32))
-        }
-    }
-
-    pub fn to_triangle(&self) -> MeshResult<(&Vertex, &Vertex, &Vertex)> {
-        if self.vertices.len() != 3 {
-            Err(MeshError::Custom("Polygon must have 3 vertices".to_string()))
-        } else {
-            Ok((&self.vertices[0], &self.vertices[1], &self.vertices[2]))
         }
     }
 

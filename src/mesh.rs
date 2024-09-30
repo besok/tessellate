@@ -102,6 +102,11 @@ impl Mesh {
     pub fn aabb(&self) -> BoundingBox {
         BoundingBox::from(self)
     }
+
+    /// Subdivide the mesh
+    /// The subdivision is based on the midpoint of the edges
+    /// The new vertices are normalized
+    /// The new faces are created based on the subdivision
     pub fn subdivide(&mut self) -> MeshResult<()> {
         let mut new_vertices = self.vertices.to_vec();
         let mut new_faces = Vec::new();
@@ -181,37 +186,34 @@ impl Mesh {
 
 impl Mesh {
     pub fn union<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
-        bool::perform_bool(self, &other.into(), bool::BoolType::Union, None, None)
+        bool::perform_bool(self, &other.into(), bool::BoolType::Union, None)
     }
     pub fn union_with<T: Into<Mesh>>(
         &self,
         other: T,
-        depth: Option<usize>,
         color: Option<Color>,
     ) -> MeshResult<Mesh> {
-        bool::perform_bool(self, &other.into(), bool::BoolType::Union, depth, color)
+        bool::perform_bool(self, &other.into(), bool::BoolType::Union, color)
     }
     pub fn intersection_with<T: Into<Mesh>>(
         &self,
         other: T,
-        depth: Option<usize>,
         color: Option<Color>,
     ) -> MeshResult<Mesh> {
-        bool::perform_bool(self, &other.into(), bool::BoolType::Intersection, depth, color)
+        bool::perform_bool(self, &other.into(), bool::BoolType::Intersection, color)
     }
     pub fn intersection<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
-        bool::perform_bool(self, &other.into(), bool::BoolType::Intersection, None, None)
+        bool::perform_bool(self, &other.into(), bool::BoolType::Intersection, None, )
     }
     pub fn difference_with<T: Into<Mesh>>(
         &self,
         other: T,
-        depth: Option<usize>,
         color: Option<Color>,
     ) -> MeshResult<Mesh> {
-        bool::perform_bool(self, &other.into(), bool::BoolType::Difference, depth, color)
+        bool::perform_bool(self, &other.into(), bool::BoolType::Difference,  color)
     }
     pub fn difference<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
-        bool::perform_bool(self, &other.into(), bool::BoolType::Difference, None, None)
+        bool::perform_bool(self, &other.into(), bool::BoolType::Difference,  None)
     }
 }
 

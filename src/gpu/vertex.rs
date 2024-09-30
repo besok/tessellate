@@ -97,11 +97,11 @@ fn vertices_check(
     vertices: &Vec<parts::vertex::Vertex>,
 ) -> Result<(), MeshError> {
     if vs.len() != vertices.len() {
-        return Err(MeshError::InvalidIndex(format!(
+        Err(MeshError::InvalidIndex(format!(
             "Vertex color count {} does not match vertex count {}",
             vs.len(),
             vertices.len()
-        )));
+        )))
     } else {
         Ok(())
     }

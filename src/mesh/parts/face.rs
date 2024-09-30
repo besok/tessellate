@@ -6,15 +6,15 @@ impl From<&Face> for Vec<MeshEdge> {
     fn from(face: &Face) -> Self {
         match face {
             Face::Triangle(a, b, c) => vec![
-                MeshEdge::new_idx(*a, *b),
-                MeshEdge::new_idx(*b, *c),
-                MeshEdge::new_idx(*c, *a),
+                MeshEdge::new(*a, *b),
+                MeshEdge::new(*b, *c),
+                MeshEdge::new(*c, *a),
             ],
             Face::Quad(a, b, c, d) => vec![
-                MeshEdge::new_idx(*a, *b),
-                MeshEdge::new_idx(*b, *c),
-                MeshEdge::new_idx(*c, *d),
-                MeshEdge::new_idx(*d, *a),
+                MeshEdge::new(*a, *b),
+                MeshEdge::new(*b, *c),
+                MeshEdge::new(*c, *d),
+                MeshEdge::new(*d, *a),
             ],
         }
     }
@@ -32,17 +32,17 @@ impl Face {
         match self {
             Face::Triangle(a, b, c) => {
                 vec![
-                    MeshEdge::new_idx(*a, *b),
-                    MeshEdge::new_idx(*b, *c),
-                    MeshEdge::new_idx(*c, *a),
+                    MeshEdge::new(*a, *b),
+                    MeshEdge::new(*b, *c),
+                    MeshEdge::new(*c, *a),
                 ]
             }
             Face::Quad(a, b, c, d) => {
                 vec![
-                    MeshEdge::new_idx(*a, *b),
-                    MeshEdge::new_idx(*b, *c),
-                    MeshEdge::new_idx(*c, *d),
-                    MeshEdge::new_idx(*d, *a),
+                    MeshEdge::new(*a, *b),
+                    MeshEdge::new(*b, *c),
+                    MeshEdge::new(*c, *d),
+                    MeshEdge::new(*d, *a),
                 ]
             }
         }

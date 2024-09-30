@@ -6,16 +6,14 @@ use glam::Vec3;
 /// The structure to store the edge of a mesh
 /// The edge can be represented by indexes or vertices
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct  MeshEdge(pub usize, pub usize);
+pub struct MeshEdge(pub usize, pub usize);
 
 impl MeshEdge {
     pub fn indexes(&self) -> Option<(usize, usize)> {
         Some((self.0, self.1))
     }
 
-
-
-    pub fn new_idx(a: usize, b: usize) -> Self {
+    pub fn new(a: usize, b: usize) -> Self {
         MeshEdge(a, b)
     }
 
@@ -26,7 +24,7 @@ where
     V: Into<usize>,
 {
     fn from(value: (V, V)) -> Self {
-        MeshEdge::new_idx(value.0.into(), value.1.into())
+        MeshEdge::new(value.0.into(), value.1.into())
     }
 }
 

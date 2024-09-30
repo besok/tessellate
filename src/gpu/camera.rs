@@ -62,7 +62,7 @@ impl Camera {
             }],
             label: Some("camera_bind_group"),
         });
-        let coordinator = CameraCoordinator::new(0.1, 0.0005);
+        let coordinator = CameraCoordinator::new(5.0, 0.1, 0.0005);
 
         Self::new(
             camera_pos,
