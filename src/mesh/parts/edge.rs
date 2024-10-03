@@ -1,3 +1,4 @@
+use std::hash::Hash;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{MeshError, MeshResult};
 use glam::Vec3;
@@ -17,6 +18,9 @@ impl MeshEdge {
         MeshEdge(a, b)
     }
 
+    pub fn inv(&self) -> Self {
+        MeshEdge(self.1, self.0)
+    }
 }
 
 impl<V> From<(V, V)> for MeshEdge
@@ -28,16 +32,22 @@ where
     }
 }
 
-
-
 /// Edge
 /// The structure to store an edge
 /// The edge is represented by two vertices
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Hash)]
 pub struct Edge {
     pub a: Vertex,
     pub b: Vertex,
 }
+
+impl PartialEq for Edge {
+    fn eq(&self, other: &Self) -> bool {
+        (self.a == other.a && self.b == other.b) || (self.a == other.b && self.b == other.a)
+    }
+}
+
+impl Eq for Edge {}
 
 impl Edge {
     pub fn new(a: Vertex, b: Vertex) -> Self {

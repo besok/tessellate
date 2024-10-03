@@ -1,3 +1,4 @@
+mod analyzer;
 
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
@@ -6,9 +7,10 @@ use crate::mesh::{Mesh, MeshError, MeshResult};
 use std::collections::HashSet;
 
 pub enum BoolType {
-    Union,
-    Intersection,
-    Difference,
+    Union, // A ∪ B
+    Intersection, // A ∩ B
+    Difference, // A - B
+    SymmetricDifference, // A ⊕ B
 }
 /// Perform a boolean operation on two meshes
 /// The implementation from this function is based on the paper:

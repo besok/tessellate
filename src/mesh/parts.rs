@@ -5,6 +5,7 @@ mod r#macro;
 pub mod polygon;
 pub mod vertex;
 pub mod plane;
+pub mod ray;
 
 pub type Idx = usize;
 

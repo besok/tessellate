@@ -12,9 +12,9 @@ use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Triangle {
-    v0: Vertex,
-    v1: Vertex,
-    v2: Vertex,
+    pub v0: Vertex,
+    pub v1: Vertex,
+    pub v2: Vertex,
 }
 
 impl Triangle {
@@ -25,6 +25,11 @@ impl Triangle {
     pub fn check_point(&self, p: &Vertex) -> PointInSimplex {
         point_in_triangle_3d(p, &self.v0, &self.v1, &self.v2)
     }
+
+    pub fn vertices(&self) -> (Vertex, Vertex, Vertex) {
+        (self.v0, self.v1, self.v2)
+    }
+
 }
 
 impl TryFrom<Polygon> for Triangle {

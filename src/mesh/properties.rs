@@ -40,6 +40,16 @@ impl<'a> MeshProperties<'a> {
             && self.boundary_loops().is_empty()
             && self.isolated_vertices().is_empty()
     }
+
+    pub fn is_solid(&self) -> bool {
+        self.is_watertight()
+            && self.is_non_self_intersecting()
+    }
+
+    pub fn is_non_self_intersecting(&self) -> bool {
+        unimplemented!()
+    }
+
     pub fn boundary_loops(&self) -> Vec<Vec<MeshEdge>> {
         let mut edge_count = HashMap::new();
         for face in self.mesh.faces() {

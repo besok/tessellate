@@ -215,6 +215,17 @@ impl Mesh {
     pub fn difference<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
         bool::perform_bool(self, &other.into(), bool::BoolType::Difference,  None)
     }
+
+    pub fn sym_difference_with<T: Into<Mesh>>(
+        &self,
+        other: T,
+        color: Option<Color>,
+    ) -> MeshResult<Mesh> {
+        bool::perform_bool(self, &other.into(), bool::BoolType::SymmetricDifference,  color)
+    }
+    pub fn sym_difference<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
+        bool::perform_bool(self, &other.into(), bool::BoolType::SymmetricDifference,  None)
+    }
 }
 
 impl Mesh {
