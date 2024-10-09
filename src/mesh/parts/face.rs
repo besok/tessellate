@@ -1,6 +1,6 @@
-use std::hash::{Hash, Hasher};
-use crate::mesh::parts::Idx;
 use crate::mesh::parts::edge::MeshEdge;
+use crate::mesh::parts::Idx;
+use std::hash::{Hash, Hasher};
 
 impl From<&Face> for Vec<MeshEdge> {
     fn from(face: &Face) -> Self {
@@ -27,6 +27,12 @@ pub enum Face {
 }
 
 impl Face {
+    pub fn with_offset(&self, offset: usize) -> Face {
+        match self {
+            Face::Triangle(a, b, c) => Face::Triangle(a + offset, b + offset, c + offset),
+            Face::Quad(a, b, c, d) => Face::Quad(a + offset, b + offset, c + offset, d + offset),
+        }
+    }
 
     pub fn edges(&self) -> Vec<MeshEdge> {
         match self {

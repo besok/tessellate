@@ -1,4 +1,5 @@
 mod analyzer;
+mod dsu;
 
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
