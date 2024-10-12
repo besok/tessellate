@@ -23,54 +23,32 @@ spheres, cubes, cuboids, cylinders, cones, rings, spheres, torus, planes and mor
 These objects serve as building blocks for more complex visualizations.
 The detailed example can be found in the [basic_shapes](examples/basic_shapes/README.md) example.
 
-
-
+### Creating parametric Geometric Objects
 ### Creating an Explicit Structured Grid
 ### Creating a Structured Surface
 ### Creating a Triangulated Surface
-
 ### Platonic Solids
-
 ### Point Cloud
 
-### Parametric Geometric Objects
 
 ## Filtering
-
 ### Boolean Operations.
-
 ### Extract Cell Centers
-
 ### Clipping with a Surface, plane and boxes
-
 ### Collision Detection
-
 ### Volumetric Analysis
-
 ### Find and label connected regions.
-
 ### Decimate a mesh
-
 ### Extract Edges
-
 ### Extract Surface
-
 ### Gaussian Smoothing
-
 ### Geodesic Paths
-
 ### Interpolating
-
 ### Computing Mesh Quality
-
 ### Resampling
-
 ### Surface Smoothing
-
 ### Surface Reconstruction
-
 ### Voxelize a Surface Mesh
-
 ### Subdivide Cells
 
 ## Advanced
@@ -91,28 +69,18 @@ The library facilitates creating interactive 3D plots using a plotter object.
 Assign colors to data points based on scalar values associated with the data. 
 
 ### Anti-Aliasing
-
 ### Measuring distances and angles
-
 ### Show Edges
 ### Legends and glyphs
-### Lighting and Shading. 
 
+### Lighting and Shading.
 Control lighting effects and shading models to enhance the visual representation of your data. 
 Explore options like smooth shading, ambient lighting, and directional lighting.
 
 ### Applying Textures
-
 ### Transparency.
-
-Adjust the transparency of objects to reveal underlying structures or highlight specific features.
-
 ### Camera Control.
-Set the camera position and orientation to view your data from different angles.
-
 ### Animations.
-Tessellate enables generating animations to visualize dynamic processes or showcase different views of your data over time.
- 
 
 ## Structures
 
