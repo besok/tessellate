@@ -52,14 +52,14 @@ impl<T: Default> MeshCache<T> {
     }
 }
 
-pub(crate) struct MeshBoolAnalyzer<T> {
+pub(crate) struct MeshBoolAnalyzer  {
     vertices: Vec<Vertex>,
     faces: Vec<Face>,
     flags: Vec<u8>,
 }
 
-impl<'a, T: Default> MeshBoolAnalyzer<T> {
-    pub(crate) fn new(mesh: &'a Mesh) -> MeshResult<MeshBoolAnalyzer<T>> {
+impl<'a,> MeshBoolAnalyzer {
+    pub(crate) fn new(mesh: &'a Mesh) -> MeshResult<MeshBoolAnalyzer> {
         Ok(Self {
             vertices: mesh.vertices().to_vec(),
             faces: mesh.faces().to_vec(),

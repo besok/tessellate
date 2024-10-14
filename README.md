@@ -24,6 +24,11 @@ These objects serve as building blocks for more complex visualizations.
 The detailed example can be found in the [basic_shapes](examples/basic_shapes/README.md) example.
 
 ### Creating parametric Geometric Objects
+
+The library provides functions to create parametric geometric shapes like:
+supertoroids, parametric ellipsoids, partial parametric ellisoids, pseudospheres, and more.
+The detailed example can be found in the [parametric_shapes](examples/parametric_shapes/README.md) example.
+
 ### Creating an Explicit Structured Grid
 ### Creating a Structured Surface
 ### Creating a Triangulated Surface
@@ -82,7 +87,7 @@ Explore options like smooth shading, ambient lighting, and directional lighting.
 ### Camera Control.
 ### Animations.
 
-## Structures
+## Auxiliary Tools and Data Structures.
 
 ### KDTree.
 

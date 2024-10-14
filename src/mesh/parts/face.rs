@@ -27,6 +27,14 @@ pub enum Face {
 }
 
 impl Face {
+    pub fn new3(a: Idx, b: Idx, c: Idx) -> Self {
+        Face::Triangle(a, b, c)
+    }
+
+    pub fn new4(a: Idx, b: Idx, c: Idx, d: Idx) -> Self {
+        Face::Quad(a, b, c, d)
+    }
+
     pub fn with_offset(&self, offset: usize) -> Face {
         match self {
             Face::Triangle(a, b, c) => Face::Triangle(a + offset, b + offset, c + offset),

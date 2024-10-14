@@ -13,7 +13,6 @@ pub struct Cone {
     height: f32,
     mesh: Mesh,
 }
-
 impl Deref for Cone {
     type Target = Mesh;
 
@@ -21,6 +20,16 @@ impl Deref for Cone {
         &self.mesh
     }
 }
+impl HasMesh for Cone {
+    fn mesh(&self) -> &Mesh {
+        &self.mesh
+    }
+    fn mesh_mut(&mut self) -> &mut Mesh {
+        &mut self.mesh
+    }
+}
+
+
 impl Default for Cone {
     fn default() -> Self {
         Cone::create(Vertex::default(), 1.0, 2.0, 32, Color::default())
@@ -66,11 +75,4 @@ impl Cone {
         }
     }
 }
-impl HasMesh for Cone {
-    fn mesh(&self) -> &Mesh {
-        &self.mesh
-    }
-    fn mesh_mut(&mut self) -> &mut Mesh {
-        &mut self.mesh
-    }
-}
+
