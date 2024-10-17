@@ -1,5 +1,4 @@
 use crate::mesh::material::Color;
-use crate::mesh::parts::face::Face;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{HasMesh, Mesh};
 use std::ops::Deref;
@@ -7,19 +6,19 @@ use std::ops::Deref;
 #[derive(Debug, Clone)]
 pub struct Supertoroid {
     /// The radius from the center to the middle of the ring of the supertoroid.
-    ring_rad: f64,
+    ring_rad: f32,
     /// The radius of the cross section of ring of the supertoroid.
-    cross_section_rad: f64,
+    cross_section_rad: f32,
     /// The scaling factor for the x-axis.
-    x_rad: f64,
+    x_rad: f32,
     /// The scaling factor for the y-axis.
-    y_rad: f64,
+    y_rad: f32,
     /// The scaling factor for the z-axis.
-    z_rad: f64,
+    z_rad: f32,
     /// The shape of the torus ring.
-    n1: f64,
+    n1: f32,
     /// The shape of the cross section of the torus ring.
-    n2: f64,
+    n2: f32,
     mesh: Mesh,
 }
 
@@ -60,13 +59,13 @@ impl Supertoroid {
     /// A new `Supertoroid` instance.
     pub fn create<V1, C>(
         center: V1,
-        ring_rad: f64,
-        cross_section_rad: f64,
-        x_rad: f64,
-        y_rad: f64,
-        z_rad: f64,
-        n1: f64,
-        n2: f64,
+        ring_rad: f32,
+        cross_section_rad: f32,
+        x_rad: f32,
+        y_rad: f32,
+        z_rad: f32,
+        n1: f32,
+        n2: f32,
         steps: usize,
         color: C,
     ) -> Self
@@ -79,14 +78,14 @@ impl Supertoroid {
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
 
-        let step_u = 2.0 * std::f64::consts::PI / steps as f64;
-        let step_v = 2.0 * std::f64::consts::PI / steps as f64;
+        let step_u = 2.0 * std::f32::consts::PI / steps as f32;
+        let step_v = 2.0 * std::f32::consts::PI / steps as f32;
 
         // Generate vertices
         for i in 0..=steps {
-            let u = i as f64 * step_u;
+            let u = i as f32 * step_u;
             for j in 0..=steps {
-                let v = j as f64 * step_v;
+                let v = j as f32 * step_v;
 
                 // Parametric coordinates of the supertoroid
                 let cos_u = u.cos();
@@ -106,9 +105,9 @@ impl Supertoroid {
                 let z = z_rad * cross_section_rad * sin_v.signum() * sin_v.abs().powf(n1);
 
                 vertices.push(Vertex::new(
-                    center.x + x as f32,
-                    center.y + y as f32,
-                    center.z + z as f32,
+                    center.x + x,
+                    center.y + y,
+                    center.z + z,
                 ));
             }
         }

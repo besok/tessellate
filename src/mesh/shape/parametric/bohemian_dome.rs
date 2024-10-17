@@ -6,7 +6,6 @@ use std::f32::consts::PI;
 use std::ops::Deref;
 
 /// A Bohemian Dome is a parametric shape that is a generalization of a torus.
-/// It is defined by the parametric equations:
 #[derive(Debug, Clone)]
 pub struct BohemianDome {
     a: f32,

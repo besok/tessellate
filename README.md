@@ -26,7 +26,7 @@ The detailed example can be found in the [basic_shapes](examples/basic_shapes/RE
 ### Creating parametric Geometric Objects
 
 The library provides functions to create parametric geometric shapes like:
-supertoroids, parametric ellipsoids, partial parametric ellisoids, pseudospheres, and more.
+supertoroids, parametric ellipsoids, partial parametric ellisoids, pseudospheres,spirals and more.
 The detailed example can be found in the [parametric_shapes](examples/parametric_shapes/README.md) example.
 
 ### Creating an Explicit Structured Grid
