@@ -19,7 +19,7 @@ pub mod shape;
 pub mod tables;
 pub mod transform;
 
-type MeshResult<T> = Result<T, MeshError>;
+pub type MeshResult<T> = Result<T, MeshError>;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum MeshError {
