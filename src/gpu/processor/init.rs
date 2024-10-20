@@ -2,25 +2,22 @@ use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::Camera;
 use crate::gpu::error::{GpuError, GpuResult};
 use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor};
-use crate::gpu::vertex::{Vertex};
+use crate::gpu::vertex::Vertex;
 use crate::mesh::Mesh;
 use std::sync::Arc;
-use wgpu::Features;
 use wgpu::util::DeviceExt;
+use wgpu::Features;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::Window;
+use crate::gpu::Settings;
 
-
-pub struct Settings{
-    // if true, required_features: wgpu::Features::POLYGON_MODE_LINE and polygon_mode: wgpu::PolygonMode::Line
-    pub only_lines:bool
-}
 
 impl GpuProcessor {
     pub fn try_init(
         event_loop: &ActiveEventLoop,
         meshes: &Vec<Mesh>,
         camera_pos: CameraPosition,
+        settings: Settings,
     ) -> GpuResult<GpuHandler> {
         let attributes = Window::default_attributes();
         let window = Arc::new(event_loop.create_window(attributes)?);
@@ -72,7 +69,7 @@ impl GpuProcessor {
         let mut gpu_meshes = Vec::new();
 
         for mesh in meshes.into_iter() {
-            let vertices:Vec<Vertex> =mesh.try_into()?;
+            let vertices: Vec<Vertex> = mesh.try_into()?;
             let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
                 label: Some("Vertex Buffer"),
                 contents: bytemuck::cast_slice(&vertices),
@@ -112,7 +109,7 @@ impl GpuProcessor {
                 })],
             }),
             primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleList,
+                topology: settings.topology.to_primitive_topology(),
                 strip_index_format: None,
                 polygon_mode: wgpu::PolygonMode::Fill,
                 ..Default::default()
@@ -133,16 +130,7 @@ impl GpuProcessor {
         });
 
         Ok(GpuHandler::new(
-            window,
-            instance,
-            surface,
-            device,
-            queue,
-            config,
-            size,
-            pipeline,
-            gpu_meshes,
-            camera,
+            window, instance, surface, device, queue, config, size, pipeline, gpu_meshes, camera,
         ))
     }
 }

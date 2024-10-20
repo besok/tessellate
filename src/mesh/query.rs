@@ -1,13 +1,15 @@
+use super::parts::vertex::Vertex;
+use crate::mesh::parts::edge::Edge;
 use crate::mesh::query::bsp::BSPTree;
 use crate::mesh::query::kdtree::KDTree;
+use crate::mesh::query::octree::Octree;
 use crate::mesh::query::sskdtree::SSKDTree;
 use crate::mesh::{Mesh, MeshResult};
-use crate::mesh::query::octree::Octree;
 
 pub mod bsp;
 pub mod kdtree;
-pub mod sskdtree;
 pub mod octree;
+pub mod sskdtree;
 
 /// A query object for a mesh
 pub struct MeshQuery<'a>(&'a Mesh);
@@ -27,7 +29,6 @@ impl<'a> MeshQuery<'a> {
         self.0
     }
 
-
     /// Try to build a KDTree from the mesh
     /// # Arguments
     /// * `depth` - The maximum depth of the tree
@@ -46,7 +47,6 @@ impl<'a> MeshQuery<'a> {
         SSKDTree::try_from_mesh(self.0, depth, min_polygons)
     }
 
-
     /// Try to build an Octree from the mesh
     /// # Arguments
     /// * `depth` - The maximum depth of the tree
@@ -57,7 +57,25 @@ impl<'a> MeshQuery<'a> {
     /// Try to build a BSPTree from the mesh
     /// # Arguments
     /// * `depth` - The maximum depth of the tree
-    pub fn try_bsp_tree(&self,depth: Option<usize>) -> MeshResult<BSPTree> {
+    pub fn try_bsp_tree(&self, depth: Option<usize>) -> MeshResult<BSPTree> {
         BSPTree::try_from_mesh(self.0, depth)
+    }
+
+    /// Extract the centers of the polygons
+    pub fn extract_poly_centers(&self) -> MeshResult<Vec<Vertex>> {
+        self.0
+            .try_polygons()?
+            .into_iter()
+            .map(|v| v.centroid())
+            .collect::<MeshResult<Vec<Vertex>>>()
+    }
+    /// Extract the centers of the edges
+    pub fn extract_edge_centers(&self) -> MeshResult<Vec<Vertex>> {
+        Ok(self
+            .0
+            .try_edges()?
+            .into_iter()
+            .map(|Edge { a, b }| (a + b) * 0.5)
+            .collect::<Vec<Vertex>>())
     }
 }

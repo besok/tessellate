@@ -1,9 +1,10 @@
 use crate::gpu::camera::position::CameraPosition;
-use crate::gpu::camera::{Camera};
+use crate::gpu::camera::Camera;
 use crate::gpu::error::{GpuError, GpuResult};
 use crate::mesh::Mesh;
 use log::{error, info};
 
+use crate::gpu::Settings;
 use std::sync::Arc;
 use wgpu::{Buffer, RenderPipeline, Surface};
 use winit::application::ApplicationHandler;
@@ -32,19 +33,18 @@ impl GpuMesh {
             mesh,
         }
     }
-
 }
 
 impl GpuProcessor {
-    pub fn new(meshes: Vec<Mesh>, camera: CameraPosition) -> Self {
+    pub fn new(meshes: Vec<Mesh>, camera: CameraPosition, settings: Settings) -> Self {
         GpuProcessor {
-            state: State::NotInitialized(meshes, camera),
+            state: State::NotInitialized(meshes, camera, settings),
         }
     }
 }
 
 enum State {
-    NotInitialized(Vec<Mesh>, CameraPosition),
+    NotInitialized(Vec<Mesh>, CameraPosition, Settings),
     Failed(GpuError),
     Initialized(GpuHandler),
 }
@@ -108,7 +108,7 @@ impl GpuProcessor {
 impl Default for GpuProcessor {
     fn default() -> Self {
         GpuProcessor {
-            state: State::NotInitialized(vec![], CameraPosition::default()),
+            state: State::NotInitialized(vec![], CameraPosition::default(), Settings::default()),
         }
     }
 }
@@ -116,8 +116,8 @@ impl Default for GpuProcessor {
 impl ApplicationHandler for GpuProcessor {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         match &self.state {
-            State::NotInitialized(meshes, camera) => {
-                match GpuProcessor::try_init(event_loop, meshes, camera.clone()) {
+            State::NotInitialized(meshes, camera, settings) => {
+                match GpuProcessor::try_init(event_loop, meshes, camera.clone(), settings.clone()) {
                     Ok(s) => {
                         self.state = State::Initialized(s);
                     }

@@ -1,5 +1,6 @@
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
+use crate::mesh::parts::edge::Edge;
 use crate::mesh::tables::MeshTables;
 use parts::bbox::BoundingBox;
 use parts::edge::MeshEdge;
@@ -97,6 +98,19 @@ impl Mesh {
 
         Mesh::from_vertices(vertices, faces, color)
     }
+
+    pub fn only_vertices<V>(vertices: Vec<V>, color: Color) -> Self
+    where
+        V: Into<Vertex>,
+    {
+        let vertices: Vec<_> = vertices.into_iter().map(Into::into).collect();
+        Mesh {
+            vertices,
+            edges: vec![],
+            faces:vec![],
+            color,
+        }
+    }
 }
 impl Mesh {
     pub fn aabb(&self) -> BoundingBox {
@@ -179,6 +193,16 @@ impl Mesh {
             .map(|f| self.face_to_polygon(f))
             .collect::<Result<Vec<_>, _>>()
     }
+    pub fn try_edges(&self) -> MeshResult<Vec<Edge>> {
+        let mut edges = Vec::new();
+        for MeshEdge(a, b) in self.edges.iter() {
+            let v1 = self.get(*a)?;
+            let v2 = self.get(*b)?;
+            let edge = Edge::new(v1.clone(), v2.clone());
+            edges.push(edge);
+        }
+        Ok(edges)
+    }
     pub fn query(&self) -> query::MeshQuery {
         query::MeshQuery::from(self)
     }
@@ -188,11 +212,7 @@ impl Mesh {
     pub fn union<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
         bool::perform_bool(self, &other.into(), bool::BoolType::Union, None)
     }
-    pub fn union_with<T: Into<Mesh>>(
-        &self,
-        other: T,
-        color: Option<Color>,
-    ) -> MeshResult<Mesh> {
+    pub fn union_with<T: Into<Mesh>>(&self, other: T, color: Option<Color>) -> MeshResult<Mesh> {
         bool::perform_bool(self, &other.into(), bool::BoolType::Union, color)
     }
     pub fn intersection_with<T: Into<Mesh>>(
@@ -203,17 +223,17 @@ impl Mesh {
         bool::perform_bool(self, &other.into(), bool::BoolType::Intersection, color)
     }
     pub fn intersection<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
-        bool::perform_bool(self, &other.into(), bool::BoolType::Intersection, None, )
+        bool::perform_bool(self, &other.into(), bool::BoolType::Intersection, None)
     }
     pub fn difference_with<T: Into<Mesh>>(
         &self,
         other: T,
         color: Option<Color>,
     ) -> MeshResult<Mesh> {
-        bool::perform_bool(self, &other.into(), bool::BoolType::Difference,  color)
+        bool::perform_bool(self, &other.into(), bool::BoolType::Difference, color)
     }
     pub fn difference<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
-        bool::perform_bool(self, &other.into(), bool::BoolType::Difference,  None)
+        bool::perform_bool(self, &other.into(), bool::BoolType::Difference, None)
     }
 
     pub fn sym_difference_with<T: Into<Mesh>>(
@@ -221,10 +241,10 @@ impl Mesh {
         other: T,
         color: Option<Color>,
     ) -> MeshResult<Mesh> {
-        bool::perform_bool(self, &other.into(), bool::BoolType::SymmetricDifference,  color)
+        bool::perform_bool(self, &other.into(), bool::BoolType::SymmetricDifference, color)
     }
     pub fn sym_difference<T: Into<Mesh>>(&self, other: T) -> MeshResult<Mesh> {
-        bool::perform_bool(self, &other.into(), bool::BoolType::SymmetricDifference,  None)
+        bool::perform_bool(self, &other.into(), bool::BoolType::SymmetricDifference, None)
     }
 }
 

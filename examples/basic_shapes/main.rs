@@ -13,6 +13,7 @@ use tessellate::mesh::shape::torus::Torus;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::HasMesh;
 use tessellate::{gpu, TessError, TessResult};
+use tessellate::gpu::Settings;
 use tessellate::mesh::parts::vertex::Vertex;
 
 fn main() -> TessResult<()> {
@@ -28,7 +29,7 @@ fn main() -> TessResult<()> {
     ];
 
     let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
-    Ok(gpu::visualize(meshes, camera)?)
+    Ok(gpu::visualize(meshes, camera, Settings::default())?)
 }
 
 fn torus() -> Torus {

@@ -6,6 +6,7 @@ use tessellate::mesh::parts::vertex::Vertex;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::{HasMesh, Mesh};
 use tessellate::{gpu, TessResult};
+use tessellate::gpu::Settings;
 
 fn main() -> TessResult<()> {
     let vertices = vec![
@@ -24,5 +25,5 @@ fn main() -> TessResult<()> {
     let meshes = vec![mesh];
 
     let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
-    Ok(gpu::visualize(meshes, camera)?)
+    Ok(gpu::visualize(meshes, camera, Settings::default())?)
 }
