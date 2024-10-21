@@ -4,6 +4,7 @@ use crate::mesh::{Mesh, MeshError, parts};
 use bytemuck::{Pod, Zeroable};
 use std::iter::zip;
 use std::mem;
+use crate::mesh::attributes::MeshType;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
@@ -25,59 +26,100 @@ impl Vertex {
 impl TryFrom<&Mesh> for Vec<Vertex> {
     type Error = MeshError;
     fn try_from(mesh: &Mesh) -> Result<Self, Self::Error> {
-        match mesh.color() {
-            Color::Face(fs) => {
-                let faces = mesh.faces();
-                faces_check(fs, faces)?;
-                let mut vertices = Vec::new();
-                for (col, face) in zip(fs.into_iter(), faces.into_iter()) {
-                    let vs = face_to_vertex3(face)
-                        .into_iter()
+
+        match mesh.attributes().mesh_type(){
+            MeshType::Polygons => {
+                match mesh.color() {
+                    Color::Face(fs) => {
+                        let faces = mesh.faces();
+                        faces_check(fs, faces)?;
+                        let mut vertices = Vec::new();
+                        for (col, face) in zip(fs.into_iter(), faces.into_iter()) {
+                            let vs = face_to_vertex3(face)
+                                .into_iter()
+                                .map(|i| mesh.get(i))
+                                .collect::<Result<Vec<_>, _>>()?;
+                            vertices.extend(vs.into_iter().map(|v| Vertex::from(v, col)))
+                        }
+                        Ok(vertices)
+                    }
+                    Color::Mesh(m) => Ok(mesh
+                        .faces()
+                        .iter()
+                        .flat_map(face_to_vertex3)
                         .map(|i| mesh.get(i))
-                        .collect::<Result<Vec<_>, _>>()?;
-                    vertices.extend(vs.into_iter().map(|v| Vertex::from(v, col)))
+                        .into_iter()
+                        .collect::<Result<Vec<_>, _>>()?
+                        .into_iter()
+                        .map(|v| Vertex::from(v, m))
+                        .collect::<Vec<_>>()),
+                    Color::Func(f) => {
+                        let mut vertices = Vec::new();
+                        for face in mesh.faces().into_iter() {
+                            let vs = face_to_vertex3(face)
+                                .into_iter()
+                                .map(|i| mesh.get(i))
+                                .collect::<Result<Vec<_>, _>>()?;
+                            vertices.extend(
+                                vs.into_iter()
+                                    .enumerate()
+                                    .map(|(i, v)| Vertex::from(v, &f(v, i))),
+                            )
+                        }
+                        Ok(vertices)
+                    }
+                    Color::Vertex(colors) => {
+                        let mut vertices = Vec::new();
+                        for face in mesh.faces().into_iter() {
+                            let vs = face_to_vertex3(face)
+                                .into_iter()
+                                .map(|i| mesh.get(i))
+                                .collect::<Result<Vec<_>, _>>()?;
+                            vertices.extend(
+                                zip(vs.into_iter(), colors.into_iter()).map(|(v, c)| Vertex::from(v, c)),
+                            )
+                        }
+                        Ok(vertices)
+                    }
                 }
-                Ok(vertices)
             }
-            Color::Mesh(m) => Ok(mesh
-                .faces()
-                .iter()
-                .flat_map(face_to_vertex3)
-                .map(|i| mesh.get(i))
-                .into_iter()
-                .collect::<Result<Vec<_>, _>>()?
-                .into_iter()
-                .map(|v| Vertex::from(v, m))
-                .collect::<Vec<_>>()),
-            Color::Func(f) => {
-                let mut vertices = Vec::new();
-                for face in mesh.faces().into_iter() {
-                    let vs = face_to_vertex3(face)
-                        .into_iter()
-                        .map(|i| mesh.get(i))
-                        .collect::<Result<Vec<_>, _>>()?;
-                    vertices.extend(
-                        vs.into_iter()
+            MeshType::Cloud => {
+                match mesh.color() {
+                    Color::Func(f) => {
+                        let vertices = mesh.vertices();
+                        Ok(vertices
+                            .into_iter()
                             .enumerate()
-                            .map(|(i, v)| Vertex::from(v, &f(v, i))),
-                    )
+                            .map(|(i, v)| Vertex::from(v, &f(v, i)))
+                            .collect::<Vec<_>>())
+                    }
+                    Color::Vertex(colors) => {
+                        let vertices = mesh.vertices();
+                        vertices_check(colors, vertices)?;
+                        Ok(vertices
+                            .into_iter()
+                            .zip(colors.into_iter())
+                            .map(|(v, c)| Vertex::from(v, c))
+                            .collect::<Vec<_>>())
+                    }
+                    Color::Face(_) => {
+                        Err(MeshError::InvalidFaceType(
+                            "Face color not supported for cloud mesh".to_string(),
+                        ))
+                    }
+                    Color::Mesh(c) => {
+                        let vertices = mesh.vertices();
+                        Ok(vertices
+                            .into_iter()
+                            .map(|v| Vertex::from(v, c))
+                            .collect::<Vec<_>>())
+                    }
                 }
-                Ok(vertices)
-            }
-            Color::Vertex(colors) => {
-                let mut vertices = Vec::new();
-                for face in mesh.faces().into_iter() {
-                    let vs = face_to_vertex3(face)
-                        .into_iter()
-                        .map(|i| mesh.get(i))
-                        .collect::<Result<Vec<_>, _>>()?;
-                    vertices.extend(
-                        zip(vs.into_iter(), colors.into_iter()).map(|(v, c)| Vertex::from(v, c)),
-                    )
-                }
-                Ok(vertices)
             }
         }
+
+
+
     }
 }
 

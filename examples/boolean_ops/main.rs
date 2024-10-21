@@ -8,7 +8,6 @@ use tessellate::mesh::shape::pyramid::Pyramid;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::HasMesh;
 use tessellate::{gpu, TessResult};
-use tessellate::gpu::Settings;
 
 fn main() -> TessResult<()> {
     let cube = Cube::create(Vertex::default(), 3.0, FaceType::Quad, Color::default());
@@ -20,5 +19,5 @@ fn main() -> TessResult<()> {
     let meshes = vec![diff.into(), cube.into(), pyramid.into()];
 
     let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
-    Ok(gpu::visualize(meshes, camera,Settings::default())?)
+    Ok(gpu::visualize(meshes, camera,)?)
 }

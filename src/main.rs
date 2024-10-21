@@ -2,7 +2,6 @@ use env_logger::Builder;
 use glam::{EulerRot, Mat4, Quat, Vec3};
 use log::{info, LevelFilter};
 use tessellate::gpu::camera::position::CameraPosition;
-use tessellate::gpu::Settings;
 use tessellate::mesh::material::{Color, RgbaColor};
 use tessellate::mesh::parts::bbox::BoundingBox;
 use tessellate::mesh::parts::face::FaceType;
@@ -40,5 +39,5 @@ fn main() -> Result<(), TessError> {
     rect_cuboid.transform(Mat4::from_translation(Vec3::new(0.0, 0.0, 0.0)))?;
 
     let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
-    Ok(gpu::visualize(vec![mesh.clone(), rect_cuboid.into()], camera, Settings::default())?)
+    Ok(gpu::visualize(vec![mesh.clone(), rect_cuboid.into()], camera,  )?)
 }

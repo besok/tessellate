@@ -1,3 +1,4 @@
+use crate::mesh::attributes::{Attributes, MeshType};
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
 use crate::mesh::parts::edge::Edge;
@@ -10,6 +11,7 @@ use parts::vertex::Vertex;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
+pub mod attributes;
 pub mod bool;
 pub mod material;
 pub mod normals;
@@ -43,6 +45,7 @@ pub struct Mesh {
     edges: Vec<MeshEdge>,
     faces: Vec<Face>,
     color: Color,
+    attributes: Attributes,
 }
 impl Mesh {
     pub fn from_vertices<V, F>(vertices: Vec<V>, faces: Vec<F>, color: Color) -> Self
@@ -63,6 +66,7 @@ impl Mesh {
             edges,
             faces,
             color,
+            attributes: Attributes::default(),
         }
     }
 
@@ -99,20 +103,32 @@ impl Mesh {
         Mesh::from_vertices(vertices, faces, color)
     }
 
-    pub fn only_vertices<V>(vertices: Vec<V>, color: Color) -> Self
+    pub fn cloud<V>(vertices: Vec<V>, color: Color) -> Self
     where
         V: Into<Vertex>,
     {
         let vertices: Vec<_> = vertices.into_iter().map(Into::into).collect();
         Mesh {
             vertices,
-            edges: vec![],
-            faces:vec![],
             color,
+            edges: vec![],
+            faces: vec![],
+            attributes: Attributes::new(MeshType::Cloud),
         }
     }
 }
 impl Mesh {
+    pub fn is_cloud(&self) -> bool {
+        self.attributes.mesh_type().is_cloud()
+    }
+    pub fn is_polygons(&self) -> bool {
+        self.attributes.mesh_type().is_polygons()
+    }
+
+    pub fn attributes(&self) -> &Attributes {
+        &self.attributes
+    }
+
     pub fn aabb(&self) -> BoundingBox {
         BoundingBox::from(self)
     }

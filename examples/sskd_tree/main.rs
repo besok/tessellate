@@ -7,7 +7,6 @@ use tessellate::mesh::shape::cone::Cone;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::{HasMesh, Mesh};
 use tessellate::{gpu, TessResult};
-use tessellate::gpu::Settings;
 
 fn main() -> TessResult<()> {
     let mut mesh: Mesh = Cone::default().into();
@@ -18,5 +17,5 @@ fn main() -> TessResult<()> {
     let meshes = vec![kdtree.to_mesh(Color::default()), mesh];
 
     let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
-    Ok(gpu::visualize(meshes, camera,Settings::default())?)
+    Ok(gpu::visualize(meshes, camera, )?)
 }
