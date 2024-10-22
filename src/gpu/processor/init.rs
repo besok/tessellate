@@ -2,8 +2,10 @@ use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::Camera;
 use crate::gpu::error::{GpuError, GpuResult};
 use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor};
-use crate::gpu::vertex::Vertex;
+use crate::gpu::vertex::{GpuInstance, GpuVertex};
 use crate::mesh::attributes::MeshType;
+use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::shape::sphere::Sphere;
 use crate::mesh::Mesh;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -33,13 +35,6 @@ impl GpuProcessor {
         }))
         .ok_or(GpuError::new("Failed to request adapter"))?;
 
-
-        // let features = if meshes.iter().any(|s|s.is_cloud()){
-        //     Features::POLYGON_MODE_POINT
-        // }else {
-        //     Features::empty()
-        // };
-
         let (device, queue) = pollster::block_on(adapter.request_device(
             &wgpu::DeviceDescriptor {
                 required_features: Features::empty(), // wgpu::Features::POLYGON_MODE_LINE,
@@ -67,21 +62,35 @@ impl GpuProcessor {
             desired_maximum_frame_latency: 2,
         };
 
-        let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some("Shader"),
-            source: wgpu::ShaderSource::Wgsl(include_str!("../wgsl/shader.wgsl").into()),
+        let shader_poly = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some("Shader Poly"),
+            source: wgpu::ShaderSource::Wgsl(include_str!("../wgsl/shader_poly.wgsl").into()),
+        });
+        let shader_vertex = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some("Shader Vertex"),
+            source: wgpu::ShaderSource::Wgsl(include_str!("../wgsl/shader_vertex.wgsl").into()),
         });
 
         let mut gpu_meshes = Vec::new();
 
         for mesh in meshes.into_iter() {
-            let vertices: Vec<Vertex> = mesh.try_into()?;
+            let vertices: Vec<GpuVertex> = mesh.try_into()?;
             let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
                 label: Some("Vertex Buffer"),
                 contents: bytemuck::cast_slice(&vertices),
                 usage: wgpu::BufferUsages::VERTEX,
             });
-            gpu_meshes.push(GpuMesh::new(vertex_buffer, vertices, mesh.clone()));
+            let inst_buff = if mesh.is_cloud() {
+                let instance_data: Vec<GpuInstance> = vertices.iter().map(|v| (*v).into()).collect();
+                Some(device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                    label: Some("Instance Buffer"),
+                    contents: bytemuck::cast_slice(&instance_data),
+                    usage: wgpu::BufferUsages::VERTEX,
+                }))
+            } else {
+                None
+            };
+            gpu_meshes.push(GpuMesh::new(vertex_buffer, vertices, mesh.clone(), inst_buff));
         }
         let camera = Camera::init(&config, &device, camera_pos);
 
@@ -92,100 +101,51 @@ impl GpuProcessor {
                 push_constant_ranges: &[],
             });
 
-        let mut pipelines = HashMap::new();
-        if meshes.iter().any(|s| s.is_cloud()) {
-            let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                label: Some("Render Pipeline Cloud"),
-                layout: Some(&render_pipeline_layout),
-                vertex: wgpu::VertexState {
-                    module: &shader,
-                    entry_point: "vs_main",
-                    compilation_options: Default::default(),
-                    buffers: &[Vertex::desc()],
-                },
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader,
-                    entry_point: "fs_main",
-                    compilation_options: Default::default(),
-                    targets: &[Some(wgpu::ColorTargetState {
-                        format: config.format,
-                        blend: Some(wgpu::BlendState {
-                            color: wgpu::BlendComponent::REPLACE,
-                            alpha: wgpu::BlendComponent::REPLACE,
-                        }),
-                        write_mask: wgpu::ColorWrites::ALL,
-                    })],
-                }),
-                primitive: wgpu::PrimitiveState {
-                    topology: wgpu::PrimitiveTopology::LineList,
-                    strip_index_format: None,
-                    polygon_mode: wgpu::PolygonMode::Fill,
-                    ..Default::default()
-                },
-                depth_stencil: Some(wgpu::DepthStencilState {
-                    format: wgpu::TextureFormat::Depth24Plus,
-                    depth_write_enabled: true,
-                    depth_compare: wgpu::CompareFunction::LessEqual,
-                    stencil: wgpu::StencilState::default(),
-                    bias: wgpu::DepthBiasState::default(),
-                }),
-                multisample: wgpu::MultisampleState {
-                    count: 1,
-                    mask: !0,
-                    alpha_to_coverage_enabled: false,
-                },
-                multiview: None,
-            });
-            pipelines.insert(MeshType::Cloud, pipeline);
-        }
-        if meshes.iter().any(|s|s.is_polygons()){
-            let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                label: Some("Render Pipeline Cloud"),
-                layout: Some(&render_pipeline_layout),
-                vertex: wgpu::VertexState {
-                    module: &shader,
-                    entry_point: "vs_main",
-                    compilation_options: Default::default(),
-                    buffers: &[Vertex::desc()],
-                },
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader,
-                    entry_point: "fs_main",
-                    compilation_options: Default::default(),
-                    targets: &[Some(wgpu::ColorTargetState {
-                        format: config.format,
-                        blend: Some(wgpu::BlendState {
-                            color: wgpu::BlendComponent::REPLACE,
-                            alpha: wgpu::BlendComponent::REPLACE,
-                        }),
-                        write_mask: wgpu::ColorWrites::ALL,
-                    })],
-                }),
-                primitive: wgpu::PrimitiveState {
-                    topology: wgpu::PrimitiveTopology::TriangleList,
-                    strip_index_format: None,
-                    polygon_mode: wgpu::PolygonMode::Fill,
-                    ..Default::default()
-                },
-                depth_stencil: Some(wgpu::DepthStencilState {
-                    format: wgpu::TextureFormat::Depth24Plus,
-                    depth_write_enabled: true,
-                    depth_compare: wgpu::CompareFunction::LessEqual,
-                    stencil: wgpu::StencilState::default(),
-                    bias: wgpu::DepthBiasState::default(),
-                }),
-                multisample: wgpu::MultisampleState {
-                    count: 1,
-                    mask: !0,
-                    alpha_to_coverage_enabled: false,
-                },
-                multiview: None,
-            });
-            pipelines.insert(MeshType::Polygons, pipeline);
-        }
 
+        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("Render Pipeline"),
+            layout: Some(&render_pipeline_layout),
+            vertex: wgpu::VertexState {
+                module: &shader_vertex,
+                entry_point: "vs_main",
+                compilation_options: Default::default(),
+                buffers: &[GpuVertex::desc()],
+            },
+            fragment: Some(wgpu::FragmentState {
+                module: &shader_vertex,
+                entry_point: "fs_main",
+                compilation_options: Default::default(),
+                targets: &[Some(wgpu::ColorTargetState {
+                    format: config.format,
+                    blend: Some(wgpu::BlendState {
+                        color: wgpu::BlendComponent::REPLACE,
+                        alpha: wgpu::BlendComponent::REPLACE,
+                    }),
+                    write_mask: wgpu::ColorWrites::ALL,
+                })],
+            }),
+            primitive: wgpu::PrimitiveState {
+                topology: wgpu::PrimitiveTopology::TriangleList,
+                strip_index_format: None,
+                polygon_mode: wgpu::PolygonMode::Fill,
+                ..Default::default()
+            },
+            depth_stencil: Some(wgpu::DepthStencilState {
+                format: wgpu::TextureFormat::Depth24Plus,
+                depth_write_enabled: true,
+                depth_compare: wgpu::CompareFunction::LessEqual,
+                stencil: wgpu::StencilState::default(),
+                bias: wgpu::DepthBiasState::default(),
+            }),
+            multisample: wgpu::MultisampleState {
+                count: 1,
+                mask: !0,
+                alpha_to_coverage_enabled: false,
+            },
+            multiview: None,
+        });
         Ok(GpuHandler::new(
-            window, instance, surface, device, queue, config, size, pipelines, gpu_meshes, camera,
+            window, instance, surface, device, queue, config, size, pipeline, gpu_meshes, camera,
         ))
     }
 }

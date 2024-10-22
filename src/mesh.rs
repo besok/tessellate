@@ -9,6 +9,7 @@ use parts::face::Face;
 use parts::polygon::Polygon;
 use parts::vertex::Vertex;
 use std::collections::{HashMap, HashSet};
+use std::fmt::{Display, Formatter};
 use std::hash::Hash;
 
 pub mod attributes;
@@ -31,6 +32,12 @@ pub enum MeshError {
     WrongIntersection(String),
     WrongMesh(String),
     Custom(String),
+}
+
+impl Display for MeshError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 impl MeshError {

@@ -5,6 +5,7 @@ use crate::mesh::Mesh;
 use log::{error, info};
 use std::collections::HashMap;
 
+use crate::gpu::vertex::GpuVertex;
 use crate::mesh::attributes::MeshType;
 use std::sync::Arc;
 use wgpu::{Buffer, RenderPipeline, Surface};
@@ -14,7 +15,6 @@ use winit::event::{ElementState, KeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowId};
-use crate::gpu::vertex::Vertex;
 
 mod init;
 mod render;
@@ -25,16 +25,23 @@ pub struct GpuProcessor {
 
 struct GpuMesh {
     vertex_buffer: Buffer,
+    instance_buffer: Option<Buffer>,
     mesh: Mesh,
-    vertices: Vec<Vertex>,
+    vertices: Vec<GpuVertex>,
 }
 
 impl GpuMesh {
-    pub fn new(vertex_buffer: Buffer, vertices: Vec<Vertex>, mesh: Mesh) -> Self {
+    pub fn new(
+        vertex_buffer: Buffer,
+        vertices: Vec<GpuVertex>,
+        mesh: Mesh,
+        instance_buffer: Option<Buffer>,
+    ) -> Self {
         GpuMesh {
             vertex_buffer,
             mesh,
-            vertices
+            vertices,
+            instance_buffer
         }
     }
 }
@@ -60,7 +67,7 @@ pub struct GpuHandler {
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     size: dpi::PhysicalSize<u32>,
-    pipelines: HashMap<MeshType, RenderPipeline>,
+    pipeline: RenderPipeline,
     meshes: Vec<GpuMesh>,
     camera: Camera,
 }
@@ -74,7 +81,7 @@ impl GpuHandler {
         queue: wgpu::Queue,
         config: wgpu::SurfaceConfiguration,
         size: dpi::PhysicalSize<u32>,
-        pipelines: HashMap<MeshType, RenderPipeline>,
+        pipeline: RenderPipeline,
         meshes: Vec<GpuMesh>,
         camera: Camera,
     ) -> Self {
@@ -86,7 +93,7 @@ impl GpuHandler {
             queue,
             config,
             size,
-            pipelines,
+            pipeline,
             meshes,
             camera,
         }
@@ -112,7 +119,7 @@ impl GpuProcessor {
 impl Default for GpuProcessor {
     fn default() -> Self {
         GpuProcessor {
-            state: State::NotInitialized(vec![], CameraPosition::default(), ),
+            state: State::NotInitialized(vec![], CameraPosition::default()),
         }
     }
 }
@@ -181,6 +188,10 @@ impl ApplicationHandler for GpuProcessor {
                                 },
                                 Err(GpuError::EventLoopError(e)) => {
                                     error!("EventLoop failed: {e}");
+                                    event_loop.exit();
+                                }
+                                Err(GpuError::MeshError(e)) => {
+                                    error!("Mesh error: {e}");
                                     event_loop.exit();
                                 }
                             }

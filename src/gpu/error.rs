@@ -9,11 +9,18 @@ pub enum GpuError {
     General(String),
     WgpuSurfaceError(SurfaceError),
     EventLoopError(String),
+    MeshError(MeshError),
 }
 
 impl GpuError {
     pub fn new(message: &str) -> Self {
         GpuError::General(message.to_string())
+    }
+}
+
+impl From<MeshError> for GpuError {
+    fn from(e: MeshError) -> Self {
+        GpuError::MeshError(e)
     }
 }
 
@@ -26,12 +33,6 @@ impl From<EventLoopError> for GpuError {
 impl From<SurfaceError> for GpuError {
     fn from(e: SurfaceError) -> Self {
         GpuError::WgpuSurfaceError(e)
-    }
-}
-
-impl From<MeshError> for GpuError {
-    fn from(e: MeshError) -> Self {
-        GpuError::General(format!("Mesh error: {:?}", e))
     }
 }
 
@@ -61,6 +62,7 @@ impl Display for GpuError {
             GpuError::General(message) => write!(f, "{}", message),
             GpuError::WgpuSurfaceError(e) => write!(f, "Wgpu surface error: {}", e),
             GpuError::EventLoopError(_) => write!(f, "Event loop error"),
+            GpuError::MeshError(_) => write!(f, "Mesh error"),
         }
     }
 }

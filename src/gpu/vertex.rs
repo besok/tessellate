@@ -8,22 +8,60 @@ use crate::mesh::attributes::MeshType;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
-pub(crate) struct Vertex {
+pub(crate) struct GpuInstance {
+    position: [f32; 4],
+}
+
+impl From<GpuVertex> for GpuInstance {
+    fn from(v: GpuVertex) -> Self {
+        GpuInstance {
+            position: v.position,
+        }
+    }
+}
+
+impl GpuInstance {
+    const ATTRIBUTES: [wgpu::VertexAttribute; 1] =  wgpu::vertex_attr_array![0=>Float32x4];
+    pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
+        wgpu::VertexBufferLayout {
+            array_stride: mem::size_of::<GpuInstance>() as wgpu::BufferAddress,
+            step_mode: wgpu::VertexStepMode::Vertex,
+            attributes: &Self::ATTRIBUTES,
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug, Pod, Zeroable)]
+pub(crate) struct GpuVertex {
     position: [f32; 4],
     color: [f32; 4],
 }
 
-impl Vertex {
+impl GpuVertex {
+    const ATTRIBUTES: [wgpu::VertexAttribute; 2] =
+        wgpu::vertex_attr_array![0=>Float32x4, 1=>Float32x4];
+    pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
+        wgpu::VertexBufferLayout {
+            array_stride: mem::size_of::<GpuVertex>() as wgpu::BufferAddress,
+            step_mode: wgpu::VertexStepMode::Vertex,
+            attributes: &Self::ATTRIBUTES,
+        }
+    }
+}
+
+
+impl GpuVertex {
     fn from(v: &parts::vertex::Vertex, color: &RgbaColor) -> Self {
         let v = v.flatten();
-        Vertex {
+        GpuVertex {
             position: [v[0], v[1], v[2], 1.0],
             color: color.clone().into(),
         }
     }
 }
 
-impl TryFrom<&Mesh> for Vec<Vertex> {
+impl TryFrom<&Mesh> for Vec<GpuVertex> {
     type Error = MeshError;
     fn try_from(mesh: &Mesh) -> Result<Self, Self::Error> {
 
@@ -39,7 +77,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
                                 .into_iter()
                                 .map(|i| mesh.get(i))
                                 .collect::<Result<Vec<_>, _>>()?;
-                            vertices.extend(vs.into_iter().map(|v| Vertex::from(v, col)))
+                            vertices.extend(vs.into_iter().map(|v| GpuVertex::from(v, col)))
                         }
                         Ok(vertices)
                     }
@@ -51,7 +89,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
                         .into_iter()
                         .collect::<Result<Vec<_>, _>>()?
                         .into_iter()
-                        .map(|v| Vertex::from(v, m))
+                        .map(|v| GpuVertex::from(v, m))
                         .collect::<Vec<_>>()),
                     Color::Func(f) => {
                         let mut vertices = Vec::new();
@@ -63,7 +101,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
                             vertices.extend(
                                 vs.into_iter()
                                     .enumerate()
-                                    .map(|(i, v)| Vertex::from(v, &f(v, i))),
+                                    .map(|(i, v)| GpuVertex::from(v, &f(v, i))),
                             )
                         }
                         Ok(vertices)
@@ -76,7 +114,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
                                 .map(|i| mesh.get(i))
                                 .collect::<Result<Vec<_>, _>>()?;
                             vertices.extend(
-                                zip(vs.into_iter(), colors.into_iter()).map(|(v, c)| Vertex::from(v, c)),
+                                zip(vs.into_iter(), colors.into_iter()).map(|(v, c)| GpuVertex::from(v, c)),
                             )
                         }
                         Ok(vertices)
@@ -90,7 +128,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
                         Ok(vertices
                             .into_iter()
                             .enumerate()
-                            .map(|(i, v)| Vertex::from(v, &f(v, i)))
+                            .map(|(i, v)| GpuVertex::from(v, &f(v, i)))
                             .collect::<Vec<_>>())
                     }
                     Color::Vertex(colors) => {
@@ -99,7 +137,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
                         Ok(vertices
                             .into_iter()
                             .zip(colors.into_iter())
-                            .map(|(v, c)| Vertex::from(v, c))
+                            .map(|(v, c)| GpuVertex::from(v, c))
                             .collect::<Vec<_>>())
                     }
                     Color::Face(_) => {
@@ -111,7 +149,7 @@ impl TryFrom<&Mesh> for Vec<Vertex> {
                         let vertices = mesh.vertices();
                         Ok(vertices
                             .into_iter()
-                            .map(|v| Vertex::from(v, c))
+                            .map(|v| GpuVertex::from(v, c))
                             .collect::<Vec<_>>())
                     }
                 }
@@ -156,14 +194,3 @@ pub fn face_to_vertex3(face: &Face) -> Vec<usize> {
     }
 }
 
-impl Vertex {
-    const ATTRIBUTES: [wgpu::VertexAttribute; 2] =
-        wgpu::vertex_attr_array![0=>Float32x4, 1=>Float32x4];
-    pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
-        wgpu::VertexBufferLayout {
-            array_stride: mem::size_of::<Vertex>() as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &Self::ATTRIBUTES,
-        }
-    }
-}

@@ -6,6 +6,7 @@ use std::iter;
 use std::sync::Arc;
 use winit::event::{ElementState, MouseButton, WindowEvent};
 use winit::window::Window;
+use crate::mesh::attributes::MeshType;
 
 impl GpuHandler {
     pub fn render(&mut self) -> GpuResult<()> {
@@ -63,18 +64,22 @@ impl GpuHandler {
                 occlusion_query_set: None,
                 timestamp_writes: None,
             });
-            let pipelines = &self.pipelines;
+            let pipeline = &self.pipeline;
             render_pass.set_bind_group(0, &self.camera.camera_bind_group(), &[]);
             for gpu_mesh in self.meshes.iter() {
                 let mesh_type = gpu_mesh.mesh.attributes().mesh_type();
-                render_pass.set_pipeline(
-                    pipelines
-                        .get(&mesh_type)
-                        .ok_or(GpuError::new("Pipeline not found"))?,
-                );
-                render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
+                render_pass.set_pipeline(pipeline,);
+                match mesh_type {
+                    MeshType::Polygons => {
+                        render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
+                        render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
+                    }
+                    MeshType::Cloud => {
+                        render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
+                        render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
+                    }
+                }
 
-                render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
             }
         }
 
