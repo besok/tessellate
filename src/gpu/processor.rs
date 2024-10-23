@@ -25,7 +25,6 @@ pub struct GpuProcessor {
 
 struct GpuMesh {
     vertex_buffer: Buffer,
-    instance_buffer: Option<Buffer>,
     mesh: Mesh,
     vertices: Vec<GpuVertex>,
 }
@@ -35,13 +34,13 @@ impl GpuMesh {
         vertex_buffer: Buffer,
         vertices: Vec<GpuVertex>,
         mesh: Mesh,
-        instance_buffer: Option<Buffer>,
+
     ) -> Self {
         GpuMesh {
             vertex_buffer,
             mesh,
             vertices,
-            instance_buffer
+
         }
     }
 }

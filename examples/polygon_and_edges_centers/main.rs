@@ -13,12 +13,11 @@ fn main() -> TessResult<()> {
     let poly_centers = pyramid.query().extract_poly_centers()?;
     let edge_centers = pyramid.query().extract_edge_centers()?;
 
-    let mesh1 = Mesh::cloud(poly_centers, Color::Mesh(RgbaColor::GREEN));
-    let mesh2 = Mesh::cloud(edge_centers, Color::Mesh(RgbaColor::RED));
+    let mesh1 = Mesh::cloud(poly_centers,0.01, Color::Mesh(RgbaColor::GREEN));
+    let mesh2 = Mesh::cloud(edge_centers, 0.01, Color::Mesh(RgbaColor::RED));
 
 
-    let meshes = vec![mesh1, mesh2,
-                      // pyramid.into()
+    let meshes = vec![mesh1, mesh2, pyramid.into()
     ];
 
     let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);

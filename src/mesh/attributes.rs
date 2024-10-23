@@ -17,20 +17,13 @@ impl Attributes {
 
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone)]
 pub enum MeshType {
     Polygons,
-    Cloud,
+    Cloud(f32),
 }
 
-impl Hash for MeshType {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        match self {
-            MeshType::Polygons => "Polygons".hash(state),
-            MeshType::Cloud => "Cloud".hash(state),
-        }
-    }
-}
+
 
 impl MeshType {
     pub fn is_polygons(&self) -> bool {
@@ -42,7 +35,7 @@ impl MeshType {
 
     pub fn is_cloud(&self) -> bool {
         match self {
-            MeshType::Cloud => true,
+            MeshType::Cloud(_) => true,
             _ => false,
         }
     }

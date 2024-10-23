@@ -121,7 +121,7 @@ impl TryFrom<&Mesh> for Vec<GpuVertex> {
                     }
                 }
             }
-            MeshType::Cloud => {
+            MeshType::Cloud(_) => {
                 match mesh.color() {
                     Color::Func(f) => {
                         let vertices = mesh.vertices();

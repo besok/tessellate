@@ -6,7 +6,7 @@ use crate::gpu::vertex::{GpuInstance, GpuVertex};
 use crate::mesh::attributes::MeshType;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::shape::sphere::Sphere;
-use crate::mesh::Mesh;
+use crate::mesh::{Mesh, MeshError, MeshResult};
 use std::collections::HashMap;
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
@@ -74,23 +74,44 @@ impl GpuProcessor {
         let mut gpu_meshes = Vec::new();
 
         for mesh in meshes.into_iter() {
-            let vertices: Vec<GpuVertex> = mesh.try_into()?;
-            let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: Some("Vertex Buffer"),
-                contents: bytemuck::cast_slice(&vertices),
-                usage: wgpu::BufferUsages::VERTEX,
-            });
-            let inst_buff = if mesh.is_cloud() {
-                let instance_data: Vec<GpuInstance> = vertices.iter().map(|v| (*v).into()).collect();
-                Some(device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                    label: Some("Instance Buffer"),
-                    contents: bytemuck::cast_slice(&instance_data),
-                    usage: wgpu::BufferUsages::VERTEX,
-                }))
-            } else {
-                None
-            };
-            gpu_meshes.push(GpuMesh::new(vertex_buffer, vertices, mesh.clone(), inst_buff));
+            match mesh.attributes().mesh_type() {
+                MeshType::Polygons => {
+                    let vertices: Vec<GpuVertex> = mesh.try_into()?;
+                    let vertex_buffer =
+                        device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                            label: Some("Vertex Buffer"),
+                            contents: bytemuck::cast_slice(&vertices),
+                            usage: wgpu::BufferUsages::VERTEX,
+                        });
+                    gpu_meshes.push(GpuMesh::new(vertex_buffer, vertices, mesh.clone()));
+                }
+                MeshType::Cloud(size) => {
+                    let color = mesh.color();
+                    let vertices_sphere: Vec<Mesh> = mesh
+                        .vertices()
+                        .into_iter()
+                        .map(|v| Sphere::create_uv(v.clone(), size,8,8, color.clone()))
+                        .map(|m| m.into())
+                        .collect();
+
+                    let vertices: Vec<GpuVertex> = vertices_sphere
+                        .iter()
+                        .map(|m| m.try_into())
+                        .collect::<MeshResult<Vec<Vec<GpuVertex>>>>()?
+                        .into_iter()
+                        .flatten()
+                        .collect();
+
+                    let vertex_buffer =
+                        device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                            label: Some("Vertex Buffer"),
+                            contents: bytemuck::cast_slice(&vertices),
+                            usage: wgpu::BufferUsages::VERTEX,
+                        });
+
+                    gpu_meshes.push(GpuMesh::new(vertex_buffer, vertices, mesh.clone()));
+                }
+            }
         }
         let camera = Camera::init(&config, &device, camera_pos);
 
@@ -100,7 +121,6 @@ impl GpuProcessor {
                 bind_group_layouts: &[&camera.camera_bind_layout()],
                 push_constant_ranges: &[],
             });
-
 
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Render Pipeline"),

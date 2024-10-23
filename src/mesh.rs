@@ -110,7 +110,7 @@ impl Mesh {
         Mesh::from_vertices(vertices, faces, color)
     }
 
-    pub fn cloud<V>(vertices: Vec<V>, color: Color) -> Self
+    pub fn cloud<V>(vertices: Vec<V>, vert_size:f32, color: Color) -> Self
     where
         V: Into<Vertex>,
     {
@@ -120,7 +120,7 @@ impl Mesh {
             color,
             edges: vec![],
             faces: vec![],
-            attributes: Attributes::new(MeshType::Cloud),
+            attributes: Attributes::new(MeshType::Cloud(vert_size)),
         }
     }
 }

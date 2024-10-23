@@ -74,7 +74,7 @@ impl GpuHandler {
                         render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
                         render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
                     }
-                    MeshType::Cloud => {
+                    MeshType::Cloud(_) => {
                         render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
                         render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
                     }

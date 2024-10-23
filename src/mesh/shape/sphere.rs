@@ -51,8 +51,12 @@ impl Sphere {
         for i in 0..m {
             for j in 0..n {
                 let next_j = (j + 1) % n;
-                faces.push(Face::Quad(
+                faces.push(Face::Triangle(
                     i * n + j,
+                    (i + 1) * n + j,
+                    i * n + next_j,
+                ));
+                faces.push(Face::Triangle(
                     i * n + next_j,
                     (i + 1) * n + j,
                     (i + 1) * n + next_j,
