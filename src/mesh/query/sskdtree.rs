@@ -70,7 +70,7 @@ impl SSKDNode {
             SSKDNode::Node { .. } => vec![],
         }
     }
-    pub fn bbox(&self) -> BoundingBox {
+    pub fn aabb(&self) -> BoundingBox {
         match self {
             SSKDNode::Leaf { bb, .. } => *bb,
             SSKDNode::Node { bb, .. } => *bb,
@@ -107,9 +107,9 @@ impl SSKDTree {
         SSKDTreeNearestNeighborIter::new(&self.root, target, max_dist)
     }
 
-    pub fn bb_to_mesh(&self) -> Vec<Mesh> {
+    pub fn aabb_to_mesh(&self) -> Vec<Mesh> {
         self.iter()
-            .map(|node| node.bbox())
+            .map(|node| node.aabb())
             .map(|bb| bb.to_rect_cuboid(FaceType::Triangle, Color::default()))
             .map(|cuboid| cuboid.mesh().clone())
             .collect()

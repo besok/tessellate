@@ -27,6 +27,7 @@ fn main() -> TessResult<()> {
     let meshes = vec![
         pseudo_sphere().into(),
         supertoroid()?.into(),
+        bohemian_dome().into(),
         // super_toroidoid().into(),
         // super_ellipsoid().into(),
         // mobius_strip().into(),
@@ -35,7 +36,6 @@ fn main() -> TessResult<()> {
         // dini().into(),
         // bour().into(),
         // boy().into(),
-        // bohemian_dome().into(),
     ];
 
     let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
@@ -59,7 +59,9 @@ fn supertoroid() -> MeshResult<Supertoroid> {
     Ok(elem)
 }
 fn bohemian_dome() -> BohemianDome {
-    BohemianDome::create(Vec3::new(0.0, 0.0, 0.0), 1.0, 1.0, 1.0, 20, 20, Color::default())
+    let mut elem = BohemianDome::create(Vec3::new(0.0, 0.0, 0.0), 1.0, 1.0, 1.0, 20, 20, Color::default());
+    let _ = elem.transform(Mat4::from_translation(Vec3::new(-2.0, -2.0, -2.0)));
+    elem
 }
 fn bour() -> Bour {
     Bour::create(Vec3::new(0.0, 0.0, 0.0), 50, 4.0, 50, 0., 0.5, Color::default())

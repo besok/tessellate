@@ -6,6 +6,9 @@ This example demonstrates how to extract the centers of the polygons and edges o
 
 To run this example, use the following command:
 
+## Screenshot
+![Example](screenshot.png)
+
 ```sh
 cargo run --example polygon_and_edges_centers
 ```

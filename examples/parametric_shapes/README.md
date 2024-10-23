@@ -15,6 +15,10 @@ To run this example, use the following command:
 cargo run --example parametric_shapes
 ```
 
+## Screenshot
+![Example](screenshot.png)
+
+
 # Notes
 Every shape has a Default method that creates a shape with default parameters. 
 You can also create a shape with custom parameters by using the `new` method.
