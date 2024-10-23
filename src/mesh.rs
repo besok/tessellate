@@ -55,6 +55,17 @@ pub struct Mesh {
     attributes: Attributes,
 }
 impl Mesh {
+    /// Creates a new `Mesh` from vertices and faces.
+    ///
+    /// # Parameters
+    ///
+    /// * `vertices` - A vector of vertices to be included in the mesh.
+    /// * `faces` - A vector of faces to be included in the mesh.
+    /// * `color` - The color of the mesh.
+    ///
+    /// # Returns
+    ///
+    /// A new `Mesh` instance containing the specified vertices and faces.
     pub fn from_vertices<V, F>(vertices: Vec<V>, faces: Vec<F>, color: Color) -> Self
     where
         V: Into<Vertex>,
@@ -76,6 +87,22 @@ impl Mesh {
             attributes: Attributes::default(),
         }
     }
+
+    /// Creates a new `Mesh` from a vector of polygons.
+    ///
+    /// This function takes a vector of polygons and a color, and constructs a new `Mesh` instance.
+    /// It first extracts unique vertices from the polygons and maps them to indices. Then, it
+    /// triangulates each polygon and converts them into faces. Finally, it creates a new `Mesh`
+    /// instance using the vertices and faces.
+    ///
+    /// # Parameters
+    ///
+    /// * `polygons` - A vector of polygons to be included in the mesh.
+    /// * `color` - The color of the mesh.
+    ///
+    /// # Returns
+    ///
+    /// A new `Mesh` instance containing the specified polygons.
 
     pub fn from_polygons(polygons: Vec<Polygon>, color: Color) -> Self {
         let mut vertices = Vec::new();
@@ -110,6 +137,17 @@ impl Mesh {
         Mesh::from_vertices(vertices, faces, color)
     }
 
+    /// Creates a new `Mesh` representing a cloud of vertices.
+    ///
+    /// # Parameters
+    ///
+    /// * `vertices` - A vector of vertices to be included in the cloud.
+    /// * `vert_size` - The size of each vertex in the cloud.
+    /// * `color` - The color of the mesh.
+    ///
+    /// # Returns
+    ///
+    /// A new `Mesh` instance representing the cloud of vertices.
     pub fn cloud<V>(vertices: Vec<V>, vert_size:f32, color: Color) -> Self
     where
         V: Into<Vertex>,

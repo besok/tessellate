@@ -8,7 +8,7 @@ use tessellate::mesh::{HasMesh, Mesh};
 use tessellate::{gpu, TessResult};
 
 fn main() -> TessResult<()> {
-    let pyramid: Mesh = Pyramid::default().into();
+    let pyramid  = Pyramid::default() ;
 
     let poly_centers = pyramid.query().extract_poly_centers()?;
     let edge_centers = pyramid.query().extract_edge_centers()?;
@@ -17,9 +17,8 @@ fn main() -> TessResult<()> {
     let mesh2 = Mesh::cloud(edge_centers, 0.01, Color::Mesh(RgbaColor::RED));
 
 
-    let meshes = vec![mesh1, mesh2, pyramid.into()
-    ];
+    let meshes = vec![mesh1, mesh2, pyramid.into()];
+    let camera = CameraPosition::new(Vec3::new(-2.5, 0.0, 0.0), 0.0, 0.0);
 
-    let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
     Ok(gpu::visualize(meshes, camera)?)
 }
