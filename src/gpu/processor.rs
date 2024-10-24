@@ -58,6 +58,11 @@ enum State {
     Failed(GpuError),
     Initialized(GpuHandler),
 }
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+enum Topology {
+    LineList,
+    TriangleList,
+}
 pub struct GpuHandler {
     window: Arc<Window>,
     instance: wgpu::Instance,
@@ -66,7 +71,7 @@ pub struct GpuHandler {
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     size: dpi::PhysicalSize<u32>,
-    pipeline: RenderPipeline,
+    pipelines: HashMap<Topology,RenderPipeline>,
     meshes: Vec<GpuMesh>,
     camera: Camera,
 }
@@ -80,7 +85,7 @@ impl GpuHandler {
         queue: wgpu::Queue,
         config: wgpu::SurfaceConfiguration,
         size: dpi::PhysicalSize<u32>,
-        pipeline: RenderPipeline,
+        pipelines: HashMap<Topology,RenderPipeline>,
         meshes: Vec<GpuMesh>,
         camera: Camera,
     ) -> Self {
@@ -92,7 +97,7 @@ impl GpuHandler {
             queue,
             config,
             size,
-            pipeline,
+            pipelines,
             meshes,
             camera,
         }

@@ -1,7 +1,7 @@
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::Camera;
 use crate::gpu::error::{GpuError, GpuResult};
-use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor};
+use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor, Topology};
 use crate::gpu::vertex::{GpuInstance, GpuVertex};
 use crate::mesh::attributes::MeshType;
 use crate::mesh::parts::vertex::Vertex;
@@ -75,7 +75,7 @@ impl GpuProcessor {
 
         for mesh in meshes.into_iter() {
             match mesh.attributes().mesh_type() {
-                MeshType::Polygons => {
+                MeshType::Polygons | MeshType::Lines => {
                     let vertices: Vec<GpuVertex> = mesh.try_into()?;
                     let vertex_buffer =
                         device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -90,7 +90,9 @@ impl GpuProcessor {
                     let vertices_sphere: Vec<Mesh> = mesh
                         .vertices()
                         .into_iter()
-                        .map(|v| Sphere::create_uv(v.clone(), size,8,8, color.clone()))
+                        .map(|v| {
+                            Sphere::create_uv(v.clone(), size as f32 * 0.01, 8, 8, color.clone())
+                        })
                         .map(|m| m.into())
                         .collect();
 
@@ -122,50 +124,102 @@ impl GpuProcessor {
                 push_constant_ranges: &[],
             });
 
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("Render Pipeline"),
-            layout: Some(&render_pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader_vertex,
-                entry_point: "vs_main",
-                compilation_options: Default::default(),
-                buffers: &[GpuVertex::desc()],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader_vertex,
-                entry_point: "fs_main",
-                compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: config.format,
-                    blend: Some(wgpu::BlendState {
-                        color: wgpu::BlendComponent::REPLACE,
-                        alpha: wgpu::BlendComponent::REPLACE,
+        let mut pipelines = HashMap::new();
+        pipelines.insert(
+            Topology::TriangleList,
+            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                label: Some("Render Pipeline"),
+                layout: Some(&render_pipeline_layout),
+                vertex: wgpu::VertexState {
+                    module: &shader_vertex,
+                    entry_point: "vs_main",
+                    compilation_options: Default::default(),
+                    buffers: &[GpuVertex::desc()],
+                },
+                fragment: Some(wgpu::FragmentState {
+                    module: &shader_vertex,
+                    entry_point: "fs_main",
+                    compilation_options: Default::default(),
+                    targets: &[Some(wgpu::ColorTargetState {
+                        format: config.format,
+                        blend: Some(wgpu::BlendState {
+                            color: wgpu::BlendComponent::REPLACE,
+                            alpha: wgpu::BlendComponent::REPLACE,
+                        }),
+                        write_mask: wgpu::ColorWrites::ALL,
+                    })],
+                }),
+                primitive: wgpu::PrimitiveState {
+                    topology: wgpu::PrimitiveTopology::TriangleList,
+                    strip_index_format: None,
+                    polygon_mode: wgpu::PolygonMode::Fill,
+                    ..Default::default()
+                },
+                depth_stencil: Some(wgpu::DepthStencilState {
+                    format: wgpu::TextureFormat::Depth24Plus,
+                    depth_write_enabled: true,
+                    depth_compare: wgpu::CompareFunction::LessEqual,
+                    stencil: wgpu::StencilState::default(),
+                    bias: wgpu::DepthBiasState::default(),
+                }),
+                multisample: wgpu::MultisampleState {
+                    count: 1,
+                    mask: !0,
+                    alpha_to_coverage_enabled: false,
+                },
+                multiview: None,
+            }),
+        );
+        if meshes.iter().any(|m| m.is_lines()) {
+            pipelines.insert(
+                Topology::LineList,
+                device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                    label: Some("Render Pipeline"),
+                    layout: Some(&render_pipeline_layout),
+                    vertex: wgpu::VertexState {
+                        module: &shader_vertex,
+                        entry_point: "vs_main",
+                        compilation_options: Default::default(),
+                        buffers: &[GpuVertex::desc()],
+                    },
+                    fragment: Some(wgpu::FragmentState {
+                        module: &shader_vertex,
+                        entry_point: "fs_main",
+                        compilation_options: Default::default(),
+                        targets: &[Some(wgpu::ColorTargetState {
+                            format: config.format,
+                            blend: Some(wgpu::BlendState {
+                                color: wgpu::BlendComponent::REPLACE,
+                                alpha: wgpu::BlendComponent::REPLACE,
+                            }),
+                            write_mask: wgpu::ColorWrites::ALL,
+                        })],
                     }),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleList,
-                strip_index_format: None,
-                polygon_mode: wgpu::PolygonMode::Fill,
-                ..Default::default()
-            },
-            depth_stencil: Some(wgpu::DepthStencilState {
-                format: wgpu::TextureFormat::Depth24Plus,
-                depth_write_enabled: true,
-                depth_compare: wgpu::CompareFunction::LessEqual,
-                stencil: wgpu::StencilState::default(),
-                bias: wgpu::DepthBiasState::default(),
-            }),
-            multisample: wgpu::MultisampleState {
-                count: 1,
-                mask: !0,
-                alpha_to_coverage_enabled: false,
-            },
-            multiview: None,
-        });
+                    primitive: wgpu::PrimitiveState {
+                        topology: wgpu::PrimitiveTopology::LineList,
+                        strip_index_format: None,
+                        polygon_mode: wgpu::PolygonMode::Fill,
+                        ..Default::default()
+                    },
+                    depth_stencil: Some(wgpu::DepthStencilState {
+                        format: wgpu::TextureFormat::Depth24Plus,
+                        depth_write_enabled: true,
+                        depth_compare: wgpu::CompareFunction::LessEqual,
+                        stencil: wgpu::StencilState::default(),
+                        bias: wgpu::DepthBiasState::default(),
+                    }),
+                    multisample: wgpu::MultisampleState {
+                        count: 1,
+                        mask: !0,
+                        alpha_to_coverage_enabled: false,
+                    },
+                    multiview: None,
+                }),
+            );
+        }
+
         Ok(GpuHandler::new(
-            window, instance, surface, device, queue, config, size, pipeline, gpu_meshes, camera,
+            window, instance, surface, device, queue, config, size, pipelines, gpu_meshes, camera,
         ))
     }
 }

@@ -41,8 +41,11 @@ impl Display for MeshError {
 }
 
 impl MeshError {
-    fn idx_edge(v1: usize, v2: usize) -> Self {
+    pub fn idx_edge(v1: usize, v2: usize) -> Self {
         MeshError::InvalidIndex(format!("Invalid index for the edge: {} - {}", v1, v2))
+    }
+    pub fn idx_vertex(v: usize) -> Self {
+        MeshError::InvalidIndex(format!("Invalid index for the vertex: {}", v))
     }
 }
 
@@ -148,7 +151,7 @@ impl Mesh {
     /// # Returns
     ///
     /// A new `Mesh` instance representing the cloud of vertices.
-    pub fn cloud<V>(vertices: Vec<V>, vert_size:f32, color: Color) -> Self
+    pub fn cloud<V>(vertices: Vec<V>, vert_size: usize, color: Color) -> Self
     where
         V: Into<Vertex>,
     {
@@ -161,10 +164,42 @@ impl Mesh {
             attributes: Attributes::new(MeshType::Cloud(vert_size)),
         }
     }
+
+    pub fn lines(lines: Vec<Edge>, color: Color) -> Self {
+        let mut vertices_map = HashMap::new();
+        let mut vertices = Vec::new();
+
+        for Edge { a, b } in lines.iter() {
+            if !vertices_map.contains_key(a) {
+                vertices_map.insert(a, vertices.len());
+                vertices.push(a.clone());
+            }
+            if !vertices_map.contains_key(b) {
+                vertices_map.insert(b, vertices.len());
+                vertices.push(b.clone());
+            }
+        }
+
+        let mesh_edges = lines
+            .iter()
+            .map(|Edge { a, b }| MeshEdge::new(vertices_map[a], vertices_map[b]))
+            .collect();
+
+        Mesh {
+            vertices,
+            edges: mesh_edges,
+            faces: vec![],
+            color,
+            attributes: Attributes::new(MeshType::Lines),
+        }
+    }
 }
 impl Mesh {
     pub fn is_cloud(&self) -> bool {
         self.attributes.mesh_type().is_cloud()
+    }
+    pub fn is_lines(&self) -> bool {
+        self.attributes.mesh_type().is_lines()
     }
     pub fn is_polygons(&self) -> bool {
         self.attributes.mesh_type().is_polygons()

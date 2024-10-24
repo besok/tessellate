@@ -17,10 +17,11 @@ impl Attributes {
 
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum MeshType {
     Polygons,
-    Cloud(f32),
+    Lines,
+    Cloud(usize),
 }
 
 
@@ -36,6 +37,12 @@ impl MeshType {
     pub fn is_cloud(&self) -> bool {
         match self {
             MeshType::Cloud(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_lines(&self) -> bool {
+        match self {
+            MeshType::Lines => true,
             _ => false,
         }
     }

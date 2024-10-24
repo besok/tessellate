@@ -10,6 +10,7 @@ pub mod bsp;
 pub mod kdtree;
 pub mod octree;
 pub mod sskdtree;
+pub mod edges;
 
 /// A query object for a mesh
 pub struct MeshQuery<'a>(&'a Mesh);
@@ -77,5 +78,17 @@ impl<'a> MeshQuery<'a> {
             .into_iter()
             .map(|Edge { a, b }| (a + b) * 0.5)
             .collect::<Vec<Vertex>>())
+    }
+
+    /// Extract the boundary edges of the mesh
+    ///
+    /// This function identifies and returns the edges that are on the boundary of the mesh.
+    /// Boundary edges are those that belong to only one face.
+    ///
+    /// # Returns
+    ///
+    /// * `MeshResult<Vec<Edge>>` - A result containing a vector of boundary edges or an error.
+    pub fn extract_boundary_edges(&self) -> MeshResult<Vec<Edge>> {
+        edges::extract_boundary_edges(self.0)
     }
 }

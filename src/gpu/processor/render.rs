@@ -1,12 +1,12 @@
 use crate::gpu::error::{GpuError, GpuResult};
-use crate::gpu::processor::GpuHandler;
+use crate::gpu::processor::{GpuHandler, Topology};
 use crate::gpu::vertex::face_to_vertex3;
+use crate::mesh::attributes::MeshType;
 use log::info;
 use std::iter;
 use std::sync::Arc;
 use winit::event::{ElementState, MouseButton, WindowEvent};
 use winit::window::Window;
-use crate::mesh::attributes::MeshType;
 
 impl GpuHandler {
     pub fn render(&mut self) -> GpuResult<()> {
@@ -64,22 +64,20 @@ impl GpuHandler {
                 occlusion_query_set: None,
                 timestamp_writes: None,
             });
-            let pipeline = &self.pipeline;
+            let pipelines = &self.pipelines;
             render_pass.set_bind_group(0, &self.camera.camera_bind_group(), &[]);
             for gpu_mesh in self.meshes.iter() {
                 let mesh_type = gpu_mesh.mesh.attributes().mesh_type();
-                render_pass.set_pipeline(pipeline,);
-                match mesh_type {
-                    MeshType::Polygons => {
-                        render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
-                        render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
+                let pipeline = match mesh_type {
+                    MeshType::Polygons | MeshType::Cloud(_) => {
+                        pipelines.get(&Topology::TriangleList)
                     }
-                    MeshType::Cloud(_) => {
-                        render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
-                        render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
-                    }
+                    MeshType::Lines => pipelines.get(&Topology::LineList),
                 }
-
+                .ok_or(GpuError::General("Pipeline not found".to_string()))?;
+                render_pass.set_pipeline(pipeline);
+                render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
+                render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
             }
         }
 

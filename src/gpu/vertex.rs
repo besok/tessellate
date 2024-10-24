@@ -1,10 +1,11 @@
+use crate::mesh::attributes::MeshType;
 use crate::mesh::material::{Color, RgbaColor};
+use crate::mesh::parts::edge::MeshEdge;
 use crate::mesh::parts::face::Face;
-use crate::mesh::{Mesh, MeshError, parts};
+use crate::mesh::{parts, Mesh, MeshError};
 use bytemuck::{Pod, Zeroable};
 use std::iter::zip;
 use std::mem;
-use crate::mesh::attributes::MeshType;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
@@ -21,7 +22,7 @@ impl From<GpuVertex> for GpuInstance {
 }
 
 impl GpuInstance {
-    const ATTRIBUTES: [wgpu::VertexAttribute; 1] =  wgpu::vertex_attr_array![0=>Float32x4];
+    const ATTRIBUTES: [wgpu::VertexAttribute; 1] = wgpu::vertex_attr_array![0=>Float32x4];
     pub(crate) fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
         wgpu::VertexBufferLayout {
             array_stride: mem::size_of::<GpuInstance>() as wgpu::BufferAddress,
@@ -50,7 +51,6 @@ impl GpuVertex {
     }
 }
 
-
 impl GpuVertex {
     fn from(v: &parts::vertex::Vertex, color: &RgbaColor) -> Self {
         let v = v.flatten();
@@ -64,100 +64,128 @@ impl GpuVertex {
 impl TryFrom<&Mesh> for Vec<GpuVertex> {
     type Error = MeshError;
     fn try_from(mesh: &Mesh) -> Result<Self, Self::Error> {
+        match mesh.attributes().mesh_type() {
+            MeshType::Polygons => match mesh.color() {
+                Color::Face(fs) => {
+                    let faces = mesh.faces();
+                    faces_check(fs, faces)?;
+                    let mut vertices = Vec::new();
+                    for (col, face) in zip(fs.into_iter(), faces.into_iter()) {
+                        let vs = face_to_vertex3(face)
+                            .into_iter()
+                            .map(|i| mesh.get(i))
+                            .collect::<Result<Vec<_>, _>>()?;
+                        vertices.extend(vs.into_iter().map(|v| GpuVertex::from(v, col)))
+                    }
+                    Ok(vertices)
+                }
+                Color::Mesh(m) => Ok(mesh
+                    .faces()
+                    .iter()
+                    .flat_map(face_to_vertex3)
+                    .map(|i| mesh.get(i))
+                    .into_iter()
+                    .collect::<Result<Vec<_>, _>>()?
+                    .into_iter()
+                    .map(|v| GpuVertex::from(v, m))
+                    .collect::<Vec<_>>()),
+                Color::Func(f) => {
+                    let mut vertices = Vec::new();
+                    for face in mesh.faces().into_iter() {
+                        for idx in face_to_vertex3(face) {
+                            let v = mesh.get(idx)?;
+                            vertices.push(GpuVertex::from(v, &f(v, idx)));
+                        }
+                    }
+                    Ok(vertices)
+                }
+                Color::Vertex(colors) => {
+                    let mut vertices = Vec::new();
+                    for face in mesh.faces().into_iter() {
+                        for idx in face_to_vertex3(face) {
+                            let v = mesh.get(idx)?;
+                            vertices.push(GpuVertex::from(
+                                v,
+                                &colors.get(idx).ok_or(MeshError::idx_vertex(idx))?.clone(),
+                            ));
+                        }
+                    }
+                    Ok(vertices)
+                }
+            },
+            MeshType::Cloud(_) => match mesh.color() {
+                Color::Func(f) => {
+                    let vertices = mesh.vertices();
+                    Ok(vertices
+                        .into_iter()
+                        .enumerate()
+                        .map(|(i, v)| GpuVertex::from(v, &f(v, i)))
+                        .collect::<Vec<_>>())
+                }
+                Color::Vertex(colors) => {
+                    let vertices = mesh.vertices();
+                    vertices_check(colors, vertices)?;
+                    Ok(vertices
+                        .into_iter()
+                        .zip(colors.into_iter())
+                        .map(|(v, c)| GpuVertex::from(v, c))
+                        .collect::<Vec<_>>())
+                }
+                Color::Face(_) => Err(MeshError::InvalidFaceType(
+                    "Face color not supported for cloud mesh".to_string(),
+                )),
+                Color::Mesh(c) => {
+                    let vertices = mesh.vertices();
+                    Ok(vertices
+                        .into_iter()
+                        .map(|v| GpuVertex::from(v, c))
+                        .collect::<Vec<_>>())
+                }
+            },
+            MeshType::Lines => match mesh.color() {
+                Color::Face(_) => Err(MeshError::InvalidFaceType(
+                    "Face color not supported for cloud mesh".to_string(),
+                )),
+                Color::Mesh(m) => Ok(mesh
+                    .edges()
+                    .iter()
+                    .flat_map(|e| vec![e.0, e.1])
+                    .map(|i| mesh.get(i))
+                    .into_iter()
+                    .collect::<Result<Vec<_>, _>>()?
+                    .into_iter()
+                    .map(|v| GpuVertex::from(v, m))
+                    .collect::<Vec<_>>()),
 
-        match mesh.attributes().mesh_type(){
-            MeshType::Polygons => {
-                match mesh.color() {
-                    Color::Face(fs) => {
-                        let faces = mesh.faces();
-                        faces_check(fs, faces)?;
-                        let mut vertices = Vec::new();
-                        for (col, face) in zip(fs.into_iter(), faces.into_iter()) {
-                            let vs = face_to_vertex3(face)
-                                .into_iter()
-                                .map(|i| mesh.get(i))
-                                .collect::<Result<Vec<_>, _>>()?;
-                            vertices.extend(vs.into_iter().map(|v| GpuVertex::from(v, col)))
-                        }
-                        Ok(vertices)
+                Color::Func(f) => {
+                    let mut vertices = Vec::new();
+                    for MeshEdge(a, b) in mesh.edges().into_iter() {
+                        let v = mesh.get(*a)?;
+                        vertices.push(GpuVertex::from(v, &f(v, *a)));
+                        let v = mesh.get(*b)?;
+                        vertices.push(GpuVertex::from(v, &f(v, *b)));
                     }
-                    Color::Mesh(m) => Ok(mesh
-                        .faces()
-                        .iter()
-                        .flat_map(face_to_vertex3)
-                        .map(|i| mesh.get(i))
-                        .into_iter()
-                        .collect::<Result<Vec<_>, _>>()?
-                        .into_iter()
-                        .map(|v| GpuVertex::from(v, m))
-                        .collect::<Vec<_>>()),
-                    Color::Func(f) => {
-                        let mut vertices = Vec::new();
-                        for face in mesh.faces().into_iter() {
-                            let vs = face_to_vertex3(face)
-                                .into_iter()
-                                .map(|i| mesh.get(i))
-                                .collect::<Result<Vec<_>, _>>()?;
-                            vertices.extend(
-                                vs.into_iter()
-                                    .enumerate()
-                                    .map(|(i, v)| GpuVertex::from(v, &f(v, i))),
-                            )
-                        }
-                        Ok(vertices)
-                    }
-                    Color::Vertex(colors) => {
-                        let mut vertices = Vec::new();
-                        for face in mesh.faces().into_iter() {
-                            let vs = face_to_vertex3(face)
-                                .into_iter()
-                                .map(|i| mesh.get(i))
-                                .collect::<Result<Vec<_>, _>>()?;
-                            vertices.extend(
-                                zip(vs.into_iter(), colors.into_iter()).map(|(v, c)| GpuVertex::from(v, c)),
-                            )
-                        }
-                        Ok(vertices)
-                    }
+                    Ok(vertices)
                 }
-            }
-            MeshType::Cloud(_) => {
-                match mesh.color() {
-                    Color::Func(f) => {
-                        let vertices = mesh.vertices();
-                        Ok(vertices
-                            .into_iter()
-                            .enumerate()
-                            .map(|(i, v)| GpuVertex::from(v, &f(v, i)))
-                            .collect::<Vec<_>>())
+                Color::Vertex(colors) => {
+                    let mut vertices = Vec::new();
+                    for MeshEdge(a, b) in mesh.edges().into_iter() {
+                        let v = mesh.get(*a)?;
+                        vertices.push(GpuVertex::from(
+                            v,
+                            &colors.get(*a).ok_or(MeshError::idx_vertex(*a))?.clone(),
+                        ));
+                        let v = mesh.get(*b)?;
+                        vertices.push(GpuVertex::from(
+                            v,
+                            &colors.get(*b).ok_or(MeshError::idx_vertex(*b))?.clone(),
+                        ));
                     }
-                    Color::Vertex(colors) => {
-                        let vertices = mesh.vertices();
-                        vertices_check(colors, vertices)?;
-                        Ok(vertices
-                            .into_iter()
-                            .zip(colors.into_iter())
-                            .map(|(v, c)| GpuVertex::from(v, c))
-                            .collect::<Vec<_>>())
-                    }
-                    Color::Face(_) => {
-                        Err(MeshError::InvalidFaceType(
-                            "Face color not supported for cloud mesh".to_string(),
-                        ))
-                    }
-                    Color::Mesh(c) => {
-                        let vertices = mesh.vertices();
-                        Ok(vertices
-                            .into_iter()
-                            .map(|v| GpuVertex::from(v, c))
-                            .collect::<Vec<_>>())
-                    }
+
+                    Ok(vertices)
                 }
-            }
+            },
         }
-
-
-
     }
 }
 
@@ -193,4 +221,3 @@ pub fn face_to_vertex3(face: &Face) -> Vec<usize> {
         Face::Quad(a, b, c, d) => vec![*a, *b, *c, *a, *c, *d],
     }
 }
-

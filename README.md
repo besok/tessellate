@@ -40,12 +40,18 @@ The detailed example can be found in the [parametric_shapes](examples/parametric
 ## Filtering
 ### Boolean Operations.
 ### Extract Cell Centers
+The library provides functions to extract the centers of polygons and edges.
+The detailed example can be found in the [extract_cell_centers](examples/polygon_and_edges_centers/README.md) example.
+
 ### Clipping with a Surface, plane and boxes
 ### Collision Detection
 ### Volumetric Analysis
 ### Find and label connected regions.
 ### Decimate a mesh
 ### Extract Edges
+The library provides functions to extract the edges of a polygons.
+The detailed example can be found in the [extract_edges](examples/extract_edges/README.md) example.
+
 ### Extract Surface
 ### Gaussian Smoothing
 ### Geodesic Paths
