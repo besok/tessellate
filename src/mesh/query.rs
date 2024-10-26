@@ -91,4 +91,42 @@ impl<'a> MeshQuery<'a> {
     pub fn extract_boundary_edges(&self) -> MeshResult<Vec<Edge>> {
         edges::extract_boundary_edges(self.0)
     }
+
+    /// Extract the manifold edges of the mesh
+    ///
+    /// This function identifies and returns the edges that are shared by exactly two faces.
+    ///
+    /// # Returns
+    ///
+    /// * `MeshResult<Vec<Edge>>` - A result containing a vector of manifold edges or an error.
+    pub fn extract_manifold_edges(&self) -> MeshResult<Vec<Edge>> {
+        edges::extract_manifold_edges(self.0)
+    }
+
+    /// Extract the non-manifold edges of the mesh
+    ///
+    /// This function identifies and returns the edges that are shared by more than two faces.
+    ///
+    /// # Returns
+    ///
+    /// * `MeshResult<Vec<Edge>>` - A result containing a vector of non-manifold edges or an error.
+    pub fn extract_non_manifold_edges(&self) -> MeshResult<Vec<Edge>> {
+        edges::extract_non_manifold_edges(self.0)
+    }
+
+    /// Extract the feature edges of the mesh
+    ///
+    /// This function identifies and returns the edges that form a feature angle greater than the specified threshold.
+    ///
+    /// # Arguments
+    ///
+    /// * `feature_angle` - The angle threshold in degrees.
+    ///
+    /// # Returns
+    ///
+    /// * `MeshResult<Vec<Edge>>` - A result containing a vector of feature edges or an error.
+    pub fn extract_feature_edges(&self, feature_angle: f32) -> MeshResult<Vec<Edge>> {
+        edges::extract_feature_edges(self.0, feature_angle)
+    }
+
 }

@@ -1,8 +1,8 @@
 use crate::mesh::parts::face::Face;
+use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 use glam::Vec3;
 use std::collections::HashMap;
-use crate::mesh::parts::vertex::Vertex;
 
 /// Mesh normals
 /// The structure to store normals for vertices and faces
@@ -82,6 +82,12 @@ impl MeshNormals {
         self.normals_vert
             .get(idx)
             .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
+    }
+
+    pub fn get_face_normal(&self, face: &Face) -> MeshResult<&Vec3> {
+        self.normals_face_map
+            .get(face)
+            .ok_or(MeshError::InvalidIndex("Invalid face".to_string()))
     }
 }
 

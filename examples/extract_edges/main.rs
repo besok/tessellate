@@ -12,9 +12,22 @@ fn main() -> TessResult<()> {
 
     let edges = spiral.query().extract_boundary_edges()?;
     let mut mesh = Mesh::lines(edges, Color::Mesh(RgbaColor::GREEN));
-    mesh.transform(Mat4::from_translation(Vec3::new(1.5, 0.0, 0.0)))?;
+    mesh.transform(Mat4::from_translation(Vec3::new(1., 0.0, 0.0)))?;
 
-    let meshes = vec![spiral.into(), mesh];
+    let edges = spiral.query().extract_manifold_edges()?;
+    let mut mesh2 = Mesh::lines(edges, Color::Mesh(RgbaColor::BLUE));
+    mesh2.transform(Mat4::from_translation(Vec3::new(2., 0.0, 0.0)))?;
+
+    let edges = spiral.query().extract_feature_edges(179.0)?;
+    let mut mesh3 = Mesh::lines(edges, Color::Mesh(RgbaColor::RED));
+    mesh3.transform(Mat4::from_translation(Vec3::new(3., 0.0, 0.0)))?;
+
+    let edges = spiral.query().extract_non_manifold_edges()?;
+    let mut mesh4 = Mesh::lines(edges, Color::Mesh(RgbaColor::RED));
+    mesh4.transform(Mat4::from_translation(Vec3::new(4., 0.0, 0.0)))?;
+
+
+    let meshes = vec![spiral.into(),   mesh, mesh2, mesh3, mesh4];
     let camera = CameraPosition::new(Vec3::new(-2.5, 0.0, 0.0), 0.0, 0.0);
 
     Ok(gpu::visualize(meshes, camera)?)
