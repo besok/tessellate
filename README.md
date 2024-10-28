@@ -8,13 +8,16 @@ Fully written in Rust for speed and safety.
 
 ## Data Loading and Creation.
 
-### Loading Existing Data.
-
 Tessellate supports a wide range of file formats commonly used in scientific computing, 
-including VTK (.vtk), STL (.stl), PLY (.ply), and many more (through integration with libraries like meshio). 
+including VTK (.vtk), STL (.stl), OBJ. 
 You can directly read data from these files into the objects for visualization and analysis.
 
- 
+See the [import_models](examples/import_models/README.md) example for more details.
+
+### Import Obj Files
+TBD
+
+
 ## Mesh Manipulation.
 
 ### Creating Basic Geometries.

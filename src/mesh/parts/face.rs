@@ -1,6 +1,8 @@
 use crate::mesh::parts::edge::MeshEdge;
 use crate::mesh::parts::Idx;
+use crate::mesh::{MeshError, MeshResult};
 use std::hash::{Hash, Hasher};
+use std::vec;
 
 impl From<&Face> for Vec<MeshEdge> {
     fn from(face: &Face) -> Self {
@@ -27,6 +29,25 @@ pub enum Face {
 }
 
 impl Face {
+    pub fn new<T>(elems: Vec<T>) -> MeshResult<Vec<Self>>
+    where
+        T: Into<Idx> + Copy,
+    {
+        match elems.as_slice() {
+            e if e.len() < 3 => Err(MeshError::Custom("Empty face or incomplete".to_string())),
+            [a, b, c] => Ok(vec![Face::Triangle((*a).into(), (*b).into(), (*c).into())]),
+            // [a, b, c, d] => Ok(vec![Face::Quad(*a, *b, *c, *d)]),
+            elems => {
+                let mut faces = Vec::new();
+                let first_vertex = elems[0].into();
+                for i in 1..elems.len() - 1 {
+                    faces.push(Face::Triangle(first_vertex, elems[i].into(), elems[i + 1].into()));
+                }
+                Ok(faces)
+            }
+        }
+    }
+
     pub fn new3(a: Idx, b: Idx, c: Idx) -> Self {
         Face::Triangle(a, b, c)
     }

@@ -1,9 +1,12 @@
-use log::LevelFilter;
+use crate::files::FileError;
 use crate::gpu::error::GpuError;
 use crate::mesh::MeshError;
+use log::LevelFilter;
 pub mod gpu;
 #[macro_use]
 pub mod mesh;
+pub mod files;
+
 pub fn turn_on_test_logs() {
     let _ = env_logger::builder()
         .is_test(true)
@@ -19,6 +22,15 @@ pub type TessResult<T> = Result<T, TessError>;
 pub enum TessError {
     MeshError(MeshError),
     GpuError(GpuError),
+    FileError(FileError),
+}
+
+
+
+impl From<FileError> for TessError {
+    fn from(e: FileError) -> Self {
+        TessError::FileError(e)
+    }
 }
 
 impl From<MeshError> for TessError {
