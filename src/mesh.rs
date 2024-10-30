@@ -9,8 +9,10 @@ use parts::face::Face;
 use parts::polygon::Polygon;
 use parts::vertex::Vertex;
 use std::collections::{HashMap, HashSet};
+use std::convert::Infallible;
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
+use std::num::TryFromIntError;
 
 pub mod attributes;
 pub mod bool;
@@ -32,6 +34,18 @@ pub enum MeshError {
     WrongIntersection(String),
     WrongMesh(String),
     Custom(String),
+}
+
+impl From<TryFromIntError> for MeshError {
+    fn from(value: TryFromIntError) -> Self {
+        MeshError::Custom(value.to_string())
+    }
+}
+
+impl From<Infallible> for MeshError {
+    fn from(_value: Infallible) -> Self {
+        MeshError::Custom("Infallible".to_string())
+    }
 }
 
 impl Display for MeshError {

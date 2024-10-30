@@ -14,8 +14,10 @@ You can directly read data from these files into the objects for visualization a
 
 See the [import_models](examples/import_models/README.md) example for more details.
 
-### Import Obj Files
-TBD
+- Import Obj Files
+- Import Ply Files 
+- Import Stl Files
+
 
 
 ## Mesh Manipulation.

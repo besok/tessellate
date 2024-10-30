@@ -24,6 +24,8 @@ rand = "0.9.0-alpha.1"
 tobj = "4.0.2"
 #tobj = {path = "../tobj"}
 ply-rs = "0.1.3"
+stl_io = "0.8.2"
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 instant = { version = "0.1", features = [ "wasm-bindgen" ] }
 console_error_panic_hook = "0.1.6"

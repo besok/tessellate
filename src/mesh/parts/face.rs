@@ -29,19 +29,33 @@ pub enum Face {
 }
 
 impl Face {
-    pub fn new<T>(elems: Vec<T>) -> MeshResult<Vec<Self>>
+    pub fn new<T, E>(elems: Vec<T>) -> MeshResult<Vec<Self>>
     where
-        T: Into<Idx> + Copy,
+        T: TryInto<Idx, Error = E> + Copy,
+        MeshError: From<E>,
     {
         match elems.as_slice() {
             e if e.len() < 3 => Err(MeshError::Custom("Empty face or incomplete".to_string())),
-            [a, b, c] => Ok(vec![Face::Triangle((*a).into(), (*b).into(), (*c).into())]),
-            // [a, b, c, d] => Ok(vec![Face::Quad(*a, *b, *c, *d)]),
+            [a, b, c] => Ok(vec![Face::Triangle(
+                (*a).try_into()?,
+                (*b).try_into()?,
+                (*c).try_into()?,
+            )]),
+            [a, b, c, d] => Ok(vec![Face::Quad(
+                (*a).try_into()?,
+                (*b).try_into()?,
+                (*c).try_into()?,
+                (*d).try_into()?,
+            )]),
             elems => {
                 let mut faces = Vec::new();
-                let first_vertex = elems[0].into();
+                let first_vertex = elems[0].try_into()?;
                 for i in 1..elems.len() - 1 {
-                    faces.push(Face::Triangle(first_vertex, elems[i].into(), elems[i + 1].into()));
+                    faces.push(Face::Triangle(
+                        first_vertex,
+                        elems[i].try_into()?,
+                        elems[i + 1].try_into()?,
+                    ));
                 }
                 Ok(faces)
             }
