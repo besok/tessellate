@@ -1,12 +1,21 @@
+use std::fs::OpenOptions;
+use stl_io::IndexedTriangle;
+
 use crate::files::FileError;
 use crate::mesh::material::Color;
+use crate::mesh::Mesh;
 use crate::mesh::parts::face::Face;
 use crate::mesh::parts::vertex::Vertex;
-use crate::mesh::Mesh;
-use ply_rs::ply::{Property, PropertyAccess};
-use std::fs::OpenOptions;
-use stl_io::{IndexedTriangle, Vector};
 
+/// Imports an STL file and converts it into a `Mesh`.
+///
+/// # Arguments
+///
+/// * `path` - A string slice that holds the path to the STL file.
+///
+/// # Returns
+///
+/// * `Result<Mesh, FileError>` - Returns a `Mesh` on success, or a `FileError` on failure.
 pub fn import_stl(path: &str) -> Result<Mesh, FileError> {
     let mut file = OpenOptions::new().read(true).open(path)?;
     let stl = stl_io::read_stl(&mut file)?;

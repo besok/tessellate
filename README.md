@@ -12,12 +12,12 @@ Tessellate supports a wide range of file formats commonly used in scientific com
 including VTK (.vtk), STL (.stl), OBJ. 
 You can directly read data from these files into the objects for visualization and analysis.
 
-See the [import_models](examples/import_models/README.md) example for more details.
-
 - Import Obj Files
 - Import Ply Files 
 - Import Stl Files
 
+The details can be found in the [import_models](examples/import_models/README.md) example.
+The module `files` provides functions to read and write mesh data from and to files.
 
 
 ## Mesh Manipulation.
