@@ -6,8 +6,6 @@
 <h1 align="center">3D scientific data visualization and plotting tool for Rust.</h1>
 
 
---- 
-
 Inspired by pyvista and VTK. 
 Fully written in Rust for speed and safety.
 
