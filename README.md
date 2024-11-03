@@ -1,7 +1,7 @@
 <h1 align="center">Tessellate</h1> 
 
 <p align="center">
-    <img width="128" alt="Logo" src="pics/logo.jpeg">
+    <img width="128" alt="Logo" src="assets/logo.jpeg">
 </p>
 <h1 align="center">3D scientific data visualization and plotting tool for Rust.</h1>
 

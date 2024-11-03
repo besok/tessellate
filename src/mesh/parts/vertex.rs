@@ -1,5 +1,6 @@
 use glam::Vec3;
 use std::cmp::Ordering;
+use std::f32::consts::PI;
 use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Div, Mul, Sub};
@@ -48,16 +49,15 @@ impl Vertex2 {
         Vertex2 { x, y }
     }
 
-    pub fn yz(v:&Vertex) -> Self {
+    pub fn yz(v: &Vertex) -> Self {
         Vertex2::new(v.y, v.z)
     }
-    pub fn xz(v:&Vertex) -> Self {
+    pub fn xz(v: &Vertex) -> Self {
         Vertex2::new(v.x, v.z)
     }
-    pub fn xy(v:&Vertex) -> Self {
+    pub fn xy(v: &Vertex) -> Self {
         Vertex2::new(v.x, v.y)
     }
-
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -239,6 +239,7 @@ impl Vertex {
     pub fn length_squared(&self) -> f32 {
         self.dot(&self)
     }
+
 }
 
 impl From<[f32; 3]> for Vertex {

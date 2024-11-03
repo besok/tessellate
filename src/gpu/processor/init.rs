@@ -5,6 +5,7 @@ use crate::gpu::gui::GuiRenderer;
 use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor, Topology};
 use crate::gpu::vertex::{GpuInstance, GpuVertex};
 use crate::mesh::attributes::MeshType;
+use crate::mesh::parts::bbox::BoundingBox;
 use crate::mesh::shape::sphere::Sphere;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 use egui_wgpu::wgpu;
@@ -27,8 +28,7 @@ impl GpuProcessor {
     ) -> GpuResult<GpuHandler> {
         let attributes = Window::default_attributes()
             .with_title("Tessellate")
-            .with_window_icon(Some(load_icon(Path::new("pics/icon.ico"))?))
-            ;
+            .with_window_icon(Some(load_icon(Path::new("assets/icon.ico"))?));
 
         let window = Arc::new(event_loop.create_window(attributes)?);
         let size = window.inner_size();
@@ -125,7 +125,13 @@ impl GpuProcessor {
                 }
             }
         }
-        let camera = Camera::init(&config, &device, camera_pos);
+        let aabb = meshes
+            .iter()
+            .map(|m| m.aabb())
+            .reduce(|a, b| (a, b).into())
+            .ok_or(MeshError::Custom("No bounding box found".to_string()))?;
+
+        let camera = Camera::init(&config, &device, camera_pos, aabb);
 
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {

@@ -9,7 +9,7 @@ use std::sync::Arc;
 use egui::style::Widgets;
 use winit::event::{ElementState, MouseButton, WindowEvent};
 use winit::window::Window;
-use crate::gpu::gui::widgets::CameraInfo;
+use crate::gpu::gui::widgets::{CameraInfo, Controls};
 
 impl GpuHandler {
     pub fn render(&mut self) -> GpuResult<()> {
@@ -92,8 +92,8 @@ impl GpuHandler {
 
         {
             self.gui.begin_frame(self.window.clone());
-            CameraInfo::show(&self.gui.context(), &self.camera.camera());
-
+            CameraInfo::show(&self.gui.context(), &self.camera);
+            Controls::show(&self.gui.context(), self.camera.camera_coordinator_mut());
             self.gui.end_frame_and_draw(
                 &self.device,
                 &self.queue,

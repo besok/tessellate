@@ -1,4 +1,6 @@
 use crate::gpu::camera::position::CameraPosition;
+use crate::mesh::parts::bbox::BoundingBox;
+use crate::mesh::parts::vertex::Vertex;
 use glam::Vec3;
 use winit::dpi::PhysicalPosition;
 use winit::event::MouseScrollDelta;
@@ -14,15 +16,51 @@ pub struct CameraCoordinator {
 }
 
 impl CameraCoordinator {
-    pub fn new(distance: f32, speed: f32, sensitivity: f32) -> Self {
+    pub fn new(pos: &Vertex, aabb: BoundingBox, speed: f32, sensitivity: f32) -> Self {
+        let c = aabb.center();
+        let distance = c.distance(pos);
+        let hor_angle = (pos.z - c.z).atan2((pos.x - c.x).hypot(pos.y - c.y));
+        let ver_angle = (pos.y - c.y).atan2(pos.x - c.x);
         Self {
             distance,
-            hor_angle: 0.0,
-            ver_angle: 0.0,
+            hor_angle,
+            ver_angle,
             speed,
             sensitivity,
             last_mouse_pos: None,
         }
+    }
+
+    pub fn distance(&self) -> f32 {
+        self.distance
+    }
+
+    pub fn hor_angle(&self) -> f32 {
+        self.hor_angle
+    }
+
+    pub fn hor_angle_step(&mut self, step: f32) {
+        self.hor_angle = self.hor_angle + step;
+    }
+
+    pub fn ver_angle(&self) -> f32 {
+        self.ver_angle
+    }
+
+    pub fn ver_angle_step(&mut self, step: f32) {
+        self.ver_angle = self.ver_angle + step;
+    }
+
+    pub fn distance_step(&mut self, step: f32) {
+        self.distance = self.distance + step;
+    }
+
+    pub fn speed(&self) -> f32 {
+        self.speed
+    }
+
+    pub fn sensitivity(&self) -> f32 {
+        self.sensitivity
     }
 
     pub fn process_scroll(&mut self, delta: &MouseScrollDelta) {

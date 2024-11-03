@@ -1,23 +1,22 @@
 use egui_wgpu::wgpu;
-use glam::{Mat4};
-use log::{info};
 use egui_wgpu::wgpu::util::DeviceExt;
 use egui_wgpu::wgpu::{BindGroupLayout, Device, SurfaceConfiguration};
+use glam::Mat4;
+use log::info;
 use winit::dpi::PhysicalPosition;
-use winit::event::{ MouseScrollDelta};
+use winit::event::MouseScrollDelta;
 
-use crate::gpu::camera::coordinator::{CameraCoordinator};
+use crate::gpu::camera::coordinator::CameraCoordinator;
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::projection::Projection;
+use crate::mesh::parts::bbox::BoundingBox;
 
 pub mod coordinator;
 pub mod position;
 pub mod projection;
 
-
-
 pub struct Camera {
-    camera: CameraPosition,
+    camera_pos: CameraPosition,
     projection: Projection,
     uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
@@ -31,7 +30,8 @@ impl Camera {
     pub fn init(
         config: &SurfaceConfiguration,
         device: &Device,
-        camera_pos: CameraPosition
+        camera_pos: CameraPosition,
+        aabb: BoundingBox,
     ) -> Self {
         let projection = Projection::new(config.width, config.height, 45.0, 0.1, 100.0);
         let mut camera_uniform = CameraUniform::new();
@@ -63,7 +63,7 @@ impl Camera {
             }],
             label: Some("camera_bind_group"),
         });
-        let coordinator = CameraCoordinator::new(5.0, 0.1, 0.0005);
+        let coordinator = CameraCoordinator::new(&camera_pos.position().into(), aabb, 0.1, 0.0005);
 
         Self::new(
             camera_pos,
@@ -86,7 +86,7 @@ impl Camera {
         camera_bind_layout: BindGroupLayout,
     ) -> Self {
         Self {
-            camera,
+            camera_pos: camera,
             uniform,
             camera_buffer,
             camera_bind_group,
@@ -101,19 +101,26 @@ impl Camera {
         self.mouse_pressed
     }
 
-    pub fn camera_bind_group(&self) -> &egui_wgpu::wgpu::BindGroup {
+    pub fn camera_bind_group(&self) -> &wgpu::BindGroup {
         &self.camera_bind_group
     }
-    pub fn camera_bind_layout(&self) -> &egui_wgpu::wgpu::BindGroupLayout {
+    pub fn camera_bind_layout(&self) -> &BindGroupLayout {
         &self.camera_bind_layout
     }
 
-    pub fn camera_coordinator(&mut self) -> &mut CameraCoordinator {
+    pub fn camera_coordinator_mut(&mut self) -> &mut CameraCoordinator {
         &mut self.camera_coord
     }
-    pub fn camera(&mut self) -> &mut CameraPosition {
-        &mut self.camera
+    pub fn camera_coordinator(&self) -> &CameraCoordinator {
+        &self.camera_coord
     }
+    pub fn camera_pos_mut(&mut self) -> &mut CameraPosition {
+        &mut self.camera_pos
+    }
+    pub fn camera_pos(&self) -> &CameraPosition {
+        &self.camera_pos
+    }
+
     pub fn uniform(&self) -> &CameraUniform {
         &self.uniform
     }
@@ -121,11 +128,11 @@ impl Camera {
         &self.camera_buffer
     }
     pub fn update_camera(&mut self) {
-        self.camera_coord.update_camera(&mut self.camera);
+        self.camera_coord.update_camera(&mut self.camera_pos);
         self.uniform
-            .update_view_proj(&self.camera, &self.projection);
+            .update_view_proj(&self.camera_pos, &self.projection);
 
-        info!("Camera position: {:?}", self.camera);
+        info!("Camera position: {:?}", self.camera_pos);
     }
 
     pub fn resize(&mut self, width: u32, height: u32) {
@@ -138,7 +145,7 @@ impl Camera {
         self.camera_coord.process_scroll(delta);
     }
 
-    pub fn process_mouse(&mut self, position:&PhysicalPosition<f64>) -> bool{
+    pub fn process_mouse(&mut self, position: &PhysicalPosition<f64>) -> bool {
         self.camera_coord.process_mouse(position)
     }
 

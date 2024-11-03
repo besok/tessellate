@@ -14,5 +14,5 @@ fn main() -> TessResult<()> {
         // building,
         // bunny,
     ];
-    Ok(gpu::visualize(meshes, Vec3::default().into())?)
+    Ok(gpu::visualize(meshes, Vec3::new(15.,0.,3.).into())?)
 }

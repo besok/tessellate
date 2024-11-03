@@ -1,9 +1,9 @@
 use crate::mesh::material::Color;
-use crate::mesh::Mesh;
 use crate::mesh::parts::face::FaceType;
 use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::shape::cuboid::rect_cuboid::RectCuboid;
+use crate::mesh::Mesh;
 
 /// Bounding box
 /// The structure to store the bounding box of a mesh
@@ -65,8 +65,6 @@ impl BoundingBox {
         }
         false
     }
-
-
 
     pub fn from_polygons(polygons: &Vec<Polygon>) -> BoundingBox {
         polygons
@@ -146,6 +144,19 @@ impl BoundingBox {
         let z_within = self.min_vertex.z <= vertex.z && vertex.z <= self.max_vertex.z;
 
         x_within && y_within && z_within
+    }
+
+    /// Calculate the distance from the center of the bounding box to a given vertex
+    ///
+    /// # Arguments
+    ///
+    /// * `v` - A reference to the vertex to which the distance is calculated
+    ///
+    /// # Returns
+    ///
+    /// * `f32` - The distance from the center of the bounding box to the given vertex
+    pub fn distance(&self, v: &Vertex) -> f32 {
+        self.center().distance(v)
     }
 }
 
