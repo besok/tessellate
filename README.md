@@ -1,15 +1,22 @@
-# Tessellate 
-3D scientific data visualization and plotting tool for Rust.
+<h1 align="center">Tessellate</h1> 
+
+<p align="center">
+    <img width="150" alt="Logo" src="pics/logo.jpeg">
+</p>
+<h1 align="center">3D scientific data visualization and plotting tool for Rust.</h1>
+
+
+--- 
+
 Inspired by pyvista and VTK. 
 Fully written in Rust for speed and safety.
-
 
 # Features
 
 ## Data Loading and Creation.
 
-Tessellate supports a wide range of file formats commonly used in scientific computing, 
-including VTK (.vtk), STL (.stl), OBJ. 
+Tessellate supports a range of file formats commonly used in scientific computing, 
+including PLY (.ply), STL (.stl), OBJ (.obj). 
 You can directly read data from these files into the objects for visualization and analysis.
 
 - Import Obj Files

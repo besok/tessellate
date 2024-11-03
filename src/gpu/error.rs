@@ -1,8 +1,11 @@
 use crate::mesh::MeshError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use wgpu::SurfaceError;
+use std::io;
+use egui_wgpu::wgpu;
+use egui_wgpu::wgpu::SurfaceError;
 use winit::error::EventLoopError;
+use winit::window::BadIcon;
 
 #[derive(Debug, Clone)]
 pub enum GpuError {
@@ -68,3 +71,15 @@ impl Display for GpuError {
 }
 
 impl Error for GpuError {}
+
+impl From<io::Error> for GpuError {
+    fn from(e: io::Error) -> Self {
+        GpuError::General(format!("IO error: {}", e))
+    }
+}
+
+impl From<BadIcon> for GpuError {
+    fn from(e: BadIcon) -> Self {
+        GpuError::General(format!("Bad icon error: {}", e))
+    }
+}

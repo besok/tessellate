@@ -8,13 +8,15 @@ use std::collections::HashMap;
 use crate::gpu::vertex::GpuVertex;
 use crate::mesh::attributes::MeshType;
 use std::sync::Arc;
-use wgpu::{Buffer, RenderPipeline, Surface};
+use egui_wgpu::wgpu;
+use egui_wgpu::wgpu::{Buffer, RenderPipeline, Surface};
 use winit::application::ApplicationHandler;
 use winit::dpi;
 use winit::event::{ElementState, KeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowId};
+use crate::gpu::gui::GuiRenderer;
 
 mod init;
 mod render;
@@ -74,6 +76,7 @@ pub struct GpuHandler {
     pipelines: HashMap<Topology,RenderPipeline>,
     meshes: Vec<GpuMesh>,
     camera: Camera,
+    gui:GuiRenderer
 }
 
 impl GpuHandler {
@@ -88,6 +91,7 @@ impl GpuHandler {
         pipelines: HashMap<Topology,RenderPipeline>,
         meshes: Vec<GpuMesh>,
         camera: Camera,
+        gui:GuiRenderer
     ) -> Self {
         Self {
             window,
@@ -100,6 +104,7 @@ impl GpuHandler {
             pipelines,
             meshes,
             camera,
+            gui
         }
     }
 }
@@ -151,6 +156,7 @@ impl ApplicationHandler for GpuProcessor {
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
         match self.state() {
             Ok(s) => {
+                s.gui.handle_input(&mut s.window, &event);
                 if _id == s.window().id() && !s.input(&event) {
                     match event {
                         WindowEvent::CloseRequested

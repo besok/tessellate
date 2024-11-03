@@ -6,6 +6,7 @@ use crate::mesh::{parts, Mesh, MeshError};
 use bytemuck::{Pod, Zeroable};
 use std::iter::zip;
 use std::mem;
+use egui_wgpu::wgpu;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]

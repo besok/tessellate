@@ -1,18 +1,23 @@
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::Camera;
 use crate::gpu::error::{GpuError, GpuResult};
+use crate::gpu::gui::GuiRenderer;
 use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor, Topology};
 use crate::gpu::vertex::{GpuInstance, GpuVertex};
 use crate::mesh::attributes::MeshType;
-use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::shape::sphere::Sphere;
 use crate::mesh::{Mesh, MeshError, MeshResult};
+use egui_wgpu::wgpu;
+use egui_wgpu::wgpu::util::DeviceExt;
+use egui_wgpu::wgpu::Features;
+use ico::IconDir;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufReader, Error};
+use std::path::Path;
 use std::sync::Arc;
-use wgpu::util::DeviceExt;
-use wgpu::Features;
 use winit::event_loop::ActiveEventLoop;
-use winit::window::Window;
+use winit::window::{Icon, Window};
 
 impl GpuProcessor {
     pub fn try_init(
@@ -20,7 +25,11 @@ impl GpuProcessor {
         meshes: &Vec<Mesh>,
         camera_pos: CameraPosition,
     ) -> GpuResult<GpuHandler> {
-        let attributes = Window::default_attributes();
+        let attributes = Window::default_attributes()
+            .with_title("Tessellate")
+            .with_window_icon(Some(load_icon(Path::new("pics/icon.ico"))?))
+            ;
+
         let window = Arc::new(event_loop.create_window(attributes)?);
         let size = window.inner_size();
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -40,6 +49,7 @@ impl GpuProcessor {
                 required_features: Features::empty(), // wgpu::Features::POLYGON_MODE_LINE,
                 required_limits: wgpu::Limits::default(),
                 label: None,
+                memory_hints: Default::default(),
             },
             None, // Trace path
         ))?;
@@ -128,7 +138,7 @@ impl GpuProcessor {
         pipelines.insert(
             Topology::TriangleList,
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                label: Some("Render Pipeline"),
+                label: Some("Render Pipeline with triangles"),
                 layout: Some(&render_pipeline_layout),
                 vertex: wgpu::VertexState {
                     module: &shader_vertex,
@@ -168,13 +178,14 @@ impl GpuProcessor {
                     alpha_to_coverage_enabled: false,
                 },
                 multiview: None,
+                cache: None,
             }),
         );
         if meshes.iter().any(|m| m.is_lines()) {
             pipelines.insert(
                 Topology::LineList,
                 device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                    label: Some("Render Pipeline"),
+                    label: Some("Render Pipeline with lines"),
                     layout: Some(&render_pipeline_layout),
                     vertex: wgpu::VertexState {
                         module: &shader_vertex,
@@ -214,12 +225,24 @@ impl GpuProcessor {
                         alpha_to_coverage_enabled: false,
                     },
                     multiview: None,
+                    cache: None,
                 }),
             );
         }
 
+        let gui = GuiRenderer::new(&device, config.format, None, 1, window.clone());
+
         Ok(GpuHandler::new(
             window, instance, surface, device, queue, config, size, pipelines, gpu_meshes, camera,
+            gui,
         ))
     }
+}
+
+fn load_icon(path: &Path) -> GpuResult<Icon> {
+    let file = File::open(path)?;
+    let icon_dir = IconDir::read(BufReader::new(file))?;
+    let icon_image = &icon_dir.entries()[0];
+    let icon_rgba = icon_image.decode().expect("Failed to decode icon image");
+    Ok(Icon::from_rgba(icon_rgba.rgba_data().to_vec(), icon_image.width(), icon_image.height())?)
 }

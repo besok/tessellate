@@ -2,11 +2,14 @@ use crate::gpu::error::{GpuError, GpuResult};
 use crate::gpu::processor::{GpuHandler, Topology};
 use crate::gpu::vertex::face_to_vertex3;
 use crate::mesh::attributes::MeshType;
+use egui_wgpu::{wgpu, ScreenDescriptor};
 use log::info;
 use std::iter;
 use std::sync::Arc;
+use egui::style::Widgets;
 use winit::event::{ElementState, MouseButton, WindowEvent};
 use winit::window::Window;
+use crate::gpu::gui::widgets::CameraInfo;
 
 impl GpuHandler {
     pub fn render(&mut self) -> GpuResult<()> {
@@ -79,6 +82,26 @@ impl GpuHandler {
                 render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
                 render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
             }
+        }
+
+        let screen_descriptor = ScreenDescriptor {
+            size_in_pixels: [self.config.width, self.config.height],
+            pixels_per_point: self.window().scale_factor() as f32,
+        };
+
+
+        {
+            self.gui.begin_frame(self.window.clone());
+            CameraInfo::show(&self.gui.context(), &self.camera.camera());
+
+            self.gui.end_frame_and_draw(
+                &self.device,
+                &self.queue,
+                &mut encoder,
+                self.window.clone(),
+                &view,
+                screen_descriptor,
+            )?;
         }
 
         self.queue.submit(iter::once(encoder.finish()));

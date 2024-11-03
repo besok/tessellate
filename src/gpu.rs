@@ -8,6 +8,7 @@ pub mod camera;
 pub mod error;
 mod processor;
 mod vertex;
+mod gui;
 
 async fn run(
     meshes: Vec<Mesh>,

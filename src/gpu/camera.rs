@@ -1,7 +1,8 @@
+use egui_wgpu::wgpu;
 use glam::{Mat4};
 use log::{info};
-use wgpu::util::DeviceExt;
-use wgpu::{BindGroupLayout, Device, SurfaceConfiguration};
+use egui_wgpu::wgpu::util::DeviceExt;
+use egui_wgpu::wgpu::{BindGroupLayout, Device, SurfaceConfiguration};
 use winit::dpi::PhysicalPosition;
 use winit::event::{ MouseScrollDelta};
 
@@ -100,10 +101,10 @@ impl Camera {
         self.mouse_pressed
     }
 
-    pub fn camera_bind_group(&self) -> &wgpu::BindGroup {
+    pub fn camera_bind_group(&self) -> &egui_wgpu::wgpu::BindGroup {
         &self.camera_bind_group
     }
-    pub fn camera_bind_layout(&self) -> &wgpu::BindGroupLayout {
+    pub fn camera_bind_layout(&self) -> &egui_wgpu::wgpu::BindGroupLayout {
         &self.camera_bind_layout
     }
 
@@ -116,7 +117,7 @@ impl Camera {
     pub fn uniform(&self) -> &CameraUniform {
         &self.uniform
     }
-    pub fn camera_buffer(&self) -> &wgpu::Buffer {
+    pub fn camera_buffer(&self) -> &egui_wgpu::wgpu::Buffer {
         &self.camera_buffer
     }
     pub fn update_camera(&mut self) {
