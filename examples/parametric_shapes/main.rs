@@ -23,11 +23,11 @@ pub fn init_logger() {
 }
 
 fn main() -> TessResult<()> {
-    init_logger();
+    // init_logger();
     let meshes = vec![
         pseudo_sphere().into(),
-        supertoroid()?.into(),
-        bohemian_dome().into(),
+        // supertoroid()?.into(),
+        // bohemian_dome().into(),
         // super_toroidoid().into(),
         // super_ellipsoid().into(),
         // mobius_strip().into(),

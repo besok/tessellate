@@ -1,6 +1,7 @@
-pub mod widgets;
+pub mod camera_info;
+pub mod controls;
 
-use egui::{Context, Visuals};
+use egui::{Context, FontData, FontDefinitions, FontFamily, Visuals};
 use egui_wgpu::Renderer;
 use egui_wgpu::ScreenDescriptor;
 use std::sync::Arc;
@@ -30,10 +31,21 @@ impl GuiRenderer {
         output_depth_format: Option<TextureFormat>,
         msaa_samples: u32,
         window: Arc<Window>,
-    ) -> Self {
+    ) -> GpuResult<Self> {
         let egui_context = Context::default();
+        let mut fonts = FontDefinitions::default();
+        fonts.font_data.insert(
+            "my_font".to_owned(),
+            FontData::from_static(include_bytes!("../../assets/fonts/Font_Awesome_6_Free-Solid-900.otf")),
+        );
+        fonts
+            .families
+            .get_mut(&FontFamily::Proportional)
+            .ok_or(GpuError::new("No proportional font family"))?
+            .insert(0, "my_font".to_owned());
+        egui_context.set_fonts(fonts);
 
-        let egui_state = egui_winit::State::new(
+        let egui_state = State::new(
             egui_context,
             egui::viewport::ViewportId::ROOT,
             &window,
@@ -44,11 +56,11 @@ impl GuiRenderer {
         let egui_renderer =
             Renderer::new(device, output_color_format, output_depth_format, msaa_samples, true);
 
-        GuiRenderer {
+        Ok(GuiRenderer {
             state: egui_state,
             renderer: egui_renderer,
             frame_started: false,
-        }
+        })
     }
 
     pub fn begin_frame(&mut self, window: Arc<Window>) {

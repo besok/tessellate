@@ -1,9 +1,10 @@
 use crate::mesh::MeshError;
+use egui_wgpu::wgpu;
+use egui_wgpu::wgpu::SurfaceError;
+use image::ImageError;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::io;
-use egui_wgpu::wgpu;
-use egui_wgpu::wgpu::SurfaceError;
 use winit::error::EventLoopError;
 use winit::window::BadIcon;
 
@@ -78,8 +79,14 @@ impl From<io::Error> for GpuError {
     }
 }
 
+
 impl From<BadIcon> for GpuError {
     fn from(e: BadIcon) -> Self {
         GpuError::General(format!("Bad icon error: {}", e))
+    }
+}
+impl From<ImageError> for GpuError {
+    fn from(e: ImageError) -> Self {
+        GpuError::General(format!("Image error: {}", e))
     }
 }

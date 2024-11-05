@@ -10,13 +10,14 @@ use crate::mesh::shape::sphere::Sphere;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 use egui_wgpu::wgpu;
 use egui_wgpu::wgpu::util::DeviceExt;
-use egui_wgpu::wgpu::Features;
 use ico::IconDir;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, Error};
 use std::path::Path;
 use std::sync::Arc;
+use egui_wgpu::wgpu::naga::back::glsl::Features;
+use winit::dpi;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::{Icon, Window};
 
@@ -28,6 +29,7 @@ impl GpuProcessor {
     ) -> GpuResult<GpuHandler> {
         let attributes = Window::default_attributes()
             .with_title("Tessellate")
+            .with_inner_size(dpi::PhysicalSize::new(1600, 1200))
             .with_window_icon(Some(load_icon(Path::new("assets/icon.ico"))?));
 
         let window = Arc::new(event_loop.create_window(attributes)?);
@@ -46,7 +48,7 @@ impl GpuProcessor {
 
         let (device, queue) = pollster::block_on(adapter.request_device(
             &wgpu::DeviceDescriptor {
-                required_features: Features::empty(), // wgpu::Features::POLYGON_MODE_LINE,
+                required_features: wgpu::Features::empty(), // wgpu::Features::POLYGON_MODE_LINE,
                 required_limits: wgpu::Limits::default(),
                 label: None,
                 memory_hints: Default::default(),
@@ -236,7 +238,7 @@ impl GpuProcessor {
             );
         }
 
-        let gui = GuiRenderer::new(&device, config.format, None, 1, window.clone());
+        let gui = GuiRenderer::new(&device, config.format, None, 1, window.clone())?;
 
         Ok(GpuHandler::new(
             window, instance, surface, device, queue, config, size, pipelines, gpu_meshes, camera,
