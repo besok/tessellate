@@ -94,7 +94,11 @@ impl GpuHandler {
         {
             self.gui.begin_frame(self.window.clone());
             CameraInfo::show(&self.gui.context(), &self.camera);
-            Controls::show(&self.gui.context(), self.camera.camera_coordinator_mut());
+            Controls::show(
+                &self.gui.context(),
+                &mut self.camera,
+            );
+
             self.gui.end_frame_and_draw(
                 &self.device,
                 &self.queue,

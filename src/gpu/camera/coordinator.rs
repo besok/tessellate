@@ -34,6 +34,11 @@ impl CameraCoordinator {
     pub fn distance(&self) -> f32 {
         self.distance
     }
+
+    pub fn set_angles_0(&mut self) {
+        self.hor_angle = 0.0;
+        self.ver_angle = 0.0;
+    }
     pub fn set_x_plus_zero(&mut self) {
         self.hor_angle = 0.0;
     }

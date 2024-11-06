@@ -155,6 +155,18 @@ impl Add for Vertex {
     }
 }
 
+impl Add<f32> for Vertex {
+    type Output = Vertex;
+
+    fn add(self, rhs: f32) -> Self::Output {
+        Vertex {
+            x: self.x + rhs,
+            y: self.y + rhs,
+            z: self.z + rhs,
+        }
+    }
+}
+
 impl Sub for Vertex {
     type Output = Vertex;
 
@@ -167,6 +179,18 @@ impl Sub for Vertex {
     }
 }
 
+impl Sub<f32> for Vertex {
+    type Output = Vertex;
+
+    fn sub(self, rhs: f32) -> Self::Output {
+        Vertex {
+            x: self.x - rhs,
+            y: self.y - rhs,
+            z: self.z - rhs,
+        }
+    }
+}
+
 impl Div for Vertex {
     type Output = Vertex;
 
@@ -175,6 +199,18 @@ impl Div for Vertex {
             x: self.x / rhs.x,
             y: self.y / rhs.y,
             z: self.z / rhs.z,
+        }
+    }
+}
+
+impl Div<f32> for Vertex {
+    type Output = Vertex;
+
+    fn div(self, rhs: f32) -> Self::Output {
+        Vertex {
+            x: self.x / rhs,
+            y: self.y / rhs,
+            z: self.z / rhs,
         }
     }
 }
@@ -239,7 +275,6 @@ impl Vertex {
     pub fn length_squared(&self) -> f32 {
         self.dot(&self)
     }
-
 }
 
 impl From<[f32; 3]> for Vertex {

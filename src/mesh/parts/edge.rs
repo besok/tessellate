@@ -41,6 +41,12 @@ pub struct Edge {
     pub b: Vertex,
 }
 
+impl<V:Into<Vertex>> From<(V,V)> for Edge {
+    fn from(value: (V, V)) -> Self {
+        Edge::new(value.0.into(), value.1.into())
+    }
+}
+
 impl PartialEq for Edge {
     fn eq(&self, other: &Self) -> bool {
         (self.a == other.a && self.b == other.b) || (self.a == other.b && self.b == other.a)
@@ -156,7 +162,7 @@ impl Edge {
                 let u = diff.cross(diff_e1).dot(cross) / denom;
                 // Check if t and u are within [0, 1] which means the intersection lies within both segments
                 if t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0 {
-                    Some(*a1 + (diff_e1 * t).into())
+                    Some(*a1 + <Vec3 as Into<Vertex>>::into((diff_e1 * t).into()))
                 } else {
                     None
                 }

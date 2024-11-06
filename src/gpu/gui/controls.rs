@@ -1,12 +1,14 @@
-use egui::{Align2, Color32, Context, RichText};
-
 use crate::gpu::camera::coordinator::CameraCoordinator;
+use crate::gpu::camera::position::CameraPosition;
+use crate::gpu::camera::Camera;
+use egui::{Align2, Color32, Context, RichText};
+use glam::Vec3;
 
 pub struct Controls;
 
 impl Controls {
-    pub fn show(ctx: &Context, camera_coord: &mut CameraCoordinator) {
-        let speed = camera_coord.speed();
+    pub fn show(ctx: &Context, camera: &mut Camera) {
+        let speed = camera.camera_coordinator_mut().speed();
         let h_speed = speed / 2.0;
         egui::Window::new("Controls")
             .vscroll(true)
@@ -15,6 +17,8 @@ impl Controls {
             .anchor(Align2::LEFT_TOP, egui::vec2(1.0, 1.0))
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
+                    let camera_coord = camera.camera_coordinator_mut();
+
                     let up = ui.button(RichText::new("\u{f358}").size(16.0));
                     if up.clicked() {
                         camera_coord.ver_angle_step(speed);
@@ -58,33 +62,48 @@ impl Controls {
                         camera_coord.distance_step(-h_speed);
                     }
                 });
-
+                ui.add_space(10.0);
                 ui.horizontal(|ui| {
-                    let rotate_x_plus = ui.button(RichText::new("X+").color(Color32::RED).size(12.0));
+                    let pos = camera.camera_pos().position().clone();
+                    let rotate_x_plus =
+                        ui.button(RichText::new("X+").color(Color32::RED).size(12.0));
+
                     if rotate_x_plus.clicked() {
-                        camera_coord.set_x_plus_zero();
+                        camera.camera_coordinator_mut().set_x_plus_zero();
+                        camera.camera_pos_mut().set_position(Vec3::new(0.0, pos.y, pos.z));
                     }
-                    let rotate_x_plus = ui.button(RichText::new("X-").color(Color32::RED).size(12.0));
+                    let rotate_x_plus =
+                        ui.button(RichText::new("X-").color(Color32::RED).size(12.0));
                     if rotate_x_plus.clicked() {
-                        camera_coord.set_x_min_zero();
+                        camera.camera_coordinator_mut().set_x_min_zero();
+                        camera.camera_pos_mut().set_position(Vec3::new(0.0, pos.y, pos.z));
                     }
                     let rotate_y = ui.button(RichText::new("Y+").color(Color32::GREEN).size(12.0));
                     if rotate_y.clicked() {
-                        camera_coord.set_y_plus_zero();
+                        camera.camera_coordinator_mut().set_y_plus_zero();
+                        camera.camera_pos_mut().set_position(Vec3::new(pos.x, 0.0, pos.z));
                     }
                     let rotate_y = ui.button(RichText::new("Y-").color(Color32::GREEN).size(12.0));
                     if rotate_y.clicked() {
-                        camera_coord.set_y_min_zero();
+                        camera.camera_coordinator_mut().set_y_min_zero();
+                        camera.camera_pos_mut().set_position(Vec3::new(pos.x, 0.0, pos.z));
                     }
-
 
                     let rotate_z = ui.button(RichText::new("Z+").color(Color32::BLUE).size(12.0));
                     if rotate_z.clicked() {
-                        camera_coord.set_z_plus_zero( );
+                        camera.camera_coordinator_mut().set_z_plus_zero();
+                        camera.camera_pos_mut().set_position(Vec3::new(pos.x, pos.y, 0.0));
                     }
                     let rotate_z = ui.button(RichText::new("Z-").color(Color32::BLUE).size(12.0));
                     if rotate_z.clicked() {
-                        camera_coord.set_z_min_zero( );
+                        camera.camera_coordinator_mut().set_z_min_zero();
+                        camera.camera_pos_mut().set_position(Vec3::new(pos.x, pos.y, 0.0));
+                    }
+
+                    let center = ui.button(RichText::new("0").color(Color32::BROWN).size(12.0));
+                    if center.clicked() {
+                        camera.camera_coordinator_mut().set_angles_0();
+                        camera.camera_pos_mut().set_position(Vec3::new(0.0, 0.0, 0.0));
                     }
                 });
             });

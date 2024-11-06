@@ -4,9 +4,9 @@ use crate::mesh::parts::edge::MeshEdge;
 use crate::mesh::parts::face::Face;
 use crate::mesh::{parts, Mesh, MeshError};
 use bytemuck::{Pod, Zeroable};
+use egui_wgpu::wgpu;
 use std::iter::zip;
 use std::mem;
-use egui_wgpu::wgpu;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
@@ -113,6 +113,11 @@ impl TryFrom<&Mesh> for Vec<GpuVertex> {
                     }
                     Ok(vertices)
                 }
+                Color::Line(_) => {
+                    Err(MeshError::InvalidFaceType(
+                        "Line color not supported for polygon mesh".to_string(),
+                    ))
+                }
             },
             MeshType::Cloud(_) => match mesh.color() {
                 Color::Func(f) => {
@@ -141,6 +146,16 @@ impl TryFrom<&Mesh> for Vec<GpuVertex> {
                         .into_iter()
                         .map(|v| GpuVertex::from(v, c))
                         .collect::<Vec<_>>())
+                }
+                Color::Line(colors) => {
+                    let mut vertices = Vec::new();
+                    for (MeshEdge(a, b), c) in zip(mesh.edges().into_iter(), colors.into_iter()) {
+                        let v1 = mesh.get(*a)?;
+                        let v2 = mesh.get(*b)?;
+                        vertices.push(GpuVertex::from(v1, c));
+                        vertices.push(GpuVertex::from(v2, c));
+                    }
+                    Ok(vertices)
                 }
             },
             MeshType::Lines => match mesh.color() {
@@ -183,6 +198,16 @@ impl TryFrom<&Mesh> for Vec<GpuVertex> {
                         ));
                     }
 
+                    Ok(vertices)
+                }
+                Color::Line(colors) => {
+                    let mut vertices = Vec::new();
+                    for (MeshEdge(a, b), c) in zip(mesh.edges().into_iter(), colors.into_iter()) {
+                        let v1 = mesh.get(*a)?;
+                        let v2 = mesh.get(*b)?;
+                        vertices.push(GpuVertex::from(v1, c));
+                        vertices.push(GpuVertex::from(v2, c));
+                    }
                     Ok(vertices)
                 }
             },

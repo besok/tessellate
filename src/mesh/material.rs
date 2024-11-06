@@ -79,6 +79,7 @@ pub enum Color {
     Func(fn(&Vertex, usize) -> RgbaColor),
     Vertex(Vec<RgbaColor>),
     Face(Vec<RgbaColor>),
+    Line(Vec<RgbaColor>),
     Mesh(RgbaColor),
 }
 

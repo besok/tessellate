@@ -5,10 +5,14 @@ use crate::gpu::gui::GuiRenderer;
 use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor, Topology};
 use crate::gpu::vertex::{GpuInstance, GpuVertex};
 use crate::mesh::attributes::MeshType;
+use crate::mesh::material::{Color, RgbaColor};
 use crate::mesh::parts::bbox::BoundingBox;
+use crate::mesh::parts::edge::Edge;
+use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::shape::sphere::Sphere;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 use egui_wgpu::wgpu;
+use egui_wgpu::wgpu::naga::back::glsl::Features;
 use egui_wgpu::wgpu::util::DeviceExt;
 use ico::IconDir;
 use std::collections::HashMap;
@@ -16,7 +20,6 @@ use std::fs::File;
 use std::io::{BufReader, Error};
 use std::path::Path;
 use std::sync::Arc;
-use egui_wgpu::wgpu::naga::back::glsl::Features;
 use winit::dpi;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::{Icon, Window};
@@ -85,7 +88,13 @@ impl GpuProcessor {
 
         let mut gpu_meshes = Vec::new();
 
-        for mesh in meshes.into_iter() {
+        let aabb = meshes
+            .iter()
+            .map(|m| m.aabb())
+            .reduce(|a, b| (a, b).into())
+            .ok_or(MeshError::Custom("No bounding box found".to_string()))?;
+
+        for mesh in meshes.into_iter().chain(create_coord(&aabb).iter()) {
             match mesh.attributes().mesh_type() {
                 MeshType::Polygons | MeshType::Lines => {
                     let vertices: Vec<GpuVertex> = mesh.try_into()?;
@@ -127,11 +136,6 @@ impl GpuProcessor {
                 }
             }
         }
-        let aabb = meshes
-            .iter()
-            .map(|m| m.aabb())
-            .reduce(|a, b| (a, b).into())
-            .ok_or(MeshError::Custom("No bounding box found".to_string()))?;
 
         let camera = Camera::init(&config, &device, camera_pos, aabb);
 
@@ -189,54 +193,53 @@ impl GpuProcessor {
                 cache: None,
             }),
         );
-        if meshes.iter().any(|m| m.is_lines()) {
-            pipelines.insert(
-                Topology::LineList,
-                device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                    label: Some("Render Pipeline with lines"),
-                    layout: Some(&render_pipeline_layout),
-                    vertex: wgpu::VertexState {
-                        module: &shader_vertex,
-                        entry_point: "vs_main",
-                        compilation_options: Default::default(),
-                        buffers: &[GpuVertex::desc()],
-                    },
-                    fragment: Some(wgpu::FragmentState {
-                        module: &shader_vertex,
-                        entry_point: "fs_main",
-                        compilation_options: Default::default(),
-                        targets: &[Some(wgpu::ColorTargetState {
-                            format: config.format,
-                            blend: Some(wgpu::BlendState {
-                                color: wgpu::BlendComponent::REPLACE,
-                                alpha: wgpu::BlendComponent::REPLACE,
-                            }),
-                            write_mask: wgpu::ColorWrites::ALL,
-                        })],
-                    }),
-                    primitive: wgpu::PrimitiveState {
-                        topology: wgpu::PrimitiveTopology::LineList,
-                        strip_index_format: None,
-                        polygon_mode: wgpu::PolygonMode::Fill,
-                        ..Default::default()
-                    },
-                    depth_stencil: Some(wgpu::DepthStencilState {
-                        format: wgpu::TextureFormat::Depth24Plus,
-                        depth_write_enabled: true,
-                        depth_compare: wgpu::CompareFunction::LessEqual,
-                        stencil: wgpu::StencilState::default(),
-                        bias: wgpu::DepthBiasState::default(),
-                    }),
-                    multisample: wgpu::MultisampleState {
-                        count: 1,
-                        mask: !0,
-                        alpha_to_coverage_enabled: false,
-                    },
-                    multiview: None,
-                    cache: None,
+
+        pipelines.insert(
+            Topology::LineList,
+            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                label: Some("Render Pipeline with lines"),
+                layout: Some(&render_pipeline_layout),
+                vertex: wgpu::VertexState {
+                    module: &shader_vertex,
+                    entry_point: "vs_main",
+                    compilation_options: Default::default(),
+                    buffers: &[GpuVertex::desc()],
+                },
+                fragment: Some(wgpu::FragmentState {
+                    module: &shader_vertex,
+                    entry_point: "fs_main",
+                    compilation_options: Default::default(),
+                    targets: &[Some(wgpu::ColorTargetState {
+                        format: config.format,
+                        blend: Some(wgpu::BlendState {
+                            color: wgpu::BlendComponent::REPLACE,
+                            alpha: wgpu::BlendComponent::REPLACE,
+                        }),
+                        write_mask: wgpu::ColorWrites::ALL,
+                    })],
                 }),
-            );
-        }
+                primitive: wgpu::PrimitiveState {
+                    topology: wgpu::PrimitiveTopology::LineList,
+                    strip_index_format: None,
+                    polygon_mode: wgpu::PolygonMode::Fill,
+                    ..Default::default()
+                },
+                depth_stencil: Some(wgpu::DepthStencilState {
+                    format: wgpu::TextureFormat::Depth24Plus,
+                    depth_write_enabled: true,
+                    depth_compare: wgpu::CompareFunction::LessEqual,
+                    stencil: wgpu::StencilState::default(),
+                    bias: wgpu::DepthBiasState::default(),
+                }),
+                multisample: wgpu::MultisampleState {
+                    count: 1,
+                    mask: !0,
+                    alpha_to_coverage_enabled: false,
+                },
+                multiview: None,
+                cache: None,
+            }),
+        );
 
         let gui = GuiRenderer::new(&device, config.format, None, 1, window.clone())?;
 
@@ -253,4 +256,17 @@ fn load_icon(path: &Path) -> GpuResult<Icon> {
     let icon_image = &icon_dir.entries()[0];
     let icon_rgba = icon_image.decode().expect("Failed to decode icon image");
     Ok(Icon::from_rgba(icon_rgba.rgba_data().to_vec(), icon_image.width(), icon_image.height())?)
+}
+
+fn create_coord(aabb: &BoundingBox) -> Vec<Mesh> {
+    let m = aabb.min().clone() - 1.0f32;
+    let coord = Mesh::lines(
+        vec![
+            (m.clone(), Vertex::new(m.x + 2.0, m.y, m.z)).into(),
+            (m.clone(), Vertex::new(m.x, m.y + 2.0, m.z)).into(),
+            (m.clone(), Vertex::new(m.x, m.y, m.z + 2.0)).into(),
+        ],
+        Color::Line(vec![RgbaColor::RED, RgbaColor::BLUE, RgbaColor::GREEN]),
+    );
+    vec![coord]
 }

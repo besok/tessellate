@@ -42,8 +42,8 @@ impl CameraPosition {
         self.position += shift;
     }
 
-    pub fn set_position(&mut self, shift: Vec3) {
-        self.position = shift;
+    pub fn set_position(&mut self, new_pos: Vec3) {
+        self.position = new_pos;
     }
 
     pub fn update_yaw(&mut self, shift: f32) {

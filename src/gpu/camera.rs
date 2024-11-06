@@ -124,7 +124,7 @@ impl Camera {
     pub fn uniform(&self) -> &CameraUniform {
         &self.uniform
     }
-    pub fn camera_buffer(&self) -> &egui_wgpu::wgpu::Buffer {
+    pub fn camera_buffer(&self) -> &wgpu::Buffer {
         &self.camera_buffer
     }
     pub fn update_camera(&mut self) {
