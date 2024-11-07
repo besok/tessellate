@@ -5,18 +5,19 @@ use crate::mesh::Mesh;
 use log::{error, info};
 use std::collections::HashMap;
 
+use crate::gpu::gui::GuiRenderer;
 use crate::gpu::vertex::GpuVertex;
+use crate::gpu::GpuOptions;
 use crate::mesh::attributes::MeshType;
-use std::sync::Arc;
 use egui_wgpu::wgpu;
 use egui_wgpu::wgpu::{Buffer, RenderPipeline, Surface};
+use std::sync::Arc;
 use winit::application::ApplicationHandler;
 use winit::dpi;
 use winit::event::{ElementState, KeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowId};
-use crate::gpu::gui::GuiRenderer;
 
 mod init;
 mod render;
@@ -32,31 +33,25 @@ struct GpuMesh {
 }
 
 impl GpuMesh {
-    pub fn new(
-        vertex_buffer: Buffer,
-        vertices: Vec<GpuVertex>,
-        mesh: Mesh,
-
-    ) -> Self {
+    pub fn new(vertex_buffer: Buffer, vertices: Vec<GpuVertex>, mesh: Mesh) -> Self {
         GpuMesh {
             vertex_buffer,
             mesh,
             vertices,
-
         }
     }
 }
 
 impl GpuProcessor {
-    pub fn new(meshes: Vec<Mesh>, camera: CameraPosition) -> Self {
+    pub fn new(meshes: Vec<Mesh>, camera: CameraPosition, options: GpuOptions) -> Self {
         GpuProcessor {
-            state: State::NotInitialized(meshes, camera),
+            state: State::NotInitialized(meshes, camera, options),
         }
     }
 }
 
 enum State {
-    NotInitialized(Vec<Mesh>, CameraPosition),
+    NotInitialized(Vec<Mesh>, CameraPosition, GpuOptions),
     Failed(GpuError),
     Initialized(GpuHandler),
 }
@@ -73,10 +68,10 @@ pub struct GpuHandler {
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     size: dpi::PhysicalSize<u32>,
-    pipelines: HashMap<Topology,RenderPipeline>,
+    pipelines: HashMap<Topology, RenderPipeline>,
     meshes: Vec<GpuMesh>,
     camera: Camera,
-    gui:GuiRenderer
+    gui: GuiRenderer,
 }
 
 impl GpuHandler {
@@ -88,10 +83,10 @@ impl GpuHandler {
         queue: wgpu::Queue,
         config: wgpu::SurfaceConfiguration,
         size: dpi::PhysicalSize<u32>,
-        pipelines: HashMap<Topology,RenderPipeline>,
+        pipelines: HashMap<Topology, RenderPipeline>,
         meshes: Vec<GpuMesh>,
         camera: Camera,
-        gui:GuiRenderer
+        gui: GuiRenderer,
     ) -> Self {
         Self {
             window,
@@ -104,7 +99,7 @@ impl GpuHandler {
             pipelines,
             meshes,
             camera,
-            gui
+            gui,
         }
     }
 }
@@ -128,7 +123,7 @@ impl GpuProcessor {
 impl Default for GpuProcessor {
     fn default() -> Self {
         GpuProcessor {
-            state: State::NotInitialized(vec![], CameraPosition::default()),
+            state: State::NotInitialized(vec![], CameraPosition::default(), GpuOptions::default()),
         }
     }
 }
@@ -136,8 +131,8 @@ impl Default for GpuProcessor {
 impl ApplicationHandler for GpuProcessor {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         match &self.state {
-            State::NotInitialized(meshes, camera) => {
-                match GpuProcessor::try_init(event_loop, meshes, camera.clone()) {
+            State::NotInitialized(meshes, camera, opts) => {
+                match GpuProcessor::try_init(event_loop, meshes, camera.clone(),opts.clone()) {
                     Ok(s) => {
                         self.state = State::Initialized(s);
                     }

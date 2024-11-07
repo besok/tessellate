@@ -94,10 +94,7 @@ impl GpuHandler {
         {
             self.gui.begin_frame(self.window.clone());
             CameraInfo::show(&self.gui.context(), &self.camera);
-            Controls::show(
-                &self.gui.context(),
-                &mut self.camera,
-            );
+            Controls::show(&self.gui.context(), &mut self.camera);
 
             self.gui.end_frame_and_draw(
                 &self.device,
@@ -146,7 +143,17 @@ impl GpuHandler {
                 ..
             } => self
                 .camera
-                .set_mouse_pressed(*state == ElementState::Pressed),
+                .mouse_mut()
+                .set_left_button(*state == ElementState::Pressed),
+            WindowEvent::MouseInput {
+                button: MouseButton::Right,
+                state,
+                ..
+            } => self
+                .camera
+                .mouse_mut()
+                .set_right_button(*state == ElementState::Pressed),
+
             WindowEvent::CursorMoved { position, .. } if self.camera.is_mouse_pressed() => {
                 self.camera.process_mouse(position)
             }

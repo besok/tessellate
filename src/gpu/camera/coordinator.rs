@@ -12,7 +12,6 @@ pub struct CameraCoordinator {
     ver_angle: f32,
     speed: f32,
     sensitivity: f32,
-    last_mouse_pos: Option<PhysicalPosition<f64>>,
 }
 
 impl CameraCoordinator {
@@ -27,7 +26,6 @@ impl CameraCoordinator {
             ver_angle,
             speed,
             sensitivity,
-            last_mouse_pos: None,
         }
     }
 
@@ -97,19 +95,14 @@ impl CameraCoordinator {
         };
     }
 
-    pub fn process_mouse(&mut self, position: &PhysicalPosition<f64>) -> bool {
-        if let Some(last_pos) = self.last_mouse_pos {
-            self.hor_angle += (position.x - last_pos.x) as f32 * self.sensitivity * self.speed;
-            self.ver_angle += (position.y - last_pos.y) as f32 * self.sensitivity * self.speed;
-        } else {
-            self.last_mouse_pos = Some(*position);
-        }
-
+    pub fn process_mouse(
+        &mut self,
+        prev_pos: &PhysicalPosition<f64>,
+        position: &PhysicalPosition<f64>,
+    ) -> bool {
+        self.hor_angle += (position.x - prev_pos.x) as f32 * self.sensitivity * self.speed;
+        self.ver_angle += (position.y - prev_pos.y) as f32 * self.sensitivity * self.speed;
         true
-    }
-
-    pub fn clean_mouse_pos(&mut self) {
-        self.last_mouse_pos = None;
     }
 
     pub fn update_camera(&mut self, camera: &mut CameraPosition) {

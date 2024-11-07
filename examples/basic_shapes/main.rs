@@ -13,6 +13,7 @@ use tessellate::mesh::shape::torus::Torus;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::HasMesh;
 use tessellate::{gpu, TessError, TessResult};
+use tessellate::gpu::GpuOptions;
 use tessellate::mesh::parts::vertex::Vertex;
 
 fn main() -> TessResult<()> {

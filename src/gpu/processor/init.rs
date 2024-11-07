@@ -23,12 +23,14 @@ use std::sync::Arc;
 use winit::dpi;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::{Icon, Window};
+use crate::gpu::GpuOptions;
 
 impl GpuProcessor {
     pub fn try_init(
         event_loop: &ActiveEventLoop,
         meshes: &Vec<Mesh>,
         camera_pos: CameraPosition,
+        options: GpuOptions,
     ) -> GpuResult<GpuHandler> {
         let attributes = Window::default_attributes()
             .with_title("Tessellate")

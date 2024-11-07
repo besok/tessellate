@@ -7,11 +7,13 @@ use winit::dpi::PhysicalPosition;
 use winit::event::MouseScrollDelta;
 
 use crate::gpu::camera::coordinator::CameraCoordinator;
+use crate::gpu::camera::mouse::Mouse;
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::projection::Projection;
 use crate::mesh::parts::bbox::BoundingBox;
 
 pub mod coordinator;
+pub mod mouse;
 pub mod position;
 pub mod projection;
 
@@ -23,7 +25,7 @@ pub struct Camera {
     camera_bind_group: wgpu::BindGroup,
     camera_coord: CameraCoordinator,
     camera_bind_layout: BindGroupLayout,
-    mouse_pressed: bool,
+    mouse: Mouse,
 }
 
 impl Camera {
@@ -93,12 +95,12 @@ impl Camera {
             camera_coord,
             projection,
             camera_bind_layout,
-            mouse_pressed: false,
+            mouse: Mouse::default(),
         }
     }
 
     pub fn is_mouse_pressed(&self) -> bool {
-        self.mouse_pressed
+        self.mouse.is_pressed()
     }
 
     pub fn camera_bind_group(&self) -> &wgpu::BindGroup {
@@ -131,8 +133,6 @@ impl Camera {
         self.camera_coord.update_camera(&mut self.camera_pos);
         self.uniform
             .update_view_proj(&self.camera_pos, &self.projection);
-
-        info!("Camera position: {:?}", self.camera_pos);
     }
 
     pub fn resize(&mut self, width: u32, height: u32) {
@@ -146,15 +146,25 @@ impl Camera {
     }
 
     pub fn process_mouse(&mut self, position: &PhysicalPosition<f64>) -> bool {
-        self.camera_coord.process_mouse(position)
-    }
-
-    pub fn set_mouse_pressed(&mut self, pressed: bool) -> bool {
-        self.mouse_pressed = pressed;
-        if !pressed {
-            self.camera_coord.clean_mouse_pos();
+        let last_pos = self.mouse.pos();
+        if self.mouse.is_left_pressed() {
+            if let Some(last_pos) = &last_pos {
+                self.camera_coord.process_mouse(last_pos, position);
+            } else {
+                self.mouse.set_pos(*position);
+            }
+        } else if self.mouse.is_right_pressed() {
+            if let Some(last_pos) = &last_pos {
+                self.camera_pos.process_mouse(last_pos, position);
+            } else {
+                self.mouse.set_pos(*position);
+            }
         }
         true
+    }
+
+    pub fn mouse_mut(&mut self) -> &mut Mouse {
+        &mut self.mouse
     }
 }
 
