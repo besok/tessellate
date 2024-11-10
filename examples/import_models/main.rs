@@ -12,11 +12,10 @@ pub fn init_logger() {
 }
 
 fn main() -> TessResult<()> {
-    init_logger();
-    let cow = files::obj::import_obj("examples/import_models/cow.obj", &LoadOptions::default())?;
-
-    let bunny = files::ply::import_ply("examples/import_models/bunny.ply")?;
-    let building = files::stl::import_stl("examples/import_models/at_t_building.stl")?;
+    // init_logger();
+    let cow = files::obj::import_obj("examples/import_models/cow.obj", &LoadOptions::default())?;    //
+    // let bunny = files::ply::import_ply("examples/import_models/bunny.ply")?;
+    // let building = files::stl::import_stl("examples/import_models/at_t_building.stl")?;
 
     let meshes = vec![
         cow,

@@ -1,7 +1,7 @@
 use egui_wgpu::wgpu;
 use egui_wgpu::wgpu::util::DeviceExt;
 use egui_wgpu::wgpu::{BindGroupLayout, Device, SurfaceConfiguration};
-use glam::Mat4;
+use glam::{Mat4, Vec3};
 use log::info;
 use winit::dpi::PhysicalPosition;
 use winit::event::MouseScrollDelta;
@@ -10,6 +10,7 @@ use crate::gpu::camera::coordinator::CameraCoordinator;
 use crate::gpu::camera::mouse::Mouse;
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::projection::Projection;
+use crate::gpu::GpuOptions;
 use crate::mesh::parts::bbox::BoundingBox;
 
 pub mod coordinator;
@@ -34,6 +35,7 @@ impl Camera {
         device: &Device,
         camera_pos: CameraPosition,
         aabb: BoundingBox,
+        gnu_options: &GpuOptions,
     ) -> Self {
         let projection = Projection::new(config.width, config.height, 45.0, 0.1, 100.0);
         let mut camera_uniform = CameraUniform::new();
@@ -65,7 +67,12 @@ impl Camera {
             }],
             label: Some("camera_bind_group"),
         });
-        let coordinator = CameraCoordinator::new(&camera_pos.position().into(), aabb, 0.1, 0.0005);
+        let coordinator = CameraCoordinator::new(
+            &camera_pos.position().into(),
+            aabb,
+            gnu_options.camera_speed,
+            gnu_options.camera_sensitivity,
+        );
 
         Self::new(
             camera_pos,
@@ -130,7 +137,13 @@ impl Camera {
         &self.camera_buffer
     }
     pub fn update_camera(&mut self) {
-        self.camera_coord.update_camera(&mut self.camera_pos);
+        let new_source = self.camera_coord.source();
+        let new_target = self.camera_coord.target();
+        self.camera_pos.set_position(new_source.into());
+        let direction = (new_target - new_source).normalize();
+        self.camera_pos.set_yaw(direction.z.atan2(direction.x));
+        self.camera_pos.set_pitch(direction.y.asin());
+
         self.uniform
             .update_view_proj(&self.camera_pos, &self.projection);
     }
@@ -145,19 +158,19 @@ impl Camera {
         self.camera_coord.process_scroll(delta);
     }
 
-    pub fn process_mouse(&mut self, position: &PhysicalPosition<f64>) -> bool {
+    pub fn process_mouse(&mut self, new_pos: &PhysicalPosition<f64>) -> bool {
         let last_pos = self.mouse.pos();
         if self.mouse.is_left_pressed() {
             if let Some(last_pos) = &last_pos {
-                self.camera_coord.process_mouse(last_pos, position);
+                self.camera_coord.process_rot(last_pos, new_pos);
             } else {
-                self.mouse.set_pos(*position);
+                self.mouse.set_pos(*new_pos);
             }
         } else if self.mouse.is_right_pressed() {
-            if let Some(last_pos) = &last_pos {
-                self.camera_pos.process_mouse(last_pos, position);
+            if let Some(curr_pos) = &last_pos {
+                self.camera_coord.process_shift(curr_pos, new_pos);
             } else {
-                self.mouse.set_pos(*position);
+                self.mouse.set_pos(*new_pos);
             }
         }
         true

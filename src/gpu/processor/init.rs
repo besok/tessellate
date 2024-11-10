@@ -139,7 +139,7 @@ impl GpuProcessor {
             }
         }
 
-        let camera = Camera::init(&config, &device, camera_pos, aabb);
+        let camera = Camera::init(&config, &device, camera_pos, aabb, &options);
 
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -264,9 +264,9 @@ fn create_coord(aabb: &BoundingBox) -> Vec<Mesh> {
     let m = aabb.min().clone() - 1.0f32;
     let coord = Mesh::lines(
         vec![
-            (m.clone(), Vertex::new(m.x + 2.0, m.y, m.z)).into(),
-            (m.clone(), Vertex::new(m.x, m.y + 2.0, m.z)).into(),
-            (m.clone(), Vertex::new(m.x, m.y, m.z + 2.0)).into(),
+            (m.clone(), Vertex::new(m.x + 1.0, m.y, m.z)).into(),
+            (m.clone(), Vertex::new(m.x, m.y + 1.0, m.z)).into(),
+            (m.clone(), Vertex::new(m.x, m.y, m.z + 1.0)).into(),
         ],
         Color::Line(vec![RgbaColor::RED, RgbaColor::BLUE, RgbaColor::GREEN]),
     );

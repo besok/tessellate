@@ -40,15 +40,7 @@ impl CameraPosition {
             pitch,
         }
     }
-    pub(crate) fn process_mouse(
-        &mut self,
-        last_pos: &PhysicalPosition<f64>,
-        curr_pos: &PhysicalPosition<f64>,
-    ) {
-        let shift_x = (last_pos.x - curr_pos.x) as f32;
-        let shift_y = (last_pos.y - curr_pos.y) as f32;
-        self.update_position(Vec3::new(shift_x, shift_y, 0.0));
-    }
+
     pub fn update_position(&mut self, shift: Vec3) {
         self.position += shift;
     }

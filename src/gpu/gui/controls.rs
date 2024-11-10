@@ -64,6 +64,42 @@ impl Controls {
                 });
                 ui.add_space(10.0);
                 ui.horizontal(|ui| {
+                    let camera_coord = camera.camera_coordinator_mut();
+
+                    let up = ui.button(RichText::new("\u{f062}").size(16.0));
+                    if up.clicked() {
+                        camera_coord.process_shift_delta(0.0, 0.1);
+                    }
+                    if up.is_pointer_button_down_on() {
+                        camera_coord.process_shift_delta(0.0, h_speed);
+                    }
+
+                    let down = ui.button(RichText::new("\u{f063}").size(16.0));
+                    if down.clicked() {
+                        camera_coord.process_shift_delta(0.0, -0.1);
+                    }
+                    if down.is_pointer_button_down_on() {
+                        camera_coord.process_shift_delta(0.0, -h_speed);
+                    }
+
+                    let left = ui.button(RichText::new("\u{f060}").size(16.0));
+                    if left.clicked() {
+                        camera_coord.process_shift_delta(-0.1, 0.0);
+                    }
+                    if left.is_pointer_button_down_on() {
+                        camera_coord.process_shift_delta(-h_speed, 0.0);
+                    }
+
+                    let right = ui.button(RichText::new("\u{f061}").size(16.0));
+                    if right.clicked() {
+                        camera_coord.process_shift_delta(0.1, 0.0);
+                    }
+                    if right.is_pointer_button_down_on() {
+                        camera_coord.process_shift_delta(h_speed, 0.0);
+                    }
+                });
+                ui.add_space(10.0);
+                ui.horizontal(|ui| {
                     let pos = camera.camera_pos().position().clone();
                     let rotate_x_plus =
                         ui.button(RichText::new("X+").color(Color32::RED).size(12.0));
@@ -104,6 +140,10 @@ impl Controls {
                     if center.clicked() {
                         camera.camera_coordinator_mut().set_angles_0();
                         camera.camera_pos_mut().set_position(Vec3::new(0.0, 0.0, 0.0));
+                    }
+                    let init_pos = ui.button(RichText::new("\u{f015}").color(Color32::GRAY).size(12.0));
+                    if init_pos.clicked() {
+                        camera.camera_coordinator_mut().set_init_pos();
                     }
                 });
             });

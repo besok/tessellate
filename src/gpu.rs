@@ -7,9 +7,9 @@ use winit::event_loop::{ControlFlow, EventLoop};
 pub mod camera;
 pub mod error;
 mod gui;
+mod light;
 mod processor;
 mod vertex;
-mod light;
 
 async fn run(
     meshes: Vec<Mesh>,
@@ -35,10 +35,34 @@ pub fn visualize_with(
 }
 
 #[derive(Debug, Clone)]
-pub struct GpuOptions {}
+pub struct GpuOptions {
+    camera_speed: f32,
+    camera_sensitivity: f32,
+}
+
+impl GpuOptions {
+    pub fn new(camera_speed: f32, camera_sensitivity: f32) -> Self {
+        Self {
+            camera_speed,
+            camera_sensitivity,
+        }
+    }
+    pub fn with_camera_speed(&mut self, camera_speed: f32) -> &mut Self {
+        self.camera_speed = camera_speed;
+        self
+    }
+
+    pub fn with_camera_sensitivity(&mut self, camera_sensitivity: f32) -> &mut Self {
+        self.camera_sensitivity = camera_sensitivity;
+        self
+    }
+}
 
 impl Default for GpuOptions {
     fn default() -> Self {
-        Self {}
+        Self {
+            camera_speed: 0.1,
+            camera_sensitivity: 0.001,
+        }
     }
 }
