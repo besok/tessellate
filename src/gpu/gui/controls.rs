@@ -66,19 +66,19 @@ impl Controls {
                 ui.horizontal(|ui| {
                     let camera_coord = camera.camera_coordinator_mut();
 
-                    let up = ui.button(RichText::new("\u{f062}").size(16.0));
-                    if up.clicked() {
+                    let down = ui.button(RichText::new("\u{f063}").size(16.0));
+                    if down.clicked() {
                         camera_coord.process_shift_delta(0.0, 0.1);
                     }
-                    if up.is_pointer_button_down_on() {
+                    if down.is_pointer_button_down_on() {
                         camera_coord.process_shift_delta(0.0, h_speed);
                     }
 
-                    let down = ui.button(RichText::new("\u{f063}").size(16.0));
-                    if down.clicked() {
+                    let up = ui.button(RichText::new("\u{f062}").size(16.0));
+                    if up.clicked() {
                         camera_coord.process_shift_delta(0.0, -0.1);
                     }
-                    if down.is_pointer_button_down_on() {
+                    if up.is_pointer_button_down_on() {
                         camera_coord.process_shift_delta(0.0, -h_speed);
                     }
 
