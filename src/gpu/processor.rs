@@ -18,6 +18,7 @@ use winit::event::{ElementState, KeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowId};
+use crate::gpu::light::Light;
 
 mod init;
 mod render;
@@ -71,7 +72,9 @@ pub struct GpuHandler {
     pipelines: HashMap<Topology, RenderPipeline>,
     meshes: Vec<GpuMesh>,
     camera: Camera,
+    light: Light,
     gui: GuiRenderer,
+    light_pipeline: RenderPipeline,
 }
 
 impl GpuHandler {
@@ -87,6 +90,8 @@ impl GpuHandler {
         meshes: Vec<GpuMesh>,
         camera: Camera,
         gui: GuiRenderer,
+        light_pipeline: RenderPipeline,
+        light: Light,
     ) -> Self {
         Self {
             window,
@@ -100,6 +105,8 @@ impl GpuHandler {
             meshes,
             camera,
             gui,
+            light_pipeline,
+            light
         }
     }
 }

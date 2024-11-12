@@ -9,8 +9,8 @@ pub struct CameraCoordinator {
     distance: f32,
     target: Vertex,
     init_target: Vertex,
-    init_source: Vertex,
-    source: Vertex,
+    init_eye: Vertex,
+    eye: Vertex,
     hor_angle: f32,
     ver_angle: f32,
     speed: f32,
@@ -22,14 +22,14 @@ impl CameraCoordinator {
         let target = aabb.center();
         let init_target = aabb.center();
         let distance = target.distance(pos);
-        let source = pos.clone();
-        let init_source = pos.clone();
-        let (hor_angle, ver_angle) = angles(&source, &target);
+        let eye = pos.clone();
+        let init_eye = pos.clone();
+        let (hor_angle, ver_angle) = angles(&eye, &target);
         Self {
             init_target,
-            init_source,
+            init_eye,
             distance,
-            source,
+            eye,
             target,
             hor_angle,
             ver_angle,
@@ -42,8 +42,8 @@ impl CameraCoordinator {
         self.distance
     }
 
-    pub fn source(&self) -> Vertex {
-        self.source
+    pub fn eye(&self) -> Vertex {
+        self.eye
     }
 
     pub fn target(&self) -> Vertex {
@@ -59,9 +59,9 @@ impl CameraCoordinator {
 
     pub fn set_init_pos(&mut self) {
         self.target = self.init_target.clone();
-        self.source = self.init_source.clone();
-        self.distance = self.target.distance(&self.source);
-        let (ha, va) = angles(&self.source, &self.target);
+        self.eye = self.init_eye.clone();
+        self.distance = self.target.distance(&self.eye);
+        let (ha, va) = angles(&self.eye, &self.target);
         self.hor_angle = ha;
         self.ver_angle = va;
     }
@@ -138,7 +138,7 @@ impl CameraCoordinator {
         let x = self.target.x + self.distance * self.hor_angle.cos() * self.ver_angle.cos();
         let y = self.target.y + self.distance * self.ver_angle.sin();
         let z = self.target.z + self.distance * self.hor_angle.sin() * self.ver_angle.cos();
-        self.source = Vertex::new(x, y, z)
+        self.eye = Vertex::new(x, y, z)
     }
 
     pub fn process_rot(
@@ -163,7 +163,7 @@ impl CameraCoordinator {
     }
 
     pub fn process_shift_delta(&mut self, dx: f32, dy: f32) -> bool {
-        let normal = (self.source - self.target).normalize();
+        let normal = (self.eye - self.target).normalize();
         let up = if normal.x.abs() < 1e-6 && normal.z.abs() < 1e-6 {
             Vertex::new(1.0, 0.0, 0.0)
         } else {
@@ -173,7 +173,7 @@ impl CameraCoordinator {
         let up = right.cross(&normal).normalize();
 
         let delta: Vertex = (right * dx + up * dy).into();
-        self.source = self.source + delta;
+        self.eye = self.eye + delta;
         self.target = self.target + delta;
 
         true

@@ -1,5 +1,4 @@
-use crate::gpu::camera::coordinator::CameraCoordinator;
-use crate::gpu::camera::position::CameraPosition;
+
 use crate::gpu::camera::Camera;
 use egui::{Align2, Color32, Context, RichText};
 use glam::Vec3;

@@ -2,7 +2,6 @@ use egui_wgpu::wgpu;
 use egui_wgpu::wgpu::util::DeviceExt;
 use egui_wgpu::wgpu::{BindGroupLayout, Device, SurfaceConfiguration};
 use glam::{Mat4, Vec3};
-use log::info;
 use winit::dpi::PhysicalPosition;
 use winit::event::MouseScrollDelta;
 
@@ -22,8 +21,10 @@ pub struct Camera {
     camera_pos: CameraPosition,
     projection: Projection,
     uniform: CameraUniform,
+
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
+
     camera_coord: CameraCoordinator,
     camera_bind_layout: BindGroupLayout,
     mouse: Mouse,
@@ -67,6 +68,7 @@ impl Camera {
             }],
             label: Some("camera_bind_group"),
         });
+
         let coordinator = CameraCoordinator::new(
             &camera_pos.position().into(),
             aabb,
@@ -90,6 +92,7 @@ impl Camera {
         uniform: CameraUniform,
         camera_buffer: wgpu::Buffer,
         camera_bind_group: wgpu::BindGroup,
+
         projection: Projection,
         camera_coord: CameraCoordinator,
         camera_bind_layout: BindGroupLayout,
@@ -117,6 +120,7 @@ impl Camera {
         &self.camera_bind_layout
     }
 
+
     pub fn camera_coordinator_mut(&mut self) -> &mut CameraCoordinator {
         &mut self.camera_coord
     }
@@ -137,7 +141,7 @@ impl Camera {
         &self.camera_buffer
     }
     pub fn update_camera(&mut self) {
-        let new_source = self.camera_coord.source();
+        let new_source = self.camera_coord.eye();
         let new_target = self.camera_coord.target();
         self.camera_pos.set_position(new_source.into());
         let direction = (new_target - new_source).normalize();

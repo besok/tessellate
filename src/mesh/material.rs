@@ -1,13 +1,50 @@
 use crate::mesh::parts::vertex::Vertex;
+use glam::Vec3;
 use rand::Rng;
 
-pub enum Material {
-    Undefined,
+#[derive(Clone, Debug)]
+pub struct Material {
+    ambient: Vec3,
+    diffuse: Vec3,
+    specular: Vec3,
+    shininess: f32,
+}
+
+impl Material {
+    pub fn new(ambient: Vec3, diffuse: Vec3, specular: Vec3, shininess: f32) -> Self {
+        Material {
+            ambient,
+            diffuse,
+            specular,
+            shininess,
+        }
+    }
+
+    pub fn ambient(&self) -> Vec3 {
+        self.ambient
+    }
+
+    pub fn diffuse(&self) -> Vec3 {
+        self.diffuse
+    }
+
+    pub fn specular(&self) -> Vec3 {
+        self.specular
+    }
+
+    pub fn shininess(&self) -> f32 {
+        self.shininess
+    }
 }
 
 impl Default for Material {
     fn default() -> Self {
-        Material::Undefined
+        Material {
+            ambient: Vec3::new(0.1, 0.1, 0.1),
+            diffuse: Vec3::new(0.5, 0.5, 0.5),
+            specular: Vec3::new(1.0, 1.0, 1.0),
+            shininess: 32.0,
+        }
     }
 }
 
@@ -97,6 +134,7 @@ impl From<RgbaColor> for Color {
 
 impl Default for Color {
     fn default() -> Self {
-        Self::Func(|_, _| RgbaColor::random())
+        // Self::Func(|_, _| RgbaColor::random())
+        Self::Mesh(RgbaColor::random())
     }
 }

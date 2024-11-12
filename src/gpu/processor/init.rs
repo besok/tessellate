@@ -4,6 +4,7 @@ use crate::gpu::error::{GpuError, GpuResult};
 use crate::gpu::gui::GuiRenderer;
 use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor, Topology};
 use crate::gpu::vertex::{GpuInstance, GpuVertex};
+use crate::gpu::GpuOptions;
 use crate::mesh::attributes::MeshType;
 use crate::mesh::material::{Color, RgbaColor};
 use crate::mesh::parts::bbox::BoundingBox;
@@ -23,7 +24,7 @@ use std::sync::Arc;
 use winit::dpi;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::{Icon, Window};
-use crate::gpu::GpuOptions;
+use crate::gpu::light::Light;
 
 impl GpuProcessor {
     pub fn try_init(
@@ -88,6 +89,11 @@ impl GpuProcessor {
             source: wgpu::ShaderSource::Wgsl(include_str!("../wgsl/shader_vertex.wgsl").into()),
         });
 
+        let light_shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some("Light Shader"),
+            source: wgpu::ShaderSource::Wgsl(include_str!("../wgsl/light.wgsl").into()),
+        });
+
         let mut gpu_meshes = Vec::new();
 
         let aabb = meshes
@@ -140,14 +146,21 @@ impl GpuProcessor {
         }
 
         let camera = Camera::init(&config, &device, camera_pos, aabb, &options);
+        let light = Light::init(&device, &options);
 
         let render_pipeline_layout =
             device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render Pipeline Layout"),
-                bind_group_layouts: &[&camera.camera_bind_layout()],
+                bind_group_layouts: &[&camera.camera_bind_layout(), &light.light_bind_layout()],
                 push_constant_ranges: &[],
             });
 
+        let light_pipeline_layout =
+            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: Some("Render Pipeline Layout"),
+                bind_group_layouts: &[&camera.camera_bind_layout(), &light.light_bind_layout()],
+                push_constant_ranges: &[],
+            });
         let mut pipelines = HashMap::new();
         pipelines.insert(
             Topology::TriangleList,
@@ -243,11 +256,66 @@ impl GpuProcessor {
             }),
         );
 
+        let light_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("Light pipeline"),
+            layout: Some(&light_pipeline_layout),
+            vertex: wgpu::VertexState {
+                module: &light_shader,
+                entry_point: "vs_main",
+                compilation_options: Default::default(),
+                buffers: &[GpuVertex::desc()],
+            },
+            fragment: Some(wgpu::FragmentState {
+                module: &light_shader,
+                entry_point: "fs_main",
+                compilation_options: Default::default(),
+                targets: &[Some(wgpu::ColorTargetState {
+                    format: config.format,
+                    blend: Some(wgpu::BlendState {
+                        color: wgpu::BlendComponent::REPLACE,
+                        alpha: wgpu::BlendComponent::REPLACE,
+                    }),
+                    write_mask: wgpu::ColorWrites::ALL,
+                })],
+            }),
+            primitive: wgpu::PrimitiveState {
+                topology: wgpu::PrimitiveTopology::TriangleList,
+                strip_index_format: None,
+                polygon_mode: wgpu::PolygonMode::Fill,
+                ..Default::default()
+            },
+            depth_stencil: Some(wgpu::DepthStencilState {
+                format: wgpu::TextureFormat::Depth24Plus,
+                depth_write_enabled: true,
+                depth_compare: wgpu::CompareFunction::LessEqual,
+                stencil: wgpu::StencilState::default(),
+                bias: wgpu::DepthBiasState::default(),
+            }),
+            multisample: wgpu::MultisampleState {
+                count: 1,
+                mask: !0,
+                alpha_to_coverage_enabled: false,
+            },
+            multiview: None,
+            cache: None,
+        });
+
         let gui = GuiRenderer::new(&device, config.format, None, 1, window.clone())?;
 
         Ok(GpuHandler::new(
-            window, instance, surface, device, queue, config, size, pipelines, gpu_meshes, camera,
+            window,
+            instance,
+            surface,
+            device,
+            queue,
+            config,
+            size,
+            pipelines,
+            gpu_meshes,
+            camera,
             gui,
+            light_pipeline,
+            light,
         ))
     }
 }

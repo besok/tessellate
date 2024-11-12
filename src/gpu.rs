@@ -1,7 +1,9 @@
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::error::GpuError;
 use crate::gpu::processor::GpuProcessor;
+use crate::mesh::material::{Color, RgbaColor};
 use crate::mesh::Mesh;
+use glam::Vec3;
 use winit::event_loop::{ControlFlow, EventLoop};
 
 pub mod camera;
@@ -38,13 +40,34 @@ pub fn visualize_with(
 pub struct GpuOptions {
     camera_speed: f32,
     camera_sensitivity: f32,
+    light: Light,
+}
+#[derive(Debug, Clone)]
+pub struct Light {
+    color: RgbaColor,
+    position: Vec3,
+}
+
+impl Light {
+    pub fn new(color: RgbaColor, position: Vec3) -> Self {
+        Self { color, position }
+    }
+    pub fn with_color(&mut self, color: RgbaColor) -> &mut Self {
+        self.color = color;
+        self
+    }
+    pub fn with_position(&mut self, position: Vec3) -> &mut Self {
+        self.position = position;
+        self
+    }
 }
 
 impl GpuOptions {
-    pub fn new(camera_speed: f32, camera_sensitivity: f32) -> Self {
+    pub fn new(camera_speed: f32, camera_sensitivity: f32, light: Light) -> Self {
         Self {
             camera_speed,
             camera_sensitivity,
+            light,
         }
     }
     pub fn with_camera_speed(&mut self, camera_speed: f32) -> &mut Self {
@@ -56,6 +79,11 @@ impl GpuOptions {
         self.camera_sensitivity = camera_sensitivity;
         self
     }
+
+    pub fn with_light(&mut self, light: Light) -> &mut Self {
+        self.light = light;
+        self
+    }
 }
 
 impl Default for GpuOptions {
@@ -63,6 +91,7 @@ impl Default for GpuOptions {
         Self {
             camera_speed: 0.1,
             camera_sensitivity: 0.001,
+            light: Light::new(RgbaColor::WHITE, Vec3::new(5.0, 5.0, 5.0)),
         }
     }
 }

@@ -1,13 +1,24 @@
 use std::hash::Hash;
+use crate::mesh::material::Material;
 
 #[derive(Debug, Default, Clone)]
 pub struct Attributes {
     mesh_type: MeshType,
+    material: Material
 }
 
 impl Attributes {
     pub fn new(mesh_type: MeshType) -> Self {
-        Attributes { mesh_type }
+        Attributes { mesh_type, material: Default::default() }
+    }
+
+    pub fn new_with_material(mesh_type: MeshType, material: Material) -> Self {
+        Attributes { mesh_type, material }
+    }
+
+    pub fn with_material(mut self, material: Material) -> Self {
+        self.material = material;
+        self
     }
 
     pub fn mesh_type(&self) -> MeshType {

@@ -5,6 +5,7 @@ use crate::gpu::processor::{GpuHandler, Topology};
 use crate::gpu::vertex::face_to_vertex3;
 use crate::mesh::attributes::MeshType;
 use egui::style::Widgets;
+use egui_wgpu::wgpu::util::RenderEncoder;
 use egui_wgpu::{wgpu, ScreenDescriptor};
 use log::info;
 use std::iter;
@@ -71,6 +72,7 @@ impl GpuHandler {
             });
             let pipelines = &self.pipelines;
             render_pass.set_bind_group(0, &self.camera.camera_bind_group(), &[]);
+            render_pass.set_bind_group(1, &self.light.light_bind_group(), &[]);
             for gpu_mesh in self.meshes.iter() {
                 let mesh_type = gpu_mesh.mesh.attributes().mesh_type();
                 let pipeline = match mesh_type {
@@ -80,8 +82,10 @@ impl GpuHandler {
                     MeshType::Lines => pipelines.get(&Topology::LineList),
                 }
                 .ok_or(GpuError::General("Pipeline not found".to_string()))?;
-                render_pass.set_pipeline(pipeline);
                 render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
+                render_pass.set_pipeline(pipeline);
+                render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
+                render_pass.set_pipeline(&self.light_pipeline);
                 render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
             }
         }
@@ -166,6 +170,12 @@ impl GpuHandler {
             &self.camera.camera_buffer(),
             0,
             bytemuck::cast_slice(&[*self.camera.uniform()]),
+        );
+        self.light.update_position();
+        self.queue.write_buffer(
+            &self.light.light_buffer(),
+            0,
+            bytemuck::cast_slice(&[*self.light.light_uniform()]),
         );
     }
     pub fn window(&self) -> &Arc<Window> {
