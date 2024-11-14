@@ -6,6 +6,8 @@ use log::{error, info};
 use std::collections::HashMap;
 
 use crate::gpu::gui::GuiRenderer;
+use crate::gpu::light::Light;
+use crate::gpu::material::Material;
 use crate::gpu::vertex::GpuVertex;
 use crate::gpu::GpuOptions;
 use crate::mesh::attributes::MeshType;
@@ -18,7 +20,6 @@ use winit::event::{ElementState, KeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowId};
-use crate::gpu::light::Light;
 
 mod init;
 mod render;
@@ -31,14 +32,21 @@ struct GpuMesh {
     vertex_buffer: Buffer,
     mesh: Mesh,
     vertices: Vec<GpuVertex>,
+    material: Material,
 }
 
 impl GpuMesh {
-    pub fn new(vertex_buffer: Buffer, vertices: Vec<GpuVertex>, mesh: Mesh) -> Self {
+    pub fn new(
+        vertex_buffer: Buffer,
+        vertices: Vec<GpuVertex>,
+        mesh: Mesh,
+        material: Material,
+    ) -> Self {
         GpuMesh {
             vertex_buffer,
             mesh,
             vertices,
+            material,
         }
     }
 }
@@ -74,7 +82,6 @@ pub struct GpuHandler {
     camera: Camera,
     light: Light,
     gui: GuiRenderer,
-    light_pipeline: RenderPipeline,
 }
 
 impl GpuHandler {
@@ -90,7 +97,6 @@ impl GpuHandler {
         meshes: Vec<GpuMesh>,
         camera: Camera,
         gui: GuiRenderer,
-        light_pipeline: RenderPipeline,
         light: Light,
     ) -> Self {
         Self {
@@ -105,8 +111,7 @@ impl GpuHandler {
             meshes,
             camera,
             gui,
-            light_pipeline,
-            light
+            light,
         }
     }
 }
@@ -139,7 +144,7 @@ impl ApplicationHandler for GpuProcessor {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         match &self.state {
             State::NotInitialized(meshes, camera, opts) => {
-                match GpuProcessor::try_init(event_loop, meshes, camera.clone(),opts.clone()) {
+                match GpuProcessor::try_init(event_loop, meshes, camera.clone(), opts.clone()) {
                     Ok(s) => {
                         self.state = State::Initialized(s);
                     }

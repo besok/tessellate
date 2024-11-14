@@ -1,7 +1,7 @@
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::error::GpuError;
 use crate::gpu::processor::GpuProcessor;
-use crate::mesh::material::{Color, RgbaColor};
+use crate::mesh::material::RgbaColor;
 use crate::mesh::Mesh;
 use glam::Vec3;
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -12,6 +12,7 @@ mod gui;
 mod light;
 mod processor;
 mod vertex;
+pub mod material;
 
 async fn run(
     meshes: Vec<Mesh>,
@@ -91,7 +92,7 @@ impl Default for GpuOptions {
         Self {
             camera_speed: 0.1,
             camera_sensitivity: 0.001,
-            light: Light::new(RgbaColor::WHITE, Vec3::new(5.0, 5.0, 5.0)),
+            light: Light::new(RgbaColor::WHITE, Vec3::new(3.0, 3.0, 3.0)),
         }
     }
 }

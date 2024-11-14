@@ -2,14 +2,16 @@ use crate::gpu::GpuOptions;
 use crate::mesh::material::RgbaColor;
 use egui_wgpu::wgpu;
 use egui_wgpu::wgpu::util::DeviceExt;
-use egui_wgpu::wgpu::{BindGroupLayout, Device, SurfaceConfiguration};
-use glam::{Quat, Vec3};
+use egui_wgpu::wgpu::{BindGroupLayout, Device};
+use glam::Vec3;
 
 pub struct Light {
     light_uniform: LightUniform,
+
     light_buffer: wgpu::Buffer,
     light_bind_group: wgpu::BindGroup,
     light_bind_layout: BindGroupLayout,
+
 }
 
 impl Light {
@@ -60,9 +62,6 @@ impl Light {
         &self.light_bind_layout
     }
 
-    pub fn update_position(&mut self) {
-        self.light_uniform.update_position();
-    }
 
     pub fn light_uniform(&self) -> &LightUniform {
         &self.light_uniform
@@ -100,10 +99,7 @@ impl LightUniform {
         }
     }
 
-    pub fn update_position(&mut self) {
-        let old_pos: Vec3 = self.position.into();
-        self.position = (Quat::from_axis_angle(Vec3::Y, 1.0_f32.to_radians()) * old_pos).into();
-    }
+
 
     pub fn position(&self) -> Vec3 {
         self.position.into()

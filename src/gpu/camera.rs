@@ -189,15 +189,18 @@ impl Camera {
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct CameraUniform {
     view_proj: [[f32; 4]; 4],
+    eye_pos: [f32; 4],
 }
 impl CameraUniform {
     pub(crate) fn new() -> Self {
         Self {
             view_proj: Mat4::IDENTITY.to_cols_array_2d(),
+            eye_pos: Vec3::ZERO.extend(1.0).into(),
         }
     }
 
     pub(crate) fn update_view_proj(&mut self, camera: &CameraPosition, projection: &Projection) {
         self.view_proj = (projection.calc_matrix() * camera.calc_matrix()).to_cols_array_2d();
+        self.eye_pos = camera.position().extend(1.0).into();
     }
 }

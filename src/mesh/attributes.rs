@@ -25,6 +25,9 @@ impl Attributes {
         self.mesh_type.clone()
     }
 
+    pub fn material(&self) -> Material {
+        self.material.clone()
+    }
 
 }
 

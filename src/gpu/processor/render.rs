@@ -82,10 +82,9 @@ impl GpuHandler {
                     MeshType::Lines => pipelines.get(&Topology::LineList),
                 }
                 .ok_or(GpuError::General("Pipeline not found".to_string()))?;
+                render_pass.set_bind_group(2, &gpu_mesh.material.material_bind_group(), &[]);
                 render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
                 render_pass.set_pipeline(pipeline);
-                render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
-                render_pass.set_pipeline(&self.light_pipeline);
                 render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);
             }
         }
@@ -171,7 +170,6 @@ impl GpuHandler {
             0,
             bytemuck::cast_slice(&[*self.camera.uniform()]),
         );
-        self.light.update_position();
         self.queue.write_buffer(
             &self.light.light_buffer(),
             0,
