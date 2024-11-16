@@ -2,79 +2,85 @@ struct Camera {
     proj: mat4x4<f32>,
     eye_pos: vec4<f32>,
 }
-@group(0) @binding(0)
-var<uniform> camera: Camera;
-
 
 struct Light {
     position: vec3<f32>,
-    color: vec3<f32>,
+    ambient: vec3<f32>,
+    diffuse: vec3<f32>,
+    specular: vec3<f32>,
 }
-@group(1) @binding(0)
-var<uniform> light: Light;
 
 struct MaterialUniforms {
-    ambient: f32,
-    diffuse: f32,
-    specular: f32,
+    ambient: vec3<f32>,
+    diffuse: vec3<f32>,
+    specular: vec3<f32>,
     shininess: f32,
-};
-@group(2) @binding(0) var<uniform> material : MaterialUniforms;
-
-
-fn diffuse_specular(N:vec3<f32>, L:vec3<f32>, V:vec3<f32>) -> vec2<f32>{
-    let H = normalize(L + V);
-    var diffuse = material.diffuse * max(dot(N, L), 0.0);
-    var specular = material.specular * pow(max(dot(N, H), 0.0), material.shininess);
-    return vec2<f32>(diffuse, specular);
 }
 
+@group(0) @binding(0) var<uniform> camera: Camera;
+@group(1) @binding(0) var<uniform> light: Light;
+@group(2) @binding(0) var<uniform> material: MaterialUniforms;
 
 struct VertexInput {
-    @location(0) pos: vec4<f32>,
+    @location(0) position: vec4<f32>,
     @location(1) color: vec4<f32>,
     @location(2) normal: vec4<f32>,
 }
 
-
 struct VertexOutput {
-    @builtin(position) pos : vec4<f32>,
-    @location(0) color : vec4<f32>,
-    @location(1) normal: vec4<f32>,
-    @location(2) eye_pos: vec4<f32>,
-
-};
+    @builtin(position) clip_position: vec4<f32>,
+    @location(0) world_position: vec3<f32>,  // Added for proper lighting calculations
+    @location(1) color: vec4<f32>,
+    @location(2) normal: vec3<f32>,
+}
 
 @vertex
-fn vs_main(@location(0) pos: vec4<f32>, @location(1) color: vec4<f32> , @location(2) normal: vec4<f32>) -> VertexOutput {
-       var out: VertexOutput;
-       out.pos = camera.proj * pos;
-       out.color = color;
-       out.normal = normal;
-       out.eye_pos = camera.eye_pos - pos;
+fn vs_main(in: VertexInput) -> VertexOutput {
+    var out: VertexOutput;
+
+    // Transform position to clip space
+    out.clip_position = camera.proj * in.position;
+
+    // Store world position for lighting calculations
+    out.world_position = in.position.xyz;
+
+    // Pass through color
+    out.color = in.color;
+
+    // Pass through normal (assuming it's already in world space)
+    out.normal = normalize(in.normal.xyz);
+
     return out;
 }
 
 @fragment
-fn fs_main(@builtin(position) pos: vec4<f32>,
-           @location(0) color: vec4<f32>,
-           @location(1) normal: vec4<f32>,
-           @location(2) eye_pos: vec4<f32>) -> @location(0) vec4<f32> {
-    // Normalize vectors needed for lighting calculations
-    let N = normalize(normal.xyz);
-    let V = normalize(eye_pos.xyz);
-    let L = normalize(light.position - pos.xyz);
+fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
+    // Normalize vectors
+    let N = normalize(in.normal);
+    let V = normalize(camera.eye_pos.xyz - in.world_position);
+    let L = normalize(light.position - in.world_position);
+    let H = normalize(L + V);
 
-    // Calculate diffuse and specular components
-    let ds = diffuse_specular(N, L, V);
-    let diffuse = ds.x;
-    let specular = ds.y;
+    // Calculate distance for attenuation
+    let distance = length(light.position - in.world_position);
+    let attenuation = 1.0 / (1.0 + 0.09 * distance + 0.032 * distance * distance);
 
-    // Calculate ambient component
-    let ambient = material.ambient;
+    // Calculate lighting components
+    let base_color = in.color.rgb;
 
-    // Combine all lighting components
-    let finalColor = color.rgb * (ambient + diffuse) + light.color * specular;
+    // Ambient
+    let ambient = light.ambient * (material.ambient * base_color);
 
-    return vec4<f32>(finalColor, color.a);
+    // Diffuse
+    let diff = max(dot(N, L), 0.0);
+    let diffuse = light.diffuse * (diff * material.diffuse * base_color);
+
+    // Specular
+    let spec = pow(max(dot(N, H), 0.0), material.shininess);
+    let specular = light.specular * (spec * material.specular);
+
+    // Combine all components
+    let final_color = (ambient + diffuse + specular) * attenuation;
+
+    return vec4<f32>(final_color, in.color.a);
 }

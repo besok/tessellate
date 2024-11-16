@@ -6,19 +6,23 @@ use egui_wgpu::wgpu::{BindGroupLayout, Device};
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct MaterialUniform {
-    ambient: f32,
-    diffuse: f32,
-    specular: f32,
+    ambient: [f32; 3],
+    _padding1: u32,
+    diffuse: [f32; 3],
+    _padding2: u32,
+    specular: [f32; 3],
     shininess: f32,
 }
 
 impl MaterialUniform {
     pub fn new(m: &mesh::material::Material) -> Self {
         Self {
-            ambient: m.ambient(),
-            diffuse: m.diffuse(),
-            specular: m.specular(),
+            ambient: m.ambient().into(),
+            diffuse: m.diffuse().into(),
+            specular: m.specular().into(),
             shininess: m.shininess(),
+            _padding1: 0,
+            _padding2: 0,
         }
     }
 }

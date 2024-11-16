@@ -4,14 +4,14 @@ use rand::Rng;
 
 #[derive(Clone, Debug)]
 pub struct Material {
-    ambient: f32,
-    diffuse: f32,
-    specular: f32,
+    ambient: Vec3,
+    diffuse: Vec3,
+    specular: Vec3,
     shininess: f32,
 }
 
 impl Material {
-    pub fn new(ambient: f32, diffuse: f32, specular: f32, shininess: f32) -> Self {
+    pub fn new(ambient: Vec3, diffuse: Vec3, specular: Vec3, shininess: f32) -> Self {
         Material {
             ambient,
             diffuse,
@@ -20,15 +20,15 @@ impl Material {
         }
     }
 
-    pub fn ambient(&self) -> f32 {
+    pub fn ambient(&self) -> Vec3 {
         self.ambient
     }
 
-    pub fn diffuse(&self) -> f32 {
+    pub fn diffuse(&self) -> Vec3 {
         self.diffuse
     }
 
-    pub fn specular(&self) -> f32 {
+    pub fn specular(&self) -> Vec3 {
         self.specular
     }
 
@@ -40,9 +40,9 @@ impl Material {
 impl Default for Material {
     fn default() -> Self {
         Material {
-            ambient: 0.1,
-            diffuse:0.5,
-            specular: 1.0,
+            ambient: Vec3::new(0.1, 0.1, 0.1),
+            diffuse: Vec3::new(0.7, 0.7, 0.7),
+            specular: Vec3::new(1.0, 1.0, 1.0),
             shininess: 32.0,
         }
     }

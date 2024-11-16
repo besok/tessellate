@@ -10,9 +10,9 @@ pub mod camera;
 pub mod error;
 mod gui;
 mod light;
+pub mod material;
 mod processor;
 mod vertex;
-pub mod material;
 
 async fn run(
     meshes: Vec<Mesh>,
@@ -41,30 +41,63 @@ pub fn visualize_with(
 pub struct GpuOptions {
     camera_speed: f32,
     camera_sensitivity: f32,
-    light: Light,
+    light: LightOptions,
 }
 #[derive(Debug, Clone)]
-pub struct Light {
-    color: RgbaColor,
+pub struct LightOptions {
     position: Vec3,
+    ambient: Vec3,
+    diffuse: Vec3,
+    specular: Vec3,
 }
 
-impl Light {
-    pub fn new(color: RgbaColor, position: Vec3) -> Self {
-        Self { color, position }
+impl LightOptions {
+    pub fn new(
+        position: Vec3,
+        ambient: Vec3,
+        diffuse: Vec3,
+        specular: Vec3,
+    ) -> Self {
+        Self {
+            position,
+            ambient,
+            diffuse,
+            specular,
+        }
     }
-    pub fn with_color(&mut self, color: RgbaColor) -> &mut Self {
-        self.color = color;
-        self
+    pub fn new_only_pos(position: Vec3) -> Self {
+        Self {
+            position,
+            ambient: Vec3::new(0.1, 0.1, 0.1),
+            diffuse: Vec3::new(0.5, 0.5, 0.5),
+            specular: Vec3::new(0.5, 0.5, 0.5),
+        }
     }
+
+
     pub fn with_position(&mut self, position: Vec3) -> &mut Self {
         self.position = position;
+        self
+    }
+
+    pub fn with_ambient(&mut self, ambient: Vec3) -> &mut Self {
+        self.ambient = ambient;
+        self
+    }
+
+    pub fn with_diffuse(&mut self, diffuse: Vec3) -> &mut Self {
+        self.diffuse = diffuse;
+        self
+    }
+
+    pub fn with_specular(&mut self, specular: Vec3) -> &mut Self {
+        self.specular = specular;
         self
     }
 }
 
 impl GpuOptions {
-    pub fn new(camera_speed: f32, camera_sensitivity: f32, light: Light) -> Self {
+    pub fn new(camera_speed: f32, camera_sensitivity: f32, light: LightOptions) -> Self {
         Self {
             camera_speed,
             camera_sensitivity,
@@ -81,7 +114,7 @@ impl GpuOptions {
         self
     }
 
-    pub fn with_light(&mut self, light: Light) -> &mut Self {
+    pub fn with_light(&mut self, light: LightOptions) -> &mut Self {
         self.light = light;
         self
     }
@@ -92,7 +125,7 @@ impl Default for GpuOptions {
         Self {
             camera_speed: 0.1,
             camera_sensitivity: 0.001,
-            light: Light::new(RgbaColor::WHITE, Vec3::new(3.0, 3.0, 3.0)),
+            light: LightOptions::new_only_pos(Vec3::new(2.0, 2.0, 2.0)),
         }
     }
 }
