@@ -2,6 +2,7 @@ use env_logger::{init, Builder};
 use glam::{Mat4, Vec3};
 use log::{info, LevelFilter};
 use tessellate::gpu::camera::position::CameraPosition;
+use tessellate::gpu::options::{CameraOptions, GpuOptions, LightOptions};
 use tessellate::mesh::material::{Color, RgbaColor};
 use tessellate::mesh::shape::parametric::bohemian_dome::BohemianDome;
 use tessellate::mesh::shape::parametric::bour::Bour;
@@ -16,7 +17,6 @@ use tessellate::mesh::shape::parametric::super_toroid::Supertoroid;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::{HasMesh, MeshResult};
 use tessellate::{gpu, TessResult};
-use tessellate::gpu::options::GpuOptions;
 
 pub fn init_logger() {
     Builder::new().filter(None, LevelFilter::Info).init();
@@ -38,8 +38,11 @@ fn main() -> TessResult<()> {
         // bour().into(),
         // boy().into(),
     ];
-
-    Ok(gpu::visualize(meshes, GpuOptions::new_only_camera_pos(Vec3::new(-3.5, 0.0, 0.0)) )?)
+    let opts = GpuOptions::new(
+        CameraOptions::new_position(Vec3::new(-3.5, 2.0, 0.0)),
+        LightOptions::new_position(Vec3::new(0.0, 3.0, 3.0)),
+    );
+    Ok(gpu::visualize(meshes, opts)?)
 }
 
 fn supertoroid() -> MeshResult<Supertoroid> {
@@ -59,7 +62,8 @@ fn supertoroid() -> MeshResult<Supertoroid> {
     Ok(elem)
 }
 fn bohemian_dome() -> BohemianDome {
-    let mut elem = BohemianDome::create(Vec3::new(0.0, 0.0, 0.0), 1.0, 1.0, 1.0, 20, 20, Color::default());
+    let mut elem =
+        BohemianDome::create(Vec3::new(0.0, 0.0, 0.0), 1.0, 1.0, 1.0, 20, 20, Color::default());
     let _ = elem.transform(Mat4::from_translation(Vec3::new(-2.0, -2.0, -2.0)));
     elem
 }

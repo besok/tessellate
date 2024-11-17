@@ -134,7 +134,6 @@ impl From<RgbaColor> for Color {
 
 impl Default for Color {
     fn default() -> Self {
-        // Self::Func(|_, _| RgbaColor::random())
         Self::Mesh(RgbaColor::random())
     }
 }

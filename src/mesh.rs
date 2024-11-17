@@ -196,7 +196,7 @@ impl Mesh {
 
         let mesh_edges = lines
             .iter()
-            .map(|Edge { a, b }| MeshEdge::new(vertices_map[a], vertices_map[b]))
+            .map(|Edge { a, b }| MeshEdge::new(vertices_map [a], vertices_map[b]))
             .collect();
 
         Mesh {

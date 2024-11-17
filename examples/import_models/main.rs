@@ -17,8 +17,6 @@ fn main() -> TessResult<()> {
     // init_logger();
     let mut cow =
         files::obj::import_obj("examples/import_models/cow.obj", &LoadOptions::default())?;
-    cow.set_color(Color::Mesh(RgbaColor::GREEN));
-    cow.attributes_mut().with_affected_by_light(false);
     // let bunny = files::ply::import_ply("examples/import_models/bunny.ply")?;
     // let building = files::stl::import_stl("examples/import_models/at_t_building.stl")?;
 

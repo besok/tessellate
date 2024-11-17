@@ -288,9 +288,9 @@ fn auxiliary_items(aabb: &BoundingBox, light_options: &LightOptions) -> Vec<Mesh
     let m = aabb.min().clone() - 1.0f32;
     let mut coord = Mesh::lines(
         vec![
-            (m.clone(), Vertex::new(m.x + 1.0, m.y, m.z)).into(),
-            (m.clone(), Vertex::new(m.x, m.y + 1.0, m.z)).into(),
-            (m.clone(), Vertex::new(m.x, m.y, m.z + 1.0)).into(),
+            (m.clone(), Vertex::new(m.x + 0.5, m.y, m.z)).into(),
+            (m.clone(), Vertex::new(m.x, m.y + 0.5, m.z)).into(),
+            (m.clone(), Vertex::new(m.x, m.y, m.z + 0.5)).into(),
         ],
         Color::Line(vec![RgbaColor::RED, RgbaColor::GREEN, RgbaColor::BLUE]),
     );
