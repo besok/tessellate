@@ -1,12 +1,13 @@
 use glam::{Mat4, Vec3};
 
 use tessellate::gpu::camera::position::CameraPosition;
+use tessellate::gpu::options::GpuOptions;
 use tessellate::mesh::material::Color;
-use tessellate::mesh::query::MeshQuery; 
+use tessellate::mesh::query::MeshQuery;
+use tessellate::mesh::shape::cylinder::Cylinder;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::{HasMesh, Mesh};
 use tessellate::{gpu, TessResult};
-use tessellate::mesh::shape::cylinder::Cylinder;
 
 fn main() -> TessResult<()> {
     let mut mesh: Mesh = Cylinder::default().into();
@@ -17,6 +18,5 @@ fn main() -> TessResult<()> {
     let mut meshes = vec![kdtree.to_mesh(Color::default()), mesh];
     // meshes.extend(kdtree.aabb_to_mesh());
 
-    let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
-    Ok(gpu::visualize(meshes, camera, )?)
+    Ok(gpu::visualize(meshes, GpuOptions::new_only_camera_pos(Vec3::new(-3.5, 0.0, 0.0)))?)
 }
