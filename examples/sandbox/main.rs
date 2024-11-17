@@ -1,5 +1,6 @@
 use glam::Vec3;
 use tessellate::gpu::camera::position::CameraPosition;
+use tessellate::gpu::options::GpuOptions;
 use tessellate::mesh::material::Color;
 use tessellate::mesh::parts::face::Face;
 use tessellate::mesh::parts::vertex::Vertex;
@@ -23,6 +24,5 @@ fn main() -> TessResult<()> {
 
     let meshes = vec![mesh];
 
-    let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
-    Ok(gpu::visualize(meshes, camera,  )?)
+    Ok(gpu::visualize(meshes, GpuOptions::new_only_camera_pos(Vec3::new(-3.5, 0.0, 0.0)))?)
 }

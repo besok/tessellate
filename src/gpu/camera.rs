@@ -9,7 +9,7 @@ use crate::gpu::camera::coordinator::CameraCoordinator;
 use crate::gpu::camera::mouse::Mouse;
 use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::projection::Projection;
-use crate::gpu::GpuOptions;
+use crate::gpu::options::GpuOptions;
 use crate::mesh::parts::bbox::BoundingBox;
 
 pub mod coordinator;
@@ -72,8 +72,8 @@ impl Camera {
         let coordinator = CameraCoordinator::new(
             &camera_pos.position().into(),
             aabb,
-            gnu_options.camera_speed,
-            gnu_options.camera_sensitivity,
+            gnu_options.camera_opts().speed(),
+            gnu_options.camera_opts().sensitivity(),
         );
 
         Self::new(

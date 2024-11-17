@@ -16,10 +16,10 @@ struct MaterialUniforms {
     specular: vec3<f32>,
     shininess: f32,
 }
-
 @group(0) @binding(0) var<uniform> camera: Camera;
 @group(1) @binding(0) var<uniform> light: Light;
 @group(2) @binding(0) var<uniform> material: MaterialUniforms;
+@group(3) @binding(0) var<uniform> is_affected_by_light: u32;
 
 struct VertexInput {
     @location(0) position: vec4<f32>,
@@ -55,32 +55,36 @@ fn vs_main(in: VertexInput) -> VertexOutput {
 
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-    // Normalize vectors
-    let N = normalize(in.normal);
-    let V = normalize(camera.eye_pos.xyz - in.world_position);
-    let L = normalize(light.position - in.world_position);
-    let H = normalize(L + V);
+    if (is_affected_by_light > 0) {
+        // Normalize vectors
+        let N = normalize(in.normal);
+        let V = normalize(camera.eye_pos.xyz - in.world_position);
+        let L = normalize(light.position - in.world_position);
+        let H = normalize(L + V);
 
-    // Calculate distance for attenuation
-    let distance = length(light.position - in.world_position);
-    let attenuation = 1.0 / (1.0 + 0.09 * distance + 0.032 * distance * distance);
+        // Calculate distance for attenuation
+        let distance = length(light.position - in.world_position);
+        let attenuation = 1.0 / (1.0 + 0.09 * distance + 0.032 * distance * distance);
 
-    // Calculate lighting components
-    let base_color = in.color.rgb;
+        // Calculate lighting components
+        let base_color = in.color.rgb;
 
-    // Ambient
-    let ambient = light.ambient * (material.ambient * base_color);
+        // Ambient
+        let ambient = light.ambient * (material.ambient * base_color);
 
-    // Diffuse
-    let diff = max(dot(N, L), 0.0);
-    let diffuse = light.diffuse * (diff * material.diffuse * base_color);
+        // Diffuse
+        let diff = max(dot(N, L), 0.0);
+        let diffuse = light.diffuse * (diff * material.diffuse * base_color);
 
-    // Specular
-    let spec = pow(max(dot(N, H), 0.0), material.shininess);
-    let specular = light.specular * (spec * material.specular);
+        // Specular
+        let spec = pow(max(dot(N, H), 0.0), material.shininess);
+        let specular = light.specular * (spec * material.specular);
 
-    // Combine all components
-    let final_color = (ambient + diffuse + specular) * attenuation;
+        // Combine all components
+        let final_color = (ambient + diffuse + specular) * attenuation;
 
-    return vec4<f32>(final_color, in.color.a);
+        return vec4<f32>(final_color, in.color.a);
+    } else {
+        return in.color;
+    }
 }

@@ -1,9 +1,14 @@
-use crate::gpu::GpuOptions;
-use crate::mesh::material::RgbaColor;
+use crate::gpu::options::GpuOptions;
 use egui_wgpu::wgpu;
 use egui_wgpu::wgpu::util::DeviceExt;
 use egui_wgpu::wgpu::{BindGroupLayout, Device};
 use glam::Vec3;
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
+pub struct IsAffectedByLightUniform {
+    pub is_affected_by_light: u32,
+}
 
 pub struct Light {
     light_uniform: LightUniform,
@@ -89,10 +94,10 @@ pub struct LightUniform {
 impl From<&GpuOptions> for LightUniform {
     fn from(options: &GpuOptions) -> Self {
         LightUniform::new(
-            &options.light.position.into(),
-            &options.light.ambient.into(),
-            &options.light.diffuse.into(),
-            &options.light.specular.into(),
+            &options.light_opts().position().into(),
+            &options.light_opts().ambient().into(),
+            &options.light_opts().diffuse().into(),
+            &options.light_opts().specular().into(),
         )
     }
 }

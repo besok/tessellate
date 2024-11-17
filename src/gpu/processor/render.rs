@@ -83,6 +83,7 @@ impl GpuHandler {
                 }
                 .ok_or(GpuError::General("Pipeline not found".to_string()))?;
                 render_pass.set_bind_group(2, &gpu_mesh.material.material_bind_group(), &[]);
+                render_pass.set_bind_group(3, &gpu_mesh.affected_by_light, &[]);
                 render_pass.set_vertex_buffer(0, gpu_mesh.vertex_buffer.slice(..));
                 render_pass.set_pipeline(pipeline);
                 render_pass.draw(0..gpu_mesh.vertices.len() as u32, 0..1);

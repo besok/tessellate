@@ -222,6 +222,9 @@ impl Mesh {
     pub fn attributes(&self) -> &Attributes {
         &self.attributes
     }
+    pub fn attributes_mut(&mut self) -> &mut Attributes {
+        &mut self.attributes
+    }
 
     pub fn aabb(&self) -> BoundingBox {
         BoundingBox::from(self)

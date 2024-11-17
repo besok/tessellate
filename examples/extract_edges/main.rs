@@ -6,6 +6,7 @@ use tessellate::mesh::shape::parametric::conic_spiral::ConicSpiral;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::{HasMesh, Mesh};
 use tessellate::{gpu, TessResult};
+use tessellate::gpu::options::GpuOptions;
 
 fn main() -> TessResult<()> {
     let spiral = ConicSpiral::default();
@@ -28,7 +29,6 @@ fn main() -> TessResult<()> {
 
 
     let meshes = vec![spiral.into(),   mesh, mesh2, mesh3, mesh4];
-    let camera = CameraPosition::new(Vec3::new(-2.5, 0.0, 0.0), 0.0, 0.0);
 
-    Ok(gpu::visualize(meshes, camera)?)
+    Ok(gpu::visualize(meshes, GpuOptions::new_only_camera_pos(Vec3::new(-3.5, 0.0, 0.0)))?)
 }

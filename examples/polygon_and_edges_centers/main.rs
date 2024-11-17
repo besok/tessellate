@@ -6,6 +6,7 @@ use tessellate::mesh::shape::pyramid::Pyramid;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::{HasMesh, Mesh};
 use tessellate::{gpu, TessResult};
+use tessellate::gpu::options::GpuOptions;
 
 fn main() -> TessResult<()> {
     let pyramid  = Pyramid::default() ;
@@ -18,7 +19,6 @@ fn main() -> TessResult<()> {
 
 
     let meshes = vec![mesh1, mesh2, pyramid.into()];
-    let camera = CameraPosition::new(Vec3::new(-2.5, 0.0, 0.0), 0.0, 0.0);
 
-    Ok(gpu::visualize(meshes, camera)?)
+    Ok(gpu::visualize(meshes, GpuOptions::new_only_camera_pos(Vec3::new(-3.5, 0.0, 0.0)))?)
 }

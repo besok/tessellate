@@ -2,30 +2,29 @@ use crate::gpu::camera::position::CameraPosition;
 use crate::gpu::camera::Camera;
 use crate::gpu::error::{GpuError, GpuResult};
 use crate::gpu::gui::GuiRenderer;
-use crate::gpu::light::Light;
+use crate::gpu::light::{IsAffectedByLightUniform, Light};
 use crate::gpu::material::Material;
 use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor, Topology};
-use crate::gpu::vertex::{GpuInstance, GpuVertex};
-use crate::gpu::GpuOptions;
+use crate::gpu::vertex::GpuVertex;
 use crate::mesh::attributes::MeshType;
 use crate::mesh::material::{Color, RgbaColor};
 use crate::mesh::parts::bbox::BoundingBox;
-use crate::mesh::parts::edge::Edge;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::shape::sphere::Sphere;
-use crate::mesh::{Mesh, MeshError, MeshResult};
+use crate::mesh::{HasMesh, Mesh, MeshError, MeshResult};
 use egui_wgpu::wgpu;
-use egui_wgpu::wgpu::naga::back::glsl::Features;
 use egui_wgpu::wgpu::util::DeviceExt;
+use egui_wgpu::wgpu::{BindGroup, BindGroupLayout, Device};
 use ico::IconDir;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufReader, Error};
+use std::io::BufReader;
 use std::path::Path;
 use std::sync::Arc;
 use winit::dpi;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::{Icon, Window};
+use crate::gpu::options::{GpuOptions, LightOptions};
 
 impl GpuProcessor {
     pub fn try_init(
@@ -94,7 +93,10 @@ impl GpuProcessor {
             .reduce(|a, b| (a, b).into())
             .ok_or(MeshError::Custom("No bounding box found".to_string()))?;
 
-        for mesh in meshes.into_iter().chain(create_coord(&aabb).iter()) {
+        for mesh in meshes
+            .into_iter()
+            .chain(auxiliary_items(&aabb, &options.light_opts()).iter())
+        {
             match mesh.attributes().mesh_type() {
                 MeshType::Polygons | MeshType::Lines => {
                     let vertices: Vec<GpuVertex> = mesh.try_into()?;
@@ -109,6 +111,10 @@ impl GpuProcessor {
                         vertices,
                         mesh.clone(),
                         Material::init(&device, &mesh.attributes().material()),
+                        is_affected_by_light_bind_group(
+                            &device,
+                            mesh.attributes().affected_by_light(),
+                        ),
                     ));
                 }
                 MeshType::Cloud(size) => {
@@ -142,6 +148,10 @@ impl GpuProcessor {
                         vertices,
                         mesh.clone(),
                         Material::init(&device, &mesh.attributes().material()),
+                        is_affected_by_light_bind_group(
+                            &device,
+                            mesh.attributes().affected_by_light(),
+                        ),
                     ));
                 }
             }
@@ -157,6 +167,7 @@ impl GpuProcessor {
                     &camera.camera_bind_layout(),
                     &light.light_bind_layout(),
                     &Material::create_bind_group_layout(&device),
+                    &affected_by_light_layout(&device),
                 ],
                 push_constant_ranges: &[],
             });
@@ -273,15 +284,64 @@ fn load_icon(path: &Path) -> GpuResult<Icon> {
     Ok(Icon::from_rgba(icon_rgba.rgba_data().to_vec(), icon_image.width(), icon_image.height())?)
 }
 
-fn create_coord(aabb: &BoundingBox) -> Vec<Mesh> {
+fn auxiliary_items(aabb: &BoundingBox, light_options: &LightOptions) -> Vec<Mesh> {
     let m = aabb.min().clone() - 1.0f32;
-    let coord = Mesh::lines(
+    let mut coord = Mesh::lines(
         vec![
             (m.clone(), Vertex::new(m.x + 1.0, m.y, m.z)).into(),
             (m.clone(), Vertex::new(m.x, m.y + 1.0, m.z)).into(),
             (m.clone(), Vertex::new(m.x, m.y, m.z + 1.0)).into(),
         ],
-        Color::Line(vec![RgbaColor::RED, RgbaColor::BLUE, RgbaColor::GREEN]),
+        Color::Line(vec![RgbaColor::RED, RgbaColor::GREEN, RgbaColor::BLUE]),
     );
-    vec![coord]
+    coord.attributes_mut().with_affected_by_light(false);
+
+    if light_options.show_source() {
+        let mut light: Mesh =
+            Sphere::create(light_options.position(), 0.1, Color::Mesh(light_options.into()))
+                .into();
+        light.attributes_mut().with_affected_by_light(false);
+        vec![coord, light]
+    } else {
+        vec![coord]
+    }
+}
+
+fn is_affected_by_light_bind_group(device: &Device, flag: bool) -> BindGroup {
+    let val = if flag { 1 } else { 0 };
+    let is_affected_by_light_buffer =
+        device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Is Affected By Light Buffer"),
+            contents: bytemuck::cast_slice(&[IsAffectedByLightUniform {
+                is_affected_by_light: val,
+            }]),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
+
+    let is_affected_by_light_bind_group_layout = affected_by_light_layout(device);
+
+    device.create_bind_group(&wgpu::BindGroupDescriptor {
+        layout: &is_affected_by_light_bind_group_layout,
+        entries: &[wgpu::BindGroupEntry {
+            binding: 0,
+            resource: is_affected_by_light_buffer.as_entire_binding(),
+        }],
+        label: None,
+    })
+}
+
+fn affected_by_light_layout(device: &Device) -> BindGroupLayout {
+    device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        entries: &[wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        }],
+        label: None,
+    })
 }

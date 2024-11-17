@@ -33,8 +33,8 @@ impl CameraCoordinator {
             target,
             hor_angle,
             ver_angle,
-            speed,
-            sensitivity,
+            speed: speed * 0.1,
+            sensitivity: sensitivity * 0.1,
         }
     }
 

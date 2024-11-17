@@ -1,7 +1,9 @@
 use glam::{Mat4, Quat, Vec3};
 use tessellate::gpu::camera::position::CameraPosition;
+use tessellate::gpu::options::GpuOptions;
 use tessellate::mesh::material::{Color, RgbaColor};
 use tessellate::mesh::parts::face::FaceType;
+use tessellate::mesh::parts::vertex::Vertex;
 use tessellate::mesh::shape::cone::Cone;
 use tessellate::mesh::shape::cuboid::cube::Cube;
 use tessellate::mesh::shape::cylinder::Cylinder;
@@ -13,8 +15,6 @@ use tessellate::mesh::shape::torus::Torus;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::HasMesh;
 use tessellate::{gpu, TessError, TessResult};
-use tessellate::gpu::GpuOptions;
-use tessellate::mesh::parts::vertex::Vertex;
 
 fn main() -> TessResult<()> {
     let meshes = vec![
@@ -28,8 +28,7 @@ fn main() -> TessResult<()> {
         torus().into(),
     ];
 
-    let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
-    Ok(gpu::visualize(meshes, camera)?)
+    Ok(gpu::visualize(meshes, GpuOptions::new_only_camera_pos(Vec3::new(-3.5, 0.0, 0.0)))?)
 }
 
 fn torus() -> Torus {

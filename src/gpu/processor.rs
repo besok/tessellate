@@ -9,7 +9,7 @@ use crate::gpu::gui::GuiRenderer;
 use crate::gpu::light::Light;
 use crate::gpu::material::Material;
 use crate::gpu::vertex::GpuVertex;
-use crate::gpu::GpuOptions;
+use crate::gpu::options::GpuOptions;
 use crate::mesh::attributes::MeshType;
 use egui_wgpu::wgpu;
 use egui_wgpu::wgpu::{Buffer, RenderPipeline, Surface};
@@ -33,6 +33,7 @@ struct GpuMesh {
     mesh: Mesh,
     vertices: Vec<GpuVertex>,
     material: Material,
+    affected_by_light: wgpu::BindGroup,
 }
 
 impl GpuMesh {
@@ -41,12 +42,14 @@ impl GpuMesh {
         vertices: Vec<GpuVertex>,
         mesh: Mesh,
         material: Material,
+        affected_by_light: wgpu::BindGroup,
     ) -> Self {
         GpuMesh {
             vertex_buffer,
             mesh,
             vertices,
             material,
+            affected_by_light
         }
     }
 }

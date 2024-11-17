@@ -16,6 +16,7 @@ use tessellate::mesh::shape::parametric::super_toroid::Supertoroid;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::{HasMesh, MeshResult};
 use tessellate::{gpu, TessResult};
+use tessellate::gpu::options::GpuOptions;
 
 pub fn init_logger() {
     Builder::new().filter(None, LevelFilter::Info).init();
@@ -38,8 +39,7 @@ fn main() -> TessResult<()> {
         // boy().into(),
     ];
 
-    let camera = CameraPosition::new(Vec3::new(-3.5, 0.0, 0.0), 0.0, 0.0);
-    Ok(gpu::visualize(meshes, camera )?)
+    Ok(gpu::visualize(meshes, GpuOptions::new_only_camera_pos(Vec3::new(-3.5, 0.0, 0.0)) )?)
 }
 
 fn supertoroid() -> MeshResult<Supertoroid> {

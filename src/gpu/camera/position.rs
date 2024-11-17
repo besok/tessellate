@@ -49,24 +49,15 @@ impl CameraPosition {
         self.position = new_pos;
     }
 
-    pub fn update_yaw(&mut self, shift: f32) {
-        self.yaw = self.yaw + shift / 300.;
-    }
 
     pub fn set_yaw(&mut self, shift: f32) {
         self.yaw = shift;
     }
 
-    pub fn update_pitch(&mut self, shift: f32) {
-        self.pitch = self.pitch + shift / 300.;
-    }
     pub fn set_pitch(&mut self, shift: f32) {
         self.pitch = shift;
     }
 
-    pub fn shift_y(&mut self, shift: f32) {
-        self.position.y += shift;
-    }
     pub fn yaw(&self) -> f32 {
         self.yaw
     }
