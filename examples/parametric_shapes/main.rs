@@ -27,27 +27,25 @@ fn main() -> TessResult<()> {
     // init_logger();
     let meshes = vec![
         pseudo_sphere().into(),
-        // supertoroid()?.into(),
-        // bohemian_dome().into(),
-        // super_toroidoid().into(),
-        // super_ellipsoid().into(),
-        // mobius_strip().into(),
-        // ellipsoid().into(),
-        // spiral().into(),
-        // dini().into(),
-        // bour().into(),
-        // boy().into(),
+        supertoroid()?.into(),
+        bohemian_dome().into(),
+        super_ellipsoid().into(),
+        mobius_strip().into(),
+        spiral().into(),
+        dini().into(),
+        bour().into(),
+        boy().into(),
     ];
-    let opts = GpuOptions::new(
-        CameraOptions::new_position(Vec3::new(-3.5, 2.0, 0.0)),
-        LightOptions::new_position(Vec3::new(0.0, 3.0, 3.0)),
-    );
+    let light_opts = LightOptions::new_position(Vec3::new(0.0, 5.0, 3.0))
+        .with_ambient(Vec3::new(0.9, 0.9, 0.9))
+        .clone();
+    let opts = GpuOptions::new(CameraOptions::new_position(Vec3::new(-15.0, 2.0, 0.0)), light_opts);
     Ok(gpu::visualize(meshes, opts)?)
 }
 
 fn supertoroid() -> MeshResult<Supertoroid> {
     let mut elem = Supertoroid::create(
-        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(3.0, -3.0, 2.0),
         1.0,
         0.5,
         1.0,
@@ -63,31 +61,28 @@ fn supertoroid() -> MeshResult<Supertoroid> {
 }
 fn bohemian_dome() -> BohemianDome {
     let mut elem =
-        BohemianDome::create(Vec3::new(0.0, 0.0, 0.0), 1.0, 1.0, 1.0, 20, 20, Color::default());
+        BohemianDome::create(Vec3::new(3.0, 1.0, 6.0), 1.0, 1.0, 1.0, 20, 20, Color::default());
     let _ = elem.transform(Mat4::from_translation(Vec3::new(-2.0, -2.0, -2.0)));
     elem
 }
 fn bour() -> Bour {
-    Bour::create(Vec3::new(0.0, 0.0, 0.0), 50, 4.0, 50, 0., 0.5, Color::default())
+    Bour::create(Vec3::new(5.0, 4.0, 0.0), 50, 4.0, 50, 0., 0.5, Color::default())
 }
 fn boy() -> Boy {
-    Boy::create(Vec3::new(0.0, 0.0, 0.0), 100, Color::default())
+    Boy::create(Vec3::new(2.0, -2.0, 1.0), 100, Color::default())
 }
 
 fn dini() -> Dini {
-    Dini::create(Vec3::new(0.0, 0.0, 0.0), 100, 1., 0.2, Color::default())
+    Dini::create(Vec3::new(6.0, 7.0, -1.0), 100, 1., 0.2, Color::default())
 }
 fn spiral() -> ConicSpiral {
     ConicSpiral::default()
-}
-fn ellipsoid() -> Ellipsoid {
-    Ellipsoid::default()
 }
 fn mobius_strip() -> MobiusStrip {
     MobiusStrip::default()
 }
 fn super_ellipsoid() -> SuperEllipsoid {
-    SuperEllipsoid::default()
+    SuperEllipsoid::create(Vec3::new(3.0, 3.0, 2.0), 50, 1.0, 1.0, 2.0, 4.0, 5.0, Color::default())
 }
 fn pseudo_sphere() -> Pseudosphere {
     Pseudosphere::default()

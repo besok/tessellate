@@ -52,7 +52,7 @@ impl Pseudosphere {
 
                 let x = u.cos() * v.sin();
                 let y = u.sin() * v.sin();
-                let z = v.cos() + (0.5*v).tan().ln();
+                let z = v.cos() + (0.5 * v).tan().ln_1p();
 
                 vertices.push(center + Vertex::new(x, y, z));
             }

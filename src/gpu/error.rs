@@ -66,7 +66,7 @@ impl Display for GpuError {
             GpuError::General(message) => write!(f, "{}", message),
             GpuError::WgpuSurfaceError(e) => write!(f, "Wgpu surface error: {}", e),
             GpuError::EventLoopError(_) => write!(f, "Event loop error"),
-            GpuError::MeshError(_) => write!(f, "Mesh error"),
+            GpuError::MeshError(e) => write!(f, "Mesh error {e}"),
         }
     }
 }

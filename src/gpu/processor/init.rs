@@ -4,6 +4,7 @@ use crate::gpu::error::{GpuError, GpuResult};
 use crate::gpu::gui::GuiRenderer;
 use crate::gpu::light::{IsAffectedByLightUniform, Light};
 use crate::gpu::material::Material;
+use crate::gpu::options::{GpuOptions, LightOptions};
 use crate::gpu::processor::{GpuHandler, GpuMesh, GpuProcessor, Topology};
 use crate::gpu::vertex::GpuVertex;
 use crate::mesh::attributes::MeshType;
@@ -24,7 +25,6 @@ use std::sync::Arc;
 use winit::dpi;
 use winit::event_loop::ActiveEventLoop;
 use winit::window::{Icon, Window};
-use crate::gpu::options::{GpuOptions, LightOptions};
 
 impl GpuProcessor {
     pub fn try_init(
@@ -95,7 +95,7 @@ impl GpuProcessor {
 
         for mesh in meshes
             .into_iter()
-            .chain(auxiliary_items(&aabb, &options.light_opts()).iter())
+            .chain(auxiliary_items(&aabb, &options.light_opts())?.iter())
         {
             match mesh.attributes().mesh_type() {
                 MeshType::Polygons | MeshType::Lines => {
@@ -284,7 +284,8 @@ fn load_icon(path: &Path) -> GpuResult<Icon> {
     Ok(Icon::from_rgba(icon_rgba.rgba_data().to_vec(), icon_image.width(), icon_image.height())?)
 }
 
-fn auxiliary_items(aabb: &BoundingBox, light_options: &LightOptions) -> Vec<Mesh> {
+fn auxiliary_items(aabb: &BoundingBox, light_options: &LightOptions) -> MeshResult<Vec<Mesh>> {
+    let mut elems = Vec::new();
     let m = aabb.min().clone() - 1.0f32;
     let mut coord = Mesh::lines(
         vec![
@@ -293,18 +294,16 @@ fn auxiliary_items(aabb: &BoundingBox, light_options: &LightOptions) -> Vec<Mesh
             (m.clone(), Vertex::new(m.x, m.y, m.z + 0.5)).into(),
         ],
         Color::Line(vec![RgbaColor::RED, RgbaColor::GREEN, RgbaColor::BLUE]),
-    );
+    )?;
     coord.attributes_mut().with_affected_by_light(false);
-
+    elems.push(coord);
     if light_options.show_source() {
         let mut light: Mesh =
-            Sphere::create(light_options.position(), 0.1, Color::Mesh(light_options.into()))
-                .into();
+            Sphere::create(light_options.position(), 0.1, Color::Mesh(light_options.into())).into();
         light.attributes_mut().with_affected_by_light(false);
-        vec![coord, light]
-    } else {
-        vec![coord]
+        elems.push(light);
     }
+    Ok(elems)
 }
 
 fn is_affected_by_light_bind_group(device: &Device, flag: bool) -> BindGroup {

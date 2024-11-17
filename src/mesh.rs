@@ -61,6 +61,9 @@ impl MeshError {
     pub fn idx_vertex(v: usize) -> Self {
         MeshError::InvalidIndex(format!("Invalid index for the vertex: {}", v))
     }
+    pub fn wrong_vert(v: &Vertex) -> Self {
+        MeshError::InvalidIndex(format!("Invalid vertex: {:?}", v))
+    }
 }
 
 #[derive(Default, Debug, Clone)]
@@ -179,7 +182,7 @@ impl Mesh {
         }
     }
 
-    pub fn lines(lines: Vec<Edge>, color: Color) -> Self {
+    pub fn lines(lines: Vec<Edge>, color: Color) -> MeshResult<Self> {
         let mut vertices_map = HashMap::new();
         let mut vertices = Vec::new();
 
@@ -194,18 +197,19 @@ impl Mesh {
             }
         }
 
-        let mesh_edges = lines
-            .iter()
-            .map(|Edge { a, b }| MeshEdge::new(vertices_map [a], vertices_map[b]))
-            .collect();
-
-        Mesh {
+        let mut mesh_edges = Vec::new();
+        for Edge { a, b } in lines.iter() {
+            let lhs = vertices_map.get(a).ok_or(MeshError::wrong_vert(a))?;
+            let rhs = vertices_map.get(b).ok_or(MeshError::wrong_vert(b))?;
+            mesh_edges.push(MeshEdge::new(*lhs, *rhs));
+        }
+        Ok(Mesh {
             vertices,
             edges: mesh_edges,
             faces: vec![],
             color,
             attributes: Attributes::new(MeshType::Lines),
-        }
+        })
     }
 }
 impl Mesh {
