@@ -108,11 +108,9 @@ mod tests {
     use crate::mesh::shape::cone::Cone;
     use crate::mesh::HasMesh;
     use crate::mesh::query::MeshQuery;
-    use crate::turn_on_test_logs;
 
     #[test]
     fn smoke_test() {
-        turn_on_test_logs();
         let fig = Cone::default();
         let mesh = fig.mesh();
         let query:MeshQuery = mesh.into();

@@ -1,0 +1,34 @@
+[package]
+name = "tesselate-examples-wgpu"
+description = "Examples for Tesselate for wgpu"
+version = "0.1.0"
+edition = "2021"
+authors = ["BorisZhguchev <zhguchev@gmail.com>"]
+license-file = "../LICENSE"
+#
+[dependencies]
+tessellate = { path = ".." }
+cfg-if = "1"
+winit = { version = "0.29", features = ["rwh_05"] }
+env_logger = "0.11.5"
+console_log = "1.0.0"
+log = "0.4"
+wgpu = "23.0.0"
+pollster = "0.4.0"
+console_error_panic_hook = "0.1.7"
+wasm-bindgen = "0.2.95"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.2.15", features = ["js"] }
+instant = { version = "0.1", features = [ "wasm-bindgen" ] }
+wgpu = { version = "23.0.0", features = ["webgl"]}
+wasm-bindgen-futures = "0.4.45"
+web-sys = { version = "0.3.72", features = [
+    "Document",
+    "Window",
+    "Element",
+    "Gpu",
+]}
+
+[lib]
+crate-type = ["cdylib", "rlib"]
