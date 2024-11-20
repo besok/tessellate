@@ -66,12 +66,42 @@ impl MeshError {
     }
 }
 
+/// Represents a 3D mesh consisting of vertices, edges, and faces.
+///
+/// The `Mesh` struct is the core data structure for representing 3D meshes in Tessellate.
+/// It contains vertices, edges, faces, color, and attributes.
+///
+/// # Fields
+///
+/// * `vertices` - A vector of vertices in the mesh.
+/// * `edges` - A vector of edges in the mesh.
+/// * `faces` - A vector of faces in the mesh.
+/// * `attributes` - Additional attributes associated with the mesh.
+///
+/// # Example
+///
+/// ```
+/// use tessellate::mesh::attributes::Attributes;
+/// use tessellate::mesh::parts::vertex::Vertex;
+/// use tessellate::mesh::parts::face::Face;
+/// use tessellate::mesh::Mesh;
+/// let vertices = vec![
+///     Vertex::new(0.0, 0.0, 0.0),
+///     Vertex::new(1.0, 0.0, 0.0),
+///     Vertex::new(1.0, 1.0, 0.0),
+///     Vertex::new(0.0, 1.0, 0.0),
+/// ];
+/// let faces = vec![
+///     Face::Triangle(0, 1, 2),
+///     Face::Triangle(0, 2, 3),
+/// ];
+/// let mesh = Mesh::from_vertices(vertices, faces, Attributes::default());
+/// ```
 #[derive(Default, Debug, Clone)]
 pub struct Mesh {
     vertices: Vec<Vertex>,
     edges: Vec<MeshEdge>,
     faces: Vec<Face>,
-    color: Color,
     attributes: Attributes,
 }
 impl Mesh {
@@ -86,7 +116,7 @@ impl Mesh {
     /// # Returns
     ///
     /// A new `Mesh` instance containing the specified vertices and faces.
-    pub fn from_vertices<V, F>(vertices: Vec<V>, faces: Vec<F>, color: Color) -> Self
+    pub fn from_vertices<V, F>(vertices: Vec<V>, faces: Vec<F>,  attributes: Attributes) -> Self
     where
         V: Into<Vertex>,
         F: Into<Face>,
@@ -103,8 +133,7 @@ impl Mesh {
             vertices,
             edges,
             faces,
-            color,
-            attributes: Attributes::default(),
+            attributes,
         }
     }
 
@@ -124,7 +153,7 @@ impl Mesh {
     ///
     /// A new `Mesh` instance containing the specified polygons.
 
-    pub fn from_polygons(polygons: Vec<Polygon>, color: Color) -> Self {
+    pub fn from_polygons(polygons: Vec<Polygon>, attributes: Attributes) -> Self {
         let mut vertices = Vec::new();
         let mut vertices_map = HashMap::new();
         let mut faces = Vec::new();
@@ -154,7 +183,7 @@ impl Mesh {
             faces.extend(faces_poly);
         }
 
-        Mesh::from_vertices(vertices, faces, color)
+        Mesh::from_vertices(vertices, faces, attributes)
     }
 
     /// Creates a new `Mesh` representing a cloud of vertices.
@@ -168,21 +197,22 @@ impl Mesh {
     /// # Returns
     ///
     /// A new `Mesh` instance representing the cloud of vertices.
-    pub fn cloud<V>(vertices: Vec<V>, vert_size: usize, color: Color) -> Self
+    pub fn cloud<V>(vertices: Vec<V>, vert_size: usize, attributes:Attributes) -> Self
     where
         V: Into<Vertex>,
     {
         let vertices: Vec<_> = vertices.into_iter().map(Into::into).collect();
+        let mut attributes = attributes;
+        attributes.set_mesh_type(MeshType::Cloud(vert_size));
         Mesh {
             vertices,
-            color,
             edges: vec![],
             faces: vec![],
-            attributes: Attributes::new(MeshType::Cloud(vert_size)),
+            attributes,
         }
     }
 
-    pub fn lines(lines: Vec<Edge>, color: Color) -> MeshResult<Self> {
+    pub fn lines(lines: Vec<Edge>, attributes:Attributes) -> MeshResult<Self> {
         let mut vertices_map = HashMap::new();
         let mut vertices = Vec::new();
 
@@ -203,12 +233,13 @@ impl Mesh {
             let rhs = vertices_map.get(b).ok_or(MeshError::wrong_vert(b))?;
             mesh_edges.push(MeshEdge::new(*lhs, *rhs));
         }
+        let mut attributes = attributes;
+        attributes.set_mesh_type(MeshType::Lines);
         Ok(Mesh {
             vertices,
             edges: mesh_edges,
             faces: vec![],
-            color,
-            attributes: Attributes::new(MeshType::Lines),
+            attributes,
         })
     }
 }
@@ -293,7 +324,7 @@ impl Mesh {
         }
 
         let new_vertices = new_vertices.into_iter().map(|v| v.normalize()).collect();
-        *self = Mesh::from_vertices(new_vertices, new_faces, self.color.clone());
+        *self = Mesh::from_vertices(new_vertices, new_faces, self.attributes.clone());
         Ok(())
     }
 }
@@ -381,13 +412,6 @@ impl Mesh {
         &self.faces
     }
 
-    pub fn color(&self) -> &Color {
-        &self.color
-    }
-
-    pub fn set_color(&mut self, color: Color) {
-        self.color = color;
-    }
 
     pub fn props(&self) -> properties::MeshProperties {
         properties::MeshProperties::new(self)

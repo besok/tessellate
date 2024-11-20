@@ -1,5 +1,6 @@
 use glam::Vec3;
 use crate::mesh::{Mesh, MeshError, MeshResult};
+use crate::mesh::attributes::Attributes;
 use crate::mesh::material::Color;
 use crate::mesh::normals::calculate_normal;
 use crate::mesh::parts::face::Face;
@@ -35,7 +36,7 @@ impl Plane {
         self.normal.dot(point) - self.dist
     }
 
-    pub fn to_mesh(&self, size: f32, color: Color) -> Mesh {
+    pub fn to_mesh(&self, size: f32, attrs: Attributes) -> Mesh {
         let right = self.normal.cross(Vec3::Y).normalize() * size;
         let up = self.normal.cross(right).normalize() * size;
 
@@ -48,7 +49,7 @@ impl Plane {
 
         let faces = vec![Face::Triangle(0, 1, 2), Face::Triangle(2, 3, 0)];
 
-        Mesh::from_vertices(vertices, faces, color)
+        Mesh::from_vertices(vertices, faces, attrs )
     }
 }
 

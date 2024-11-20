@@ -4,6 +4,7 @@ use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{HasMesh, Mesh};
 use std::f32::consts::PI;
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
 
 /// Bour's minimal surface
 /// https://en.wikipedia.org/wiki/Bour%27s_minimal_surface
@@ -19,7 +20,7 @@ pub struct Bour {
 
 impl Default for Bour {
     fn default() -> Self {
-        Bour::create(Vertex::default(), 50, 4.0, 50, 0., 3., Color::default())
+        Bour::create(Vertex::default(), 50, 4.0, 50, 0., 3., Attributes::default())
     }
 }
 
@@ -41,14 +42,14 @@ impl Bour {
         r_steps: usize,
         r_min: f32,
         r_max: f32,
-        color: C,
+        attrs: C,
     ) -> Self
     where
         V1: Into<Vertex>,
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
         let center = center.into();
-        let color = color.into();
+        let  attrs = attrs.into();
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
 
@@ -84,7 +85,7 @@ impl Bour {
             r_steps,
             r_min,
             r_max,
-            mesh: Mesh::from_vertices(vertices, faces, color),
+            mesh: Mesh::from_vertices(vertices, faces, attrs),
         }
     }
 }

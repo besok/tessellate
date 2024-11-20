@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
 use crate::mesh::Mesh;
 use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
@@ -20,7 +21,7 @@ impl Deref for Grid {
     }
 }
 impl Grid {
-    pub fn create(rows: usize, columns: usize, spacing: f32,color: Color) -> Self {
+    pub fn create(rows: usize, columns: usize, spacing: f32,attrs: Attributes) -> Self {
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut faces: Vec<Face> = Vec::new();
 
@@ -46,7 +47,7 @@ impl Grid {
             }
         }
 
-        let mesh = Mesh::from_vertices(vertices, faces,color);
+        let mesh = Mesh::from_vertices(vertices, faces,attrs);
 
         Self {
             rows,
@@ -68,6 +69,6 @@ impl HasMesh for Grid {
 
 impl Default for Grid {
     fn default() -> Self {
-        Grid::create(10, 10, 1.0,Color::default())
+        Grid::create(10, 10, 1.0,Default::default())
     }
 }

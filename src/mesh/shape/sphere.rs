@@ -4,6 +4,7 @@ use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
 
@@ -31,12 +32,12 @@ impl HasMesh for Sphere {
 }
 
 impl Sphere {
-    pub fn create_uv<V,C>(center: V, radius: f32, m: usize, n: usize, color: C) -> Self
+    pub fn create_uv<V,C>(center: V, radius: f32, m: usize, n: usize, attributes: C) -> Self
     where V: Into<Vertex>,
-          C: Into<Color>
+          C: Into<Attributes>
     {
         let center = center.into();
-        let color = color.into();
+        let attributes = attributes.into();
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
 
@@ -68,12 +69,12 @@ impl Sphere {
             radius,
             center,
             segments: n * m,
-            mesh: Mesh::from_vertices(vertices, faces,color),
+            mesh: Mesh::from_vertices(vertices, faces,attributes),
         }
     }
-    pub fn create_ico<V: Into<Vertex>>(center: V, radius: f32, subdivisions: usize, color: Color) -> Self {
+    pub fn create_ico<V: Into<Vertex>>(center: V, radius: f32, subdivisions: usize, attrs: Attributes) -> Self {
         let center = center.into();
-        let mut ico = Icosahedron::create(center, radius,color);
+        let mut ico = Icosahedron::create(center, radius, attrs);
         let mesh = (0..subdivisions).fold(ico.mesh_mut(), |acc, _| {
             let _ = acc.subdivide();
             acc

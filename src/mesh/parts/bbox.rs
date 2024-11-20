@@ -1,3 +1,4 @@
+use crate::mesh::attributes::Attributes;
 use crate::mesh::material::Color;
 use crate::mesh::parts::face::FaceType;
 use crate::mesh::parts::polygon::Polygon;
@@ -95,11 +96,11 @@ impl BoundingBox {
     }
 
     /// The function creates a mesh from the bounding box
-    pub fn to_rect_cuboid<C>(self, face_type: FaceType, color: C) -> RectCuboid
+    pub fn to_rect_cuboid<C>(self, face_type: FaceType, attributes: C) -> RectCuboid
     where
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
-        RectCuboid::create_bbox(self.min_vertex, self.max_vertex, face_type, color)
+        RectCuboid::create_bbox(self.min_vertex, self.max_vertex, face_type, attributes)
     }
 
     pub fn max(&self) -> &Vertex {

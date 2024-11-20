@@ -12,19 +12,19 @@ fn main() -> TessResult<()> {
     let spiral = ConicSpiral::default();
 
     let edges = spiral.query().extract_boundary_edges()?;
-    let mut mesh = Mesh::lines(edges, Color::Mesh(RgbaColor::GREEN))?;
+    let mut mesh = Mesh::lines(edges, Color::Mesh(RgbaColor::GREEN).into())?;
     mesh.transform(Mat4::from_translation(Vec3::new(1., 0.0, 0.0)))?;
 
     let edges = spiral.query().extract_manifold_edges()?;
-    let mut mesh2 = Mesh::lines(edges, Color::Mesh(RgbaColor::BLUE))?;
+    let mut mesh2 = Mesh::lines(edges, Color::Mesh(RgbaColor::BLUE).into())?;
     mesh2.transform(Mat4::from_translation(Vec3::new(2., 0.0, 0.0)))?;
 
     let edges = spiral.query().extract_feature_edges(179.0)?;
-    let mut mesh3 = Mesh::lines(edges, Color::Mesh(RgbaColor::RED))?;
+    let mut mesh3 = Mesh::lines(edges, Color::Mesh(RgbaColor::RED).into())?;
     mesh3.transform(Mat4::from_translation(Vec3::new(3., 0.0, 0.0)))?;
 
     let edges = spiral.query().extract_non_manifold_edges()?;
-    let mut mesh4 = Mesh::lines(edges, Color::Mesh(RgbaColor::RED))?;
+    let mut mesh4 = Mesh::lines(edges, Color::Mesh(RgbaColor::RED).into())?;
     mesh4.transform(Mat4::from_translation(Vec3::new(4., 0.0, 0.0)))?;
 
 

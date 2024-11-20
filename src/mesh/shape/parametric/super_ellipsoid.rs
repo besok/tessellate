@@ -1,8 +1,10 @@
+use crate::mesh::attributes::Attributes;
 use crate::mesh::material::Color;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{HasMesh, Mesh};
 use std::f32::consts::PI;
 use std::ops::Deref;
+
 /// Represents an Ellipsoid shape with radii along the x, y, and z axes.
 #[derive(Debug, Clone)]
 pub struct SuperEllipsoid {
@@ -16,7 +18,7 @@ pub struct SuperEllipsoid {
 
 impl Default for SuperEllipsoid {
     fn default() -> Self {
-        SuperEllipsoid::create(Vertex::default(), 50, 1.0, 2.0, 3.0, 4.0, 5.0, Color::default())
+        SuperEllipsoid::create(Vertex::default(), 50, 1.0, 2.0, 3.0, 4.0, 5.0, Attributes::default())
     }
 }
 
@@ -43,14 +45,14 @@ impl SuperEllipsoid {
         z_rad: f32,
         n1: f32,
         n2: f32,
-        color: C,
+        attrs: C,
     ) -> Self
     where
         V1: Into<Vertex>,
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
         let center = center.into();
-        let color = color.into();
+        let attrs = attrs.into();
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
 
@@ -101,7 +103,7 @@ impl SuperEllipsoid {
             z_rad,
             n1,
             n2,
-            mesh: Mesh::from_vertices(vertices, faces, color),
+            mesh: Mesh::from_vertices(vertices, faces, attrs),
         }
     }
 }

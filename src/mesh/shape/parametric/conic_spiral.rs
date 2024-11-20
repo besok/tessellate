@@ -4,6 +4,8 @@ use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{HasMesh, Mesh};
 use std::f32::consts::PI;
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
+
 /// Represents a Dini surface mesh.
 #[derive(Debug, Clone)]
 pub struct ConicSpiral {
@@ -46,14 +48,14 @@ impl ConicSpiral {
         b: f32,
         c: f32,
         n: f32,
-        color: C,
+        attrs: C
     ) -> Self
     where
         V1: Into<Vertex>,
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
         let center = center.into();
-        let color = color.into();
+        let  attrs = attrs.into();
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
         let inv2pi = 1.0 / (2.0 * PI);
@@ -90,7 +92,7 @@ impl ConicSpiral {
             b,
             c,
             n,
-            mesh: Mesh::from_vertices(vertices, faces, color),
+            mesh: Mesh::from_vertices(vertices, faces, attrs),
         }
     }
 }

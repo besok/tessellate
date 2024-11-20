@@ -14,8 +14,8 @@ fn main() -> TessResult<()> {
     let poly_centers = pyramid.query().extract_poly_centers()?;
     let edge_centers = pyramid.query().extract_edge_centers()?;
 
-    let mesh1 = Mesh::cloud(poly_centers,2, Color::Mesh(RgbaColor::GREEN));
-    let mesh2 = Mesh::cloud(edge_centers, 2, Color::Mesh(RgbaColor::RED));
+    let mesh1 = Mesh::cloud(poly_centers,2, Color::Mesh(RgbaColor::GREEN).into());
+    let mesh2 = Mesh::cloud(edge_centers, 2, Color::Mesh(RgbaColor::RED).into());
 
 
     let meshes = vec![mesh1, mesh2, pyramid.into()];

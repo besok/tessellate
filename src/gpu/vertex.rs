@@ -70,7 +70,7 @@ impl TryFrom<&Mesh> for Vec<GpuVertex> {
     fn try_from(mesh: &Mesh) -> Result<Self, Self::Error> {
         let normals = mesh.try_normals()?;
         match mesh.attributes().mesh_type() {
-            MeshType::Polygons => match mesh.color() {
+            MeshType::Polygons => match mesh.attributes().color() {
                 Color::Face(fs) => {
                     let faces = mesh.faces();
                     faces_check(fs, faces)?;
@@ -126,7 +126,7 @@ impl TryFrom<&Mesh> for Vec<GpuVertex> {
                     "Line color not supported for polygon mesh".to_string(),
                 )),
             },
-            MeshType::Cloud(_) => match mesh.color() {
+            MeshType::Cloud(_) => match mesh.attributes().color() {
                 Color::Func(f) => {
                     let vertices = mesh.vertices();
                     let mut gpu_vertices = Vec::new();
@@ -165,7 +165,7 @@ impl TryFrom<&Mesh> for Vec<GpuVertex> {
                     Ok(vertices)
                 }
             },
-            MeshType::Lines => match mesh.color() {
+            MeshType::Lines => match mesh.attributes().color() {
                 Color::Face(_) => Err(MeshError::InvalidFaceType(
                     "Face color not supported for cloud mesh".to_string(),
                 )),

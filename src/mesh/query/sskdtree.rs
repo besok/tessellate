@@ -117,7 +117,7 @@ impl SSKDTree {
 
 
     pub fn to_mesh(&self, color: Color) -> Mesh {
-        Mesh::from_polygons(self.iter().flat_map(|node| node.polygons()).collect(), color)
+        Mesh::from_polygons(self.iter().flat_map(|node| node.polygons()).collect(), color.into())
     }
 }
 

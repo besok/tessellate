@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
 use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
@@ -21,16 +22,16 @@ impl Deref for Pyramid {
 }
 impl Default for Pyramid {
     fn default() -> Self {
-        Pyramid::create(Vertex::default(), 1.0, 3.0,Color::default())
+        Pyramid::create(Vertex::default(), 1.0, 3.0,Attributes::default())
     }
 }
 impl Pyramid {
-    pub fn create<V,C>(center: V, size: f32, height: f32,color: C) -> Self
+    pub fn create<V,C>(center: V, size: f32, height: f32,attrs: C) -> Self
     where V:Into<Vertex>,
-          C:Into<Color>
+          C:Into<Attributes>
     {
         let center = center.into();
-        let color = color.into();
+        let attrs = attrs.into();
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut faces: Vec<Face> = Vec::new();
 
@@ -56,7 +57,7 @@ impl Pyramid {
         faces.push(Face::Triangle(base_center_index, 2, 3));
         faces.push(Face::Triangle(base_center_index, 3, 0));
 
-        let mesh = Mesh::from_vertices(vertices, faces,color);
+        let mesh = Mesh::from_vertices(vertices, faces,attrs);
         Self {
             center,
             size,

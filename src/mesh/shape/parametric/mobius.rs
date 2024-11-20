@@ -4,6 +4,8 @@ use crate::mesh::parts::face::Face;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{HasMesh, Mesh};
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
+
 /// Represents a Möbius Strip mesh.
 #[derive(Debug, Clone)]
 pub struct MobiusStrip {
@@ -38,14 +40,14 @@ impl MobiusStrip {
         length: f32,
         twists: f32,
         num_points: usize,
-        color: C,
+        attrs: C,
     ) -> Self
     where
         V1: Into<Vertex>,
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
         let center = center.into();
-        let color = color.into();
+        let attrs = attrs.into();
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
 
@@ -74,7 +76,7 @@ impl MobiusStrip {
             width,
             length,
             twists,
-            mesh: Mesh::from_vertices(vertices, faces, color),
+            mesh: Mesh::from_vertices(vertices, faces, attrs),
         }
     }
 }

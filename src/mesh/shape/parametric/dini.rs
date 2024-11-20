@@ -4,6 +4,8 @@ use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{HasMesh, Mesh};
 use std::f32::consts::PI;
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
+
 /// Represents a Dini surface mesh.
 #[derive(Debug, Clone)]
 pub struct Dini {
@@ -30,13 +32,13 @@ impl Dini {
     ///
     /// # Returns
     /// A new instance of `Dini`.
-    pub fn create<V1, C>(center: V1, num_points: usize, a: f32, b: f32, color: C) -> Self
+    pub fn create<V1, C>(center: V1, num_points: usize, a: f32, b: f32, attrs: C) -> Self
     where
         V1: Into<Vertex>,
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
         let center = center.into();
-        let color = color.into();
+        let  attrs = attrs.into();
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
 
@@ -66,7 +68,7 @@ impl Dini {
 
         Dini {
             a,b,
-            mesh: Mesh::from_vertices(vertices, faces, color),
+            mesh: Mesh::from_vertices(vertices, faces, attrs),
         }
     }
 }

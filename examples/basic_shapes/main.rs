@@ -15,6 +15,7 @@ use tessellate::mesh::shape::torus::Torus;
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::HasMesh;
 use tessellate::{gpu, TessError, TessResult};
+use tessellate::mesh::attributes::Attributes;
 
 fn main() -> TessResult<()> {
     let meshes = vec![
@@ -37,11 +38,11 @@ fn main() -> TessResult<()> {
 }
 
 fn torus() -> Torus {
-    Torus::create(Vec3::new(0.0, -2.0, 2.0), 1.0, 0.5, 32, 32, Color::default())
+    Torus::create(Vec3::new(0.0, -2.0, 2.0), 1.0, 0.5, 32, 32, Attributes::default())
 }
 
 fn cylinder() -> Cylinder {
-    Cylinder::create([0.0, 0.0, 4.0], 1.0, 1.0, 3, Color::default())
+    Cylinder::create([0.0, 0.0, 4.0], 1.0, 1.0, 3, Attributes::default())
 }
 
 fn green_sphere() -> TessResult<Sphere> {
@@ -86,7 +87,7 @@ fn cube_color_every_side() -> Result<Cube, TessError> {
         .map(|_| RgbaColor::random())
         .collect();
 
-    cube.mesh_mut().set_color(Color::Face(colors));
+    cube.mesh_mut().attributes_mut().set_color(Color::Face(colors));
     cube.transform(Mat4::from_translation(Vec3::new(-3.0, -3.0, 0.0)))?;
     Ok(cube)
 }

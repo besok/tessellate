@@ -3,6 +3,7 @@ use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{HasMesh, Mesh};
 use std::f32::consts::PI;
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
 use crate::mesh::parts::face::Face;
 
 /// Represents an Ellipsoid shape with radii along the x, y, and z axes.
@@ -31,14 +32,14 @@ impl Pseudosphere {
     pub fn create<V1, C>(
         center: V1,
         steps: usize,
-        color: C,
+        attrs: C,
     ) -> Self
     where
         V1: Into<Vertex>,
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
         let center = center.into();
-        let color = color.into();
+        let attrs = attrs.into() ;
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
 
@@ -70,7 +71,7 @@ impl Pseudosphere {
         }
 
         Pseudosphere {
-            mesh: Mesh::from_vertices(vertices, faces, color),
+            mesh: Mesh::from_vertices(vertices, faces, attrs),
         }
     }
 }

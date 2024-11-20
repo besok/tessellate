@@ -1,0 +1,41 @@
+# Mesh
+
+The `Mesh` struct represents a 3D mesh consisting of vertices, edges, and faces. 
+It is the core data structure for representing 3D geometries in Tessellate. 
+The `Mesh` struct provides various methods for creating, manipulating, and analyzing 3D meshes.
+
+## Fields
+
+- **vertices**: A vector of vertices in the mesh.
+- **edges**: A vector of edges in the mesh.
+- **faces**: A vector of faces in the mesh.
+- **attributes**: Additional attributes associated with the mesh.
+ 
+
+## Example of creating a mesh
+
+```rust
+use tessellate::mesh::attributes::Attributes;
+use tessellate::mesh::parts::polygon::Polygon;
+use tessellate::mesh::parts::vertex::Vertex;
+use tessellate::mesh::Mesh;
+
+fn main() {
+    let vertices = vec![
+        Vertex::new(0.0, 0.0, 0.0),
+        Vertex::new(1.0, 0.0, 0.0),
+        Vertex::new(1.0, 1.0, 0.0),
+        Vertex::new(0.0, 1.0, 0.0),
+    ];
+ 
+    let faces = vec![
+        Face::Triangle(0, 1, 2),
+        Face::Triangle(0, 2, 3),
+    ];
+ 
+    let mesh = Mesh::from_vertices(vertices, faces, Attributes::default());
+
+    // Print the mesh details
+    println!("{:?}", mesh);
+}
+```

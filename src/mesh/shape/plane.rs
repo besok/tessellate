@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
 use crate::mesh::Mesh;
 use crate::mesh::parts::face::Face;
 use crate::mesh::HasMesh;
@@ -21,13 +22,13 @@ impl Deref for Plane {
 }
 impl Plane {
 
-    pub fn create<V,C>(center: V, width: f32, height: f32,color: C) -> Self
+    pub fn create<V,C>(center: V, width: f32, height: f32,attrs: C) -> Self
     where
         V:Into<Vertex>,
-        C:Into<Color>
+        C:Into<Attributes>
     {
         let center = center.into();
-        let color = color.into();
+        let  attrs = attrs.into();
         let half_width = width / 2.0;
         let half_height = height / 2.0;
         let mut vertices: Vec<Vertex> = Vec::new();
@@ -43,7 +44,7 @@ impl Plane {
         faces.push(Face::Triangle(0, 1, 2));
         faces.push(Face::Triangle(2, 3, 0));
 
-        let mesh = Mesh::from_vertices(vertices, faces,color);
+        let mesh = Mesh::from_vertices(vertices, faces,attrs);
 
         Self {
             center,

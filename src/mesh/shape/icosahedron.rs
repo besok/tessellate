@@ -1,9 +1,10 @@
-use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
+use crate::mesh::material::Color;
 use crate::mesh::parts::face::Face;
+use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
-use crate::mesh::material::Color;
-use crate::mesh::parts::vertex::Vertex;
+use std::ops::Deref;
 
 #[derive(Debug, Clone)]
 pub struct Icosahedron {
@@ -28,18 +29,19 @@ impl Deref for Icosahedron {
     }
 }
 impl Icosahedron {
-    pub fn create<V,C>(center: V, size: f32,color: C) -> Self
-    where V: Into<Vertex>,
-          C: Into<Color>
+    pub fn create<V, C>(center: V, size: f32, attributes: C) -> Self
+    where
+        V: Into<Vertex>,
+        C: Into<Attributes>,
     {
         let center = center.into();
-        let color = color.into();
+        let attributes = attributes.into();
         let phi = (1.0 + 5.0_f32.sqrt()) / 2.0;
         let scale = size / phi.sqrt();
         Self {
             center,
             scale,
-            mesh: Mesh::from_vertices(vertices(center, phi, scale), faces(),color),
+            mesh: Mesh::from_vertices(vertices(center, phi, scale), faces(), attributes),
         }
     }
 }

@@ -3,4 +3,4 @@ authors = ["Boris Zhguchev"]
 language = "en"
 multilingual = false
 src = "src"
-title = "Tesselate"
+title = "Tesselate. 3d scientific visualization with Rust"

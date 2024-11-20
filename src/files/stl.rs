@@ -2,6 +2,7 @@ use std::fs::OpenOptions;
 use stl_io::IndexedTriangle;
 
 use crate::files::FileError;
+use crate::mesh::attributes::Attributes;
 use crate::mesh::material::Color;
 use crate::mesh::Mesh;
 use crate::mesh::parts::face::Face;
@@ -37,5 +38,5 @@ pub fn import_stl(path: &str) -> Result<Mesh, FileError> {
         )
         .collect();
 
-    Ok(Mesh::from_vertices(vertices, faces, Color::default()))
+    Ok(Mesh::from_vertices(vertices, faces, Attributes::default()))
 }

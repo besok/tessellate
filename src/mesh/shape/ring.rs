@@ -3,7 +3,7 @@ use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
 use std::ops::Deref;
-use crate::mesh::material::Color;
+use crate::mesh::attributes::Attributes;
 use crate::mesh::parts::vertex::Vertex;
 
 #[derive(Debug, Clone)]
@@ -23,7 +23,7 @@ impl Deref for Ring {
 }
 impl Default for Ring {
     fn default() -> Self {
-        Ring::create(Vertex::default(), 1.0, 0.5, 1.0, 32, Color::default())
+        Ring::create(Vertex::default(), 1.0, 0.5, 1.0, 32, Attributes::default())
     }
 }
 
@@ -34,13 +34,13 @@ impl Ring {
         outer_radius: f32,
         height: f32,
         segments: usize,
-        color: C
+        attrs: C
     ) -> Self
     where V:Into<Vertex>,
-          C:Into<Color>
+          C:Into<Attributes>
     {
         let center = center.into();
-        let color = color.into();
+        let attrs = attrs.into();
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut faces: Vec<Face> = Vec::new();
 
@@ -113,7 +113,7 @@ impl Ring {
             ));
         }
 
-        let mesh = Mesh::from_vertices(vertices, faces,color);
+        let mesh = Mesh::from_vertices(vertices, faces,attrs);
 
         Ring {
             center,

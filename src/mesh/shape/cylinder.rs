@@ -1,10 +1,11 @@
+use crate::mesh::attributes::Attributes;
+use crate::mesh::material::Color;
+use crate::mesh::parts::face::Face;
+use crate::mesh::parts::vertex::Vertex;
+use crate::mesh::HasMesh;
+use crate::mesh::Mesh;
 use std::f32::consts::PI;
 use std::ops::Deref;
-use crate::mesh::Mesh;
-use crate::mesh::parts::face::Face;
-use crate::mesh::HasMesh;
-use crate::mesh::material::Color;
-use crate::mesh::parts::vertex::Vertex;
 
 #[derive(Debug, Clone)]
 pub struct Cylinder {
@@ -20,27 +21,27 @@ impl Deref for Cylinder {
         &self.mesh
     }
 }
-impl Default for Cylinder{
+impl Default for Cylinder {
     fn default() -> Self {
-        Cylinder::create(Vertex::default(), 1.0, 2.0, 32, Color::default())
+        Cylinder::create(Vertex::default(), 1.0, 2.0, 32, Attributes::default())
     }
 }
 impl Cylinder {
-    pub fn create<V,C>(
+    pub fn create<V, C>(
         center: V,
         radius: f32,
         height: f32,
         segments: usize,
-        color: C
+        attrs: C,
     ) -> Self
-    where V:Into<Vertex>,
-          C:Into<Color>
+    where
+        V: Into<Vertex>,
+        C: Into<Attributes>,
     {
         let center = center.into();
-        let color = color.into();
+        let attrs = attrs.into();
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut faces: Vec<Face> = Vec::new();
-
 
         // Bottom center vertex
         let bottom_center_index = vertices.len();
@@ -88,7 +89,7 @@ impl Cylinder {
             faces.push(Face::Triangle(top_center_index, top_seg, next_top_seg));
         }
 
-        let mesh = Mesh::from_vertices(vertices, faces,color);
+        let mesh = Mesh::from_vertices(vertices, faces, attrs);
         Cylinder {
             center,
             radius,

@@ -4,6 +4,7 @@ use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{HasMesh, Mesh};
 use std::f32::consts::PI;
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
 
 /// Represents a Boy surface mesh.
 #[derive(Debug, Clone)]
@@ -27,13 +28,13 @@ impl Boy {
     ///
     /// # Returns
     /// A new instance of `Boy`.
-    pub fn create<V1, C>(center: V1, num_points: usize, color: C) -> Self
+    pub fn create<V1, C>(center: V1, num_points: usize, attrs: C) -> Self
     where
         V1: Into<Vertex>,
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
         let center = center.into();
-        let color = color.into();
+        let attrs = attrs.into();
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
 
@@ -67,7 +68,7 @@ impl Boy {
         }
 
         Boy {
-            mesh: Mesh::from_vertices(vertices, faces, color),
+            mesh: Mesh::from_vertices(vertices, faces, attrs),
         }
     }
 }

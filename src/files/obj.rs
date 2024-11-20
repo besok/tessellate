@@ -2,6 +2,7 @@ use tobj::load_obj;
 use log::info;
 use crate::files::FileError;
 use crate::mesh::{Mesh, MeshError};
+use crate::mesh::attributes::Attributes;
 use crate::mesh::material::Color;
 use crate::mesh::parts::face::Face;
 use crate::mesh::parts::vertex::Vertex;
@@ -67,7 +68,7 @@ pub fn import_objs(path: &str, options: &tobj::LoadOptions) -> Result<Vec<Mesh>,
             }
         }
 
-        meshes.push(Mesh::from_vertices(vertices, faces, Color::default()));
+        meshes.push(Mesh::from_vertices(vertices, faces, Attributes::default()));
     }
 
     Ok(meshes)

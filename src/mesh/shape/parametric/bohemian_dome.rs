@@ -4,6 +4,7 @@ use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{HasMesh, Mesh};
 use std::f32::consts::PI;
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
 
 /// A Bohemian Dome is a parametric shape that is a generalization of a torus.
 #[derive(Debug, Clone)]
@@ -18,7 +19,7 @@ pub struct BohemianDome {
 
 impl Default for BohemianDome {
     fn default() -> Self {
-        BohemianDome::create(Vertex::default(), 0.5, 1.5, 1.0, 50, 50, Color::default())
+        BohemianDome::create(Vertex::default(), 0.5, 1.5, 1.0, 50, 50, Attributes::default())
     }
 }
 
@@ -39,6 +40,7 @@ impl BohemianDome {
     ///
     /// # Example
     /// ```rust
+    /// use tessellate::mesh::attributes::Attributes;
     /// use tessellate::mesh::material::Color;
     /// use tessellate::mesh::parts::vertex::Vertex;
     /// use tessellate::mesh::shape::parametric::bohemian_dome::BohemianDome;
@@ -49,7 +51,7 @@ impl BohemianDome {
     ///     1.0,
     ///     20,
     ///     20,
-    ///     Color::default(),
+    ///     Attributes::default(),
     /// );
     /// ```
     pub fn create<V1, C>(
@@ -59,14 +61,14 @@ impl BohemianDome {
         c: f32,
         u_steps: usize,
         v_steps: usize,
-        color: C,
+        attrs: C,
     ) -> Self
     where
         V1: Into<Vertex>,
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
         let center = center.into();
-        let color = color.into();
+        let  attrs = attrs.into();
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
 
@@ -103,7 +105,7 @@ impl BohemianDome {
             c,
             u_steps,
             v_steps,
-            mesh: Mesh::from_vertices(vertices, faces, color),
+            mesh: Mesh::from_vertices(vertices, faces, attrs),
         }
     }
 }

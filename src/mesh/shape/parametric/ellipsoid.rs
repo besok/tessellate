@@ -3,6 +3,8 @@ use crate::mesh::parts::face::Face;
 use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{HasMesh, Mesh};
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
+
 /// Represents an Ellipsoid shape with radii along the x, y, and z axes.
 #[derive(Debug, Clone)]
 pub struct Ellipsoid {
@@ -31,20 +33,20 @@ impl Ellipsoid {
     ///
     /// # Returns
     /// A new `Ellipsoid` instance.
-    pub fn create<V1, C>(
+    pub fn create<V1, A>(
         center: V1,
         steps: usize,
         x_rad: f32,
         y_rad: f32,
         z_rad: f32,
-        color: C,
+        attributes: A,
     ) -> Self
     where
         V1: Into<Vertex>,
-        C: Into<Color>,
+        A: Into<Attributes>,
     {
         let center = center.into();
-        let color = color.into();
+        let attr = attributes.into();
         let mut vertices = Vec::new();
         let mut faces = Vec::new();
 
@@ -83,7 +85,7 @@ impl Ellipsoid {
             x_rad,
             y_rad,
             z_rad,
-            mesh: Mesh::from_vertices(vertices, faces, color),
+            mesh: Mesh::from_vertices(vertices, faces, attr),
         }
     }
 }

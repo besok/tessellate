@@ -1,10 +1,11 @@
-use crate::mesh::material::Material;
+use crate::mesh::material::{Color, Material, RgbaColor};
 use std::hash::Hash;
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Attributes {
     mesh_type: MeshType,
     material: Material,
+    color: Color,
     affected_by_light: bool,
 }
 
@@ -13,6 +14,7 @@ impl Default for Attributes {
         Attributes {
             mesh_type: Default::default(),
             material: Default::default(),
+            color: Color::default(),
             affected_by_light: true,
         }
     }
@@ -22,15 +24,17 @@ impl Attributes {
     pub fn new(mesh_type: MeshType) -> Self {
         Attributes {
             mesh_type,
+            color: Color::default(),
             material: Default::default(),
             affected_by_light: true,
         }
     }
 
-    pub fn new_with_material(mesh_type: MeshType, material: Material) -> Self {
+    pub fn new_with_material(mesh_type: MeshType, material: Material, color: Color) -> Self {
         Attributes {
             mesh_type,
             material,
+            color,
             affected_by_light: true,
         }
     }
@@ -39,11 +43,13 @@ impl Attributes {
         mesh_type: MeshType,
         material: Material,
         affected_by_light: bool,
+        color: Color,
     ) -> Self {
         Attributes {
             mesh_type,
             material,
             affected_by_light,
+            color,
         }
     }
 
@@ -67,6 +73,18 @@ impl Attributes {
 
     pub fn affected_by_light(&self) -> bool {
         self.affected_by_light
+    }
+
+    pub fn color(&self) -> &Color {
+        &self.color
+    }
+
+    pub fn set_color(&mut self, color: Color) {
+        self.color = color;
+    }
+
+    pub fn set_mesh_type(&mut self, mesh_type: MeshType) {
+        self.mesh_type = mesh_type;
     }
 }
 
@@ -102,5 +120,28 @@ impl MeshType {
 impl Default for MeshType {
     fn default() -> Self {
         MeshType::Polygons
+    }
+}
+
+impl From<Color> for Attributes {
+    fn from(color: Color) -> Self {
+        Attributes {
+            color,
+            mesh_type: Default::default(),
+            material: Default::default(),
+            affected_by_light: true,
+        }
+    }
+}
+
+
+impl From<RgbaColor> for Attributes {
+    fn from(color: RgbaColor) -> Self {
+        Attributes {
+            color: color.into(),
+            mesh_type: Default::default(),
+            material: Default::default(),
+            affected_by_light: true,
+        }
     }
 }

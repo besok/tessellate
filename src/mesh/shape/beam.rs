@@ -4,6 +4,7 @@ use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
 
 #[derive(Debug, Clone)]
 pub struct Beam {
@@ -22,20 +23,20 @@ impl Deref for Beam {
 }
 impl Default for Beam {
     fn default() -> Self {
-        Beam::create(Vertex::default(), Vertex::new(1.0,1.0,1.0), 0.01,  Color::default())
+        Beam::create(Vertex::default(), Vertex::new(1.0,1.0,1.0), 0.01,  Attributes::default())
     }
 }
 
 impl Beam {
-    pub fn create<V1,V2, C>(start: V1, end: V2, diam:f32, color: C) -> Self
+    pub fn create<V1,V2, C>(start: V1, end: V2, diam:f32, attrs: C) -> Self
     where
         V1: Into<Vertex>,
         V2: Into<Vertex>,
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
         let start = start.into();
         let end = end.into();
-        let color = color.into();
+        let attrs = attrs.into();
         let mut vertices: Vec<Vertex> = Vec::new();
         let mut faces: Vec<Face> = Vec::new();
 
@@ -60,7 +61,7 @@ impl Beam {
         faces.push(Face::Quad(0, 1, 3, 2)); // Bottom face
         faces.push(Face::Quad(4, 5, 7, 6)); // Top face
 
-        let mesh = Mesh::from_vertices(vertices, faces, color);
+        let mesh = Mesh::from_vertices(vertices, faces, attrs);
         Beam { start, end,diam, mesh }
     }
 }

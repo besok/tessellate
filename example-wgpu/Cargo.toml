@@ -17,7 +17,6 @@ wgpu = "23.0.0"
 pollster = "0.4.0"
 console_error_panic_hook = "0.1.7"
 wasm-bindgen = "0.2.95"
-
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.2.15", features = ["js"] }
 instant = { version = "0.1", features = [ "wasm-bindgen" ] }

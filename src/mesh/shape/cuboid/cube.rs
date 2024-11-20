@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
 use crate::mesh::material::Color;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
@@ -40,14 +41,14 @@ impl Default for Cube {
 }
 
 impl Cube {
-    pub fn create<V,C>(center: V, size: f32, face_type: FaceType, color: C) -> Self
+    pub fn create<V,C>(center: V, size: f32, face_type: FaceType,attrs: C) -> Self
     where
         V: Into<Vertex>,
-        C: Into<Color>
+        C: Into<Attributes>
     {
         let half_size = size / 2.0;
         let center = center.into();
-        let color = color.into();
+        let attrs = attrs.into();
         let vertices = vec![
             Vertex::new(center.x - half_size, center.y - half_size, center.z - half_size),
             Vertex::new(center.x + half_size, center.y - half_size, center.z - half_size),
@@ -87,7 +88,7 @@ impl Cube {
         };
 
         Cube {
-            mesh: Mesh::from_vertices(vertices, faces, color),
+            mesh: Mesh::from_vertices(vertices, faces, attrs),
             center,
             size,
         }

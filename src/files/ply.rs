@@ -2,6 +2,7 @@ use ply_rs::parser::Parser;
 use ply_rs::ply::{Property, PropertyAccess};
 
 use crate::files::FileError;
+use crate::mesh::attributes::Attributes;
 use crate::mesh::material::Color;
 use crate::mesh::Mesh;
 use crate::mesh::parts::face::Face;
@@ -54,7 +55,7 @@ pub fn import_ply(path: &str) -> Result<Mesh, FileError> {
 
     }
 
-    Ok(Mesh::from_vertices(vertices, faces, Color::default()))
+    Ok(Mesh::from_vertices(vertices, faces, Attributes::default()))
 }
 
 #[derive(Debug)]

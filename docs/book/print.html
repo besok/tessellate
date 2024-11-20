@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Tesselate</title>
+        <title>Tesselate. 3d scientific visualization with Rust</title>
         <meta name="robots" content="noindex">
 
 
@@ -121,7 +121,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Tesselate</h1>
+                    <h1 class="menu-title">Tesselate. 3d scientific visualization with Rust</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -153,7 +153,164 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="chapter-1"><a class="header" href="#chapter-1">Chapter 1</a></h1>
+                        <div align="center">
+<h1 id="tessellate"><a class="header" href="#tessellate">Tessellate</a></h1>
+<img src="assets/logo.jpeg" alt="Tessellate Logo" width="128"/>
+<h3 id="3d-scientific-data-visualization-and-plotting-tool-for-rust"><a class="header" href="#3d-scientific-data-visualization-and-plotting-tool-for-rust">3D Scientific Data Visualization and Plotting Tool for Rust</a></h3>
+<p><a href="https://crates.io/crates/tessellate"><img src="https://img.shields.io/crates/v/tessellate.svg" alt="Crates.io" /></a>
+<a href="https://docs.rs/tessellate"><img src="https://docs.rs/tessellate/badge.svg" alt="Documentation" /></a>
+<a href="LICENSE.html"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" /></a></p>
+</div>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Tessellate is a powerful 3D scientific visualization library written in Rust,
+designed for performance and safety.
+Drawing inspiration from PyVista and VTK,
+it provides a robust foundation for creating sophisticated scientific visualizations.</p>
+<h2 id="features"><a class="header" href="#features">Features</a></h2>
+<ul>
+<li>🚀 <strong>Robustness</strong>: Written entirely in Rust for maximum speed and efficiency</li>
+<li>🛡️ <strong>Memory Safe</strong>: Leverages Rust's safety guarantees</li>
+<li>📊 <strong>Scientific Visualization</strong>: Specialized tools for scientific data representation</li>
+<li>🎨 <strong>3D Plotting</strong>: Comprehensive 3D plotting capabilities</li>
+</ul>
+<h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
+<p>Add Tessellate to your <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+tessellate = "0.1.0"
+</code></pre>
+<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
+<pre><pre class="playground"><code class="language-rust">
+use tessellate::*;
+use glam::Vec3;
+
+fn main() -&gt; TessResult&lt;()&gt; {
+    let meshes = vec![
+        Torus::default().into(),
+    ];
+
+    let opts = GpuOptions::new(
+        CameraOptions::new_position(Vec3::new(0.0, 5.0, 10.0)),
+        LightOptions::new_position(Vec3::new(0.0, 5.0, 3.0)),
+    );
+
+    Ok(gpu::visualize(meshes, opts)?)
+}</code></pre></pre>
+<h2 id="documentation"><a class="header" href="#documentation">Documentation</a></h2>
+<p>This book provides a comprehensive guide to Tessellate's features and capabilities.
+For detailed information on the API, please refer to the <a href="https://docs.rs/tessellate">API Documentation</a>.</p>
+<h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
+<p>We welcome contributions! Please see our <a href="CONTRIBUTING.html">Contributing Guide</a> for details.</p>
+<h2 id="license"><a class="header" href="#license">License</a></h2>
+<p>This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.</p>
+<hr />
+<div align="center">
+Made with ❤️ by the Tessellate Team
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="definitions"><a class="header" href="#definitions">Definitions</a></h1>
+<p>This section provides an overview of the fundamental elements of the <strong>mesh module</strong>, which lies at the core of Tessellate. The module offers essential building blocks for working with meshes, enabling the creation, manipulation, and analysis of 3D geometries. Below are the primary elements and their roles:</p>
+<ul>
+<li><strong>Vertex</strong>: Represents a point in 3D space with <code>x</code>, <code>y</code>, and <code>z</code> coordinates.</li>
+<li><strong>Edge</strong>: A line segment that connects two vertices.</li>
+<li><strong>Face</strong>: A flat surface enclosed by edges, typically a triangle or polygon.</li>
+<li><strong>Mesh</strong>: A collection of vertices, edges, and faces that together define the structure of a 3D object.</li>
+<li><strong>Properties</strong>: Functions and data structures to compute and manage mesh characteristics, such as area and volume.</li>
+<li><strong>Attributes</strong>: Metadata associated with the mesh, including colors, texture coordinates, and other descriptive properties.</li>
+<li><strong>MeshType</strong>: Specifies the type of mesh, such as a point cloud, surface, or wireframe representation.</li>
+<li><strong>BoundingBox</strong>: An enclosing box around the mesh, used for spatial queries and performance optimization.</li>
+<li><strong>Polygon</strong>: A flat, multi-sided shape defined by vertices and edges, often used to construct mesh faces.</li>
+<li><strong>Color</strong>: Defines the color properties of the mesh or its individual elements.</li>
+<li><strong>Transform</strong>: Tools for applying transformations to the mesh, such as translation, rotation, and scaling.</li>
+<li><strong>Boolean Operations</strong>: Functions to perform operations like union, intersection, and difference between meshes.</li>
+<li><strong>Query</strong>: Tools to search and retrieve elements within the mesh, such as specific vertices, edges, or faces.</li>
+<li><strong>Shape</strong>: Utilities for creating and editing geometric shapes that form the basis of the mesh.</li>
+</ul>
+<p>Each of these elements plays a crucial role in building and working with 3D models,
+forming the foundation for advanced mesh operations and analysis.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="mesh"><a class="header" href="#mesh">Mesh</a></h1>
+<p>The <code>Mesh</code> struct represents a 3D mesh consisting of vertices, edges, and faces.
+It is the core data structure for representing 3D geometries in Tessellate.
+The <code>Mesh</code> struct provides various methods for creating, manipulating, and analyzing 3D meshes.</p>
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
+<ul>
+<li><strong>vertices</strong>: A vector of vertices in the mesh.</li>
+<li><strong>edges</strong>: A vector of edges in the mesh.</li>
+<li><strong>faces</strong>: A vector of faces in the mesh.</li>
+<li><strong>color</strong>: The color of the mesh.</li>
+<li><strong>attributes</strong>: Additional attributes associated with the mesh.</li>
+</ul>
+<h2 id="example-of-creating-a-mesh"><a class="header" href="#example-of-creating-a-mesh">Example of creating a mesh</a></h2>
+<pre><pre class="playground"><code class="language-rust">use tessellate::mesh::material::Color;
+use tessellate::mesh::parts::polygon::Polygon;
+use tessellate::mesh::parts::vertex::Vertex;
+use tessellate::mesh::Mesh;
+
+fn main() {
+    let vertices = vec![
+        Vertex::new(0.0, 0.0, 0.0),
+        Vertex::new(1.0, 0.0, 0.0),
+        Vertex::new(1.0, 1.0, 0.0),
+        Vertex::new(0.0, 1.0, 0.0),
+    ];
+ 
+    let faces = vec![
+        Face::Triangle(0, 1, 2),
+        Face::Triangle(0, 2, 3),
+    ];
+ 
+    let mesh = Mesh::from_vertices(vertices, faces, Color::default());
+
+    // Print the mesh details
+    println!("{:?}", mesh);
+}</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="statistics"><a class="header" href="#statistics">Statistics</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="explicit-structured-grid"><a class="header" href="#explicit-structured-grid">Explicit Structured Grid</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="structured-surface"><a class="header" href="#structured-surface">Structured Surface</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="triangulated-surface"><a class="header" href="#triangulated-surface">Triangulated Surface</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="platonic-solids"><a class="header" href="#platonic-solids">Platonic Solids</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="point-cloud"><a class="header" href="#point-cloud">Point Cloud</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="boolean-operations"><a class="header" href="#boolean-operations">Boolean Operations</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="extract-cell-centers"><a class="header" href="#extract-cell-centers">Extract Cell Centers</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="clipping-with-a-surface-plane-and-boxes"><a class="header" href="#clipping-with-a-surface-plane-and-boxes">Clipping with a Surface, plane and boxes</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="collision-detection"><a class="header" href="#collision-detection">Collision Detection</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="volumetric-analysis"><a class="header" href="#volumetric-analysis">Volumetric Analysis</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="find-and-label-connected-regions"><a class="header" href="#find-and-label-connected-regions">Find and label connected regions</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="decimate-a-mesh"><a class="header" href="#decimate-a-mesh">Decimate a mesh</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="extract-edges"><a class="header" href="#extract-edges">Extract Edges</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="extract-surface"><a class="header" href="#extract-surface">Extract Surface</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="gaussian-smoothing"><a class="header" href="#gaussian-smoothing">Gaussian Smoothing</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="geodesic-paths"><a class="header" href="#geodesic-paths">Geodesic Paths</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="interpolating"><a class="header" href="#interpolating">Interpolating</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="computing-mesh-quality"><a class="header" href="#computing-mesh-quality">Computing Mesh Quality</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="resampling"><a class="header" href="#resampling">Resampling</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="surface-smoothing"><a class="header" href="#surface-smoothing">Surface Smoothing</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="surface-reconstruction"><a class="header" href="#surface-reconstruction">Surface Reconstruction</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="voxelize-a-surface-mesh"><a class="header" href="#voxelize-a-surface-mesh">Voxelize a Surface Mesh</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="subdivide-cells"><a class="header" href="#subdivide-cells">Subdivide Cells</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="geometric-quantities"><a class="header" href="#geometric-quantities">Geometric quantities</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="laplacian-smoothing"><a class="header" href="#laplacian-smoothing">Laplacian smoothing</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="curvature"><a class="header" href="#curvature">Curvature</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="gradient"><a class="header" href="#gradient">Gradient</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="ray-tracing"><a class="header" href="#ray-tracing">Ray tracing</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="ray-casting"><a class="header" href="#ray-casting">Ray Casting</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="ray-tracing-1"><a class="header" href="#ray-tracing-1">Ray tracing</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="tesselate"><a class="header" href="#tesselate">Tesselate</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-1"><a class="header" href="#contributing-1">Contributing</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><p>MIT License</p>
+<p>Copyright (c) [2024] [Boris Zhguchev]</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>
 
                     </main>
 

@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use crate::mesh::attributes::Attributes;
 use crate::mesh::material::Color;
 use crate::mesh::HasMesh;
 use crate::mesh::Mesh;
@@ -36,17 +37,17 @@ impl RectCuboid {
         size_y: f32,
         size_z: f32,
         face_type: FaceType,
-        color: C,
+        attrs: C
     ) -> Self
     where
         V: Into<Vertex>,
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
         let half_size_x = size_x / 2.0;
         let half_size_y = size_y / 2.0;
         let half_size_z = size_z / 2.0;
         let center = center.into();
-        let color = color.into();
+        let attrs = attrs.into();
         let vertices = vec![
             Vertex::new(center.x - half_size_x, center.y - half_size_y, center.z - half_size_z),
             Vertex::new(center.x + half_size_x, center.y - half_size_y, center.z - half_size_z),
@@ -86,7 +87,7 @@ impl RectCuboid {
         };
 
         Self {
-            mesh: Mesh::from_vertices(vertices, faces, color),
+            mesh: Mesh::from_vertices(vertices, faces, attrs),
             center,
             size_x,
             size_y,
@@ -94,10 +95,10 @@ impl RectCuboid {
         }
     }
 
-    pub fn create_bbox<V,C>(min_v:V, max_v:V,face_type: FaceType, color: C) -> Self
+    pub fn create_bbox<V,C>(min_v:V, max_v:V,face_type: FaceType, attributes:  C) -> Self
     where
         V: Into<Vertex>,
-        C: Into<Color>,
+        C: Into<Attributes>,
     {
         let min_v = min_v.into();
         let max_v = max_v.into();
@@ -109,7 +110,7 @@ impl RectCuboid {
         let size_x = max_v.x - min_v.x;
         let size_y = max_v.y - min_v.y;
         let size_z = max_v.z - min_v.z;
-        Self::create(center, size_x, size_y, size_z, face_type, color)
+        Self::create(center, size_x, size_y, size_z, face_type, attributes)
     }
 }
 

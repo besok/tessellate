@@ -118,7 +118,7 @@ impl GpuProcessor {
                     ));
                 }
                 MeshType::Cloud(size) => {
-                    let color = mesh.color();
+                    let color = mesh.attributes().color();
                     let vertices_sphere: Vec<Mesh> = mesh
                         .vertices()
                         .into_iter()
@@ -293,7 +293,7 @@ fn auxiliary_items(aabb: &BoundingBox, light_options: &LightOptions) -> MeshResu
             (m.clone(), Vertex::new(m.x, m.y + 0.5, m.z)).into(),
             (m.clone(), Vertex::new(m.x, m.y, m.z + 0.5)).into(),
         ],
-        Color::Line(vec![RgbaColor::RED, RgbaColor::GREEN, RgbaColor::BLUE]),
+        Color::Line(vec![RgbaColor::RED, RgbaColor::GREEN, RgbaColor::BLUE]).into(),
     )?;
     coord.attributes_mut().with_affected_by_light(false);
     elems.push(coord);
