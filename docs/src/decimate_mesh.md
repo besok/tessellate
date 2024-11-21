@@ -1,1 +1,0 @@
-# Decimate a mesh

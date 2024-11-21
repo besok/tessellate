@@ -152,7 +152,15 @@
 
                 <div id="content" class="content">
                     <main>
-                        
+                        <h1 id="import-ply-files"><a class="header" href="#import-ply-files">Import PLY files</a></h1>
+<p>The <a href="https://en.wikipedia.org/wiki/PLY_(file_format)">PLY</a> file format.</p>
+<pre><pre class="playground"><code class="language-rust">
+fn main() -&gt; TessResult&lt;()&gt; {
+    let building = files::ply::import_ply("examples/import_models/ply/ply_ascii.ply")?;
+    Ok(())
+}
+</code></pre></pre>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

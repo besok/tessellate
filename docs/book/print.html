@@ -234,11 +234,10 @@ The <code>Mesh</code> struct provides various methods for creating, manipulating
 <li><strong>vertices</strong>: A vector of vertices in the mesh.</li>
 <li><strong>edges</strong>: A vector of edges in the mesh.</li>
 <li><strong>faces</strong>: A vector of faces in the mesh.</li>
-<li><strong>color</strong>: The color of the mesh.</li>
 <li><strong>attributes</strong>: Additional attributes associated with the mesh.</li>
 </ul>
 <h2 id="example-of-creating-a-mesh"><a class="header" href="#example-of-creating-a-mesh">Example of creating a mesh</a></h2>
-<pre><pre class="playground"><code class="language-rust">use tessellate::mesh::material::Color;
+<pre><pre class="playground"><code class="language-rust">use tessellate::mesh::attributes::Attributes;
 use tessellate::mesh::parts::polygon::Polygon;
 use tessellate::mesh::parts::vertex::Vertex;
 use tessellate::mesh::Mesh;
@@ -250,49 +249,208 @@ fn main() {
         Vertex::new(1.0, 1.0, 0.0),
         Vertex::new(0.0, 1.0, 0.0),
     ];
- 
     let faces = vec![
-        Face::Triangle(0, 1, 2),
-        Face::Triangle(0, 2, 3),
+        Face::from((0, 1, 2)),
+        Face::from((0, 2, 3)),
+        Face::from((0, 3, 1)),
     ];
  
-    let mesh = Mesh::from_vertices(vertices, faces, Color::default());
+    let mesh = Mesh::from_vertices(vertices, faces, Attributes::default());
 
     // Print the mesh details
     println!("{:?}", mesh);
 }</code></pre></pre>
-<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="statistics"><a class="header" href="#statistics">Statistics</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="explicit-structured-grid"><a class="header" href="#explicit-structured-grid">Explicit Structured Grid</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="structured-surface"><a class="header" href="#structured-surface">Structured Surface</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="triangulated-surface"><a class="header" href="#triangulated-surface">Triangulated Surface</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="platonic-solids"><a class="header" href="#platonic-solids">Platonic Solids</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="point-cloud"><a class="header" href="#point-cloud">Point Cloud</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="boolean-operations"><a class="header" href="#boolean-operations">Boolean Operations</a></h1>
+<p>or like that</p>
+<pre><pre class="playground"><code class="language-rust">fn main() {
+    let mesh = Mesh::from_polygons(
+        vec![
+            poly!(-2.5, -2.5, 0.0; 2.5, -2.5, 0.0; 0.0, 0.0, 5.0),
+            poly!(2.5, -2.5, 0.0; 2.5, 2.5, 0.0; 0.0, 0.0, 5.0),
+        ],
+        Attributes::default(),
+    );
+}</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="parts-and-components-of-mesh"><a class="header" href="#parts-and-components-of-mesh">Parts and components of mesh</a></h1>
+<h2 id="vertex"><a class="header" href="#vertex">Vertex</a></h2>
+<p>A <code>Vertex</code> represents a point in 3D space with x, y, and z coordinates.</p>
+<pre><pre class="playground"><code class="language-rust">use tessellate::v;
+fn main(){
+    let vertex1 = v!(1.0, 2.0, 3.0);
+    let vertex2 = Vertex::new(1.0, 2.0, 3.0);
+    let vertex3 = [1.0, 2.0, 3.0].into();
+    
+    println!("{:?}", [vertex2, vertex3, vertex1]);
+}</code></pre></pre>
+<h2 id="edge"><a class="header" href="#edge">Edge</a></h2>
+<p>An <code>Edge</code> represents a connection between two vertices in a mesh.</p>
+<p>There are two types of edges:</p>
+<ul>
+<li>MeshEdge - An edge that connects two vertices in a mesh using their indices.</li>
+<li>Edge - An edge that connects two vertices in a mesh using the vertices themselves.</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust">fn main(){
+    let edge:Edge = (v!(0.0, 0.0, 0.0), v!(1.0, 1.0, 1.0)).into();
+}
+</code></pre></pre>
+<h2 id="face"><a class="header" href="#face">Face</a></h2>
+<p>A <code>Face</code> represents a polygonal surface in a mesh, typically defined by three or more vertices.
+There are two types of faces:</p>
+<ul>
+<li>Triangle - A face with three vertices.</li>
+<li>Quad - A face with four vertices.</li>
+</ul>
+<p>The face works with indices of vertices in the mesh.</p>
+<pre><pre class="playground"><code class="language-rust">
+use tessellate::mesh::parts::face::Face;
+fn main(){
+    let triangle = Face::new3(0, 1, 2);
+ 
+    let quad = Face::new4(0, 1, 2, 3);
+
+    // Creating faces from a vector of elements with an attempt to triangulate it.
+    let faces = Face::new(vec![0, 1, 2, 3, 4, 5, 6]).unwrap();
+}
+</code></pre></pre>
+<h2 id="polygon"><a class="header" href="#polygon">Polygon</a></h2>
+<p>A <code>Polygon</code> is a flat shape consisting of straight, non-intersecting lines that are joined to form a closed chain or circuit.</p>
+<pre><pre class="playground"><code class="language-rust">use tessellate::mesh::parts::polygon::Polygon;
+use tessellate::mesh::parts::vertex::Vertex;
+
+fn main() { 
+    // Creating a polygon with three vertices
+    let v0 = Vertex::new(0.0, 0.0, 0.0);
+    let v1 = Vertex::new(1.0, 0.0, 0.0);
+    let v2 = Vertex::new(0.0, 1.0, 0.0);
+    let triangle = Polygon::new(vec![v0, v1, v2]);
+    
+    // Creating a polygon with four vertices
+    let v3 = Vertex::new(1.0, 1.0, 0.0);
+    let quad:Polygon = vec![v0, v1, v2, v3].into(); 
+}
+</code></pre></pre>
+<h2 id="plane"><a class="header" href="#plane">Plane</a></h2>
+<p>A <code>Plane</code> is a flat, two-dimensional surface that extends infinitely in 3D space.</p>
+<pre><pre class="playground"><code class="language-rust">use glam::Vec3;
+use tessellate::mesh::attributes::Attributes;
+use tessellate::mesh::parts::plane::Plane;
+
+fn main(){ 
+    // Create a plane from a normal vector and a point
+    let normal = Vec3::new(0.0, 1.0, 0.0);
+    let point = Vec3::new(0.0, 0.0, 0.0);
+    let plane = Plane::new(normal, point);
+    
+    // Calculate the distance from a point to the plane
+    let distance = plane.distance(Vec3::new(0.0, 2.0, 0.0));
+    assert_eq!(distance, 2.0);
+}</code></pre></pre>
+<h2 id="bbox"><a class="header" href="#bbox">BBox</a></h2>
+<p>A <code>BBox</code> (Bounding Box) is a rectangular box that completely contains a 3D object,
+used for spatial indexing and collision detection.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="properties"><a class="header" href="#properties">Properties</a></h1>
+<p>A set of properties that can be analyzed from a mesh.</p>
+<h2 id="example"><a class="header" href="#example">Example</a></h2>
+<pre><pre class="playground"><code class="language-rust">use crate::tessellate::mesh::shape::pyramid::Pyramid;
+use crate::tessellate::mesh::{Mesh, properties::MeshProperties};
+use crate::tessellate::mesh::parts::vertex::Vertex;
+use crate::tessellate::mesh::parts::face::Face;
+
+fn main(){
+    let pyramid = Pyramid::default();
+    
+    assert!(&amp;pyramid.props().is_manifold());
+    assert!(&amp;pyramid.props().is_watertight());
+    assert!(&amp;pyramid.props().isolated_vertices().is_empty());
+}</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="attributes"><a class="header" href="#attributes">Attributes</a></h1>
+<p>The attributes that can be set up on the mesh and provided to use for visualization or other purposes.</p>
+<h2 id="meshtype"><a class="header" href="#meshtype">MeshType</a></h2>
+<p>The type of mesh that can be created. The following types are available:</p>
+<ul>
+<li>Polygons: A mesh that is made up of polygons.</li>
+<li>Lines: A mesh that is made up of lines.</li>
+<li>Cloud: A mesh that is made up of points.</li>
+</ul>
+<h2 id="material"><a class="header" href="#material">Material</a></h2>
+<p>The material for the mesh that affects how it will interact with the light.
+The following properties can be set:</p>
+<ul>
+<li>Ambient: The ambient color of the material.</li>
+<li>Diffuse: The diffuse color of the material.</li>
+<li>Specular: The specular color of the material.</li>
+<li>Shininess: The shininess of the material.</li>
+</ul>
+<h2 id="color"><a class="header" href="#color">Color</a></h2>
+<p>The color of the mesh.
+The color can be set as a single color or as a gradient.
+The color is set up as a tuple of 4 values (r, g, b, a)
+where r, g, b are the red, green, blue values and a is the alpha value.</p>
+<p>Can be set up for the following parts of the mesh:</p>
+<ul>
+<li>Vertex: A color assigned to each vertex.</li>
+<li>Face: A color assigned to each face.</li>
+<li>Line: A color assigned to each line.</li>
+<li>Mesh: A single color for the entire mesh.</li>
+<li>Func: A function that assigns a color a vertex with some logic.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="query"><a class="header" href="#query">Query</a></h1>
+<p>A set of queries that can be performed on a mesh.
+It helps to analyze the mesh and extract useful information.
+It uses auxiliary structures like <code>KDTree</code> and <code>BSP Tree</code> to perform the queries.</p>
+<h2 id="example-1"><a class="header" href="#example-1">Example</a></h2>
+<pre><pre class="playground"><code class="language-rust">use std::process::Termination;
+use crate::tessellate::mesh::shape::cylinder::Cylinder;
+
+fn main() -&gt; TessResult&lt;()&gt; {
+    let cylinder = Cylinder::default();
+    
+    let kd_tree = &amp;cylinder.query().try_kd_tree(None)?;
+    let sskd_tree = &amp;cylinder.query().try_sskd_tree(None, None)?;
+    let octree = &amp;cylinder.query().try_octree(None)?;
+    let bsp_tree = &amp;cylinder.query().try_bsp_tree(None)?;
+    
+    let poly_centers = &amp;cylinder.query().extract_poly_centers()?;
+    let edge_centers = &amp;cylinder.query().extract_edge_centers()?;
+    let manifold_edges = &amp;cylinder.query().extract_manifold_edges()?;
+    
+}</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="import"><a class="header" href="#import">Import</a></h1>
+<p>The <code>import</code> module provides functions to read mesh data from files. The supported file formats are:</p>
+<ul>
+<li><a href="./stl.html">STL</a></li>
+<li><a href="./ply.html">PLY</a></li>
+<li><a href="./obj.html">OBJ</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="import-stl-files"><a class="header" href="#import-stl-files">Import STL files</a></h1>
+<p>The format of the <a href="https://en.wikipedia.org/wiki/STL_(file_format)">STL</a> file.</p>
+<pre><pre class="playground"><code class="language-rust">
+fn main() -&gt; TessResult&lt;()&gt; {
+    let building = files::stl::import_stl("examples/import_models/at_t_building.stl")?;
+    Ok(())
+}
+
+
+</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="import-ply-files"><a class="header" href="#import-ply-files">Import PLY files</a></h1>
+<p>The <a href="https://en.wikipedia.org/wiki/PLY_(file_format)">PLY</a> file format.</p>
+<pre><pre class="playground"><code class="language-rust">
+fn main() -&gt; TessResult&lt;()&gt; {
+    let building = files::ply::import_ply("examples/import_models/ply/ply_ascii.ply")?;
+    Ok(())
+}
+</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="import-obj-files"><a class="header" href="#import-obj-files">Import OBJ files</a></h1>
+<p>The <a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file">OBJ</a> file format.</p>
+<pre><pre class="playground"><code class="language-rust">use tessellate::files::obj::import_objs;
+fn main() -&gt; TessResult&lt;()&gt; {
+    let options = tobj::LoadOptions::default();
+    let meshes = import_objs("path/to/your.obj", &amp;options)?;
+    Ok(())
+}</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="boolean-operations"><a class="header" href="#boolean-operations">Boolean Operations</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="extract-cell-centers"><a class="header" href="#extract-cell-centers">Extract Cell Centers</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="clipping-with-a-surface-plane-and-boxes"><a class="header" href="#clipping-with-a-surface-plane-and-boxes">Clipping with a Surface, plane and boxes</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="collision-detection"><a class="header" href="#collision-detection">Collision Detection</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="volumetric-analysis"><a class="header" href="#volumetric-analysis">Volumetric Analysis</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="find-and-label-connected-regions"><a class="header" href="#find-and-label-connected-regions">Find and label connected regions</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="decimate-a-mesh"><a class="header" href="#decimate-a-mesh">Decimate a mesh</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="extract-edges"><a class="header" href="#extract-edges">Extract Edges</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="extract-surface"><a class="header" href="#extract-surface">Extract Surface</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="gaussian-smoothing"><a class="header" href="#gaussian-smoothing">Gaussian Smoothing</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="geodesic-paths"><a class="header" href="#geodesic-paths">Geodesic Paths</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="interpolating"><a class="header" href="#interpolating">Interpolating</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="computing-mesh-quality"><a class="header" href="#computing-mesh-quality">Computing Mesh Quality</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="resampling"><a class="header" href="#resampling">Resampling</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="surface-smoothing"><a class="header" href="#surface-smoothing">Surface Smoothing</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="surface-reconstruction"><a class="header" href="#surface-reconstruction">Surface Reconstruction</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="voxelize-a-surface-mesh"><a class="header" href="#voxelize-a-surface-mesh">Voxelize a Surface Mesh</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="subdivide-cells"><a class="header" href="#subdivide-cells">Subdivide Cells</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="geometric-quantities"><a class="header" href="#geometric-quantities">Geometric quantities</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="laplacian-smoothing"><a class="header" href="#laplacian-smoothing">Laplacian smoothing</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="curvature"><a class="header" href="#curvature">Curvature</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="gradient"><a class="header" href="#gradient">Gradient</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="ray-tracing"><a class="header" href="#ray-tracing">Ray tracing</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="ray-casting"><a class="header" href="#ray-casting">Ray Casting</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="ray-tracing-1"><a class="header" href="#ray-tracing-1">Ray tracing</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="tesselate"><a class="header" href="#tesselate">Tesselate</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-1"><a class="header" href="#contributing-1">Contributing</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><p>MIT License</p>
 <p>Copyright (c) [2024] [Boris Zhguchev]</p>

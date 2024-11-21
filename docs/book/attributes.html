@@ -152,7 +152,38 @@
 
                 <div id="content" class="content">
                     <main>
-                        
+                        <h1 id="attributes"><a class="header" href="#attributes">Attributes</a></h1>
+<p>The attributes that can be set up on the mesh and provided to use for visualization or other purposes.</p>
+<h2 id="meshtype"><a class="header" href="#meshtype">MeshType</a></h2>
+<p>The type of mesh that can be created. The following types are available:</p>
+<ul>
+<li>Polygons: A mesh that is made up of polygons.</li>
+<li>Lines: A mesh that is made up of lines.</li>
+<li>Cloud: A mesh that is made up of points.</li>
+</ul>
+<h2 id="material"><a class="header" href="#material">Material</a></h2>
+<p>The material for the mesh that affects how it will interact with the light.
+The following properties can be set:</p>
+<ul>
+<li>Ambient: The ambient color of the material.</li>
+<li>Diffuse: The diffuse color of the material.</li>
+<li>Specular: The specular color of the material.</li>
+<li>Shininess: The shininess of the material.</li>
+</ul>
+<h2 id="color"><a class="header" href="#color">Color</a></h2>
+<p>The color of the mesh.
+The color can be set as a single color or as a gradient.
+The color is set up as a tuple of 4 values (r, g, b, a)
+where r, g, b are the red, green, blue values and a is the alpha value.</p>
+<p>Can be set up for the following parts of the mesh:</p>
+<ul>
+<li>Vertex: A color assigned to each vertex.</li>
+<li>Face: A color assigned to each face.</li>
+<li>Line: A color assigned to each line.</li>
+<li>Mesh: A single color for the entire mesh.</li>
+<li>Func: A function that assigns a color a vertex with some logic.</li>
+</ul>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

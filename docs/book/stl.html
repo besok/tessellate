@@ -152,7 +152,17 @@
 
                 <div id="content" class="content">
                     <main>
-                        
+                        <h1 id="import-stl-files"><a class="header" href="#import-stl-files">Import STL files</a></h1>
+<p>The format of the <a href="https://en.wikipedia.org/wiki/STL_(file_format)">STL</a> file.</p>
+<pre><pre class="playground"><code class="language-rust">
+fn main() -&gt; TessResult&lt;()&gt; {
+    let building = files::stl::import_stl("examples/import_models/at_t_building.stl")?;
+    Ok(())
+}
+
+
+</code></pre></pre>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

@@ -161,11 +161,10 @@ The <code>Mesh</code> struct provides various methods for creating, manipulating
 <li><strong>vertices</strong>: A vector of vertices in the mesh.</li>
 <li><strong>edges</strong>: A vector of edges in the mesh.</li>
 <li><strong>faces</strong>: A vector of faces in the mesh.</li>
-<li><strong>color</strong>: The color of the mesh.</li>
 <li><strong>attributes</strong>: Additional attributes associated with the mesh.</li>
 </ul>
 <h2 id="example-of-creating-a-mesh"><a class="header" href="#example-of-creating-a-mesh">Example of creating a mesh</a></h2>
-<pre><pre class="playground"><code class="language-rust">use tessellate::mesh::material::Color;
+<pre><pre class="playground"><code class="language-rust">use tessellate::mesh::attributes::Attributes;
 use tessellate::mesh::parts::polygon::Polygon;
 use tessellate::mesh::parts::vertex::Vertex;
 use tessellate::mesh::Mesh;
@@ -177,16 +176,26 @@ fn main() {
         Vertex::new(1.0, 1.0, 0.0),
         Vertex::new(0.0, 1.0, 0.0),
     ];
- 
     let faces = vec![
-        Face::Triangle(0, 1, 2),
-        Face::Triangle(0, 2, 3),
+        Face::from((0, 1, 2)),
+        Face::from((0, 2, 3)),
+        Face::from((0, 3, 1)),
     ];
  
-    let mesh = Mesh::from_vertices(vertices, faces, Color::default());
+    let mesh = Mesh::from_vertices(vertices, faces, Attributes::default());
 
     // Print the mesh details
     println!("{:?}", mesh);
+}</code></pre></pre>
+<p>or like that</p>
+<pre><pre class="playground"><code class="language-rust">fn main() {
+    let mesh = Mesh::from_polygons(
+        vec![
+            poly!(-2.5, -2.5, 0.0; 2.5, -2.5, 0.0; 0.0, 0.0, 5.0),
+            poly!(2.5, -2.5, 0.0; 2.5, 2.5, 0.0; 0.0, 0.0, 5.0),
+        ],
+        Attributes::default(),
+    );
 }</code></pre></pre>
 
                     </main>

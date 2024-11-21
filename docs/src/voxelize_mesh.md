@@ -1,1 +1,0 @@
-# Voxelize a Surface Mesh

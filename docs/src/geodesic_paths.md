@@ -1,1 +1,0 @@
-# Geodesic Paths

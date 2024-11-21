@@ -1,1 +1,0 @@
-# Triangulated Surface

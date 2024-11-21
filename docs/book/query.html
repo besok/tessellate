@@ -152,7 +152,28 @@
 
                 <div id="content" class="content">
                     <main>
-                        
+                        <h1 id="query"><a class="header" href="#query">Query</a></h1>
+<p>A set of queries that can be performed on a mesh.
+It helps to analyze the mesh and extract useful information.
+It uses auxiliary structures like <code>KDTree</code> and <code>BSP Tree</code> to perform the queries.</p>
+<h2 id="example"><a class="header" href="#example">Example</a></h2>
+<pre><pre class="playground"><code class="language-rust">use std::process::Termination;
+use crate::tessellate::mesh::shape::cylinder::Cylinder;
+
+fn main() -&gt; TessResult&lt;()&gt; {
+    let cylinder = Cylinder::default();
+    
+    let kd_tree = &amp;cylinder.query().try_kd_tree(None)?;
+    let sskd_tree = &amp;cylinder.query().try_sskd_tree(None, None)?;
+    let octree = &amp;cylinder.query().try_octree(None)?;
+    let bsp_tree = &amp;cylinder.query().try_bsp_tree(None)?;
+    
+    let poly_centers = &amp;cylinder.query().extract_poly_centers()?;
+    let edge_centers = &amp;cylinder.query().extract_edge_centers()?;
+    let manifold_edges = &amp;cylinder.query().extract_manifold_edges()?;
+    
+}</code></pre></pre>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
@@ -161,7 +182,7 @@
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="statistics.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="import.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -175,7 +196,7 @@
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="statistics.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="import.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

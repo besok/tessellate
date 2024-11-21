@@ -152,7 +152,22 @@
 
                 <div id="content" class="content">
                     <main>
-                        
+                        <h1 id="properties"><a class="header" href="#properties">Properties</a></h1>
+<p>A set of properties that can be analyzed from a mesh.</p>
+<h2 id="example"><a class="header" href="#example">Example</a></h2>
+<pre><pre class="playground"><code class="language-rust">use crate::tessellate::mesh::shape::pyramid::Pyramid;
+use crate::tessellate::mesh::{Mesh, properties::MeshProperties};
+use crate::tessellate::mesh::parts::vertex::Vertex;
+use crate::tessellate::mesh::parts::face::Face;
+
+fn main(){
+    let pyramid = Pyramid::default();
+    
+    assert!(&amp;pyramid.props().is_manifold());
+    assert!(&amp;pyramid.props().is_watertight());
+    assert!(&amp;pyramid.props().isolated_vertices().is_empty());
+}</code></pre></pre>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

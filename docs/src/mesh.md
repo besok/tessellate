@@ -27,15 +27,28 @@ fn main() {
         Vertex::new(1.0, 1.0, 0.0),
         Vertex::new(0.0, 1.0, 0.0),
     ];
- 
     let faces = vec![
-        Face::Triangle(0, 1, 2),
-        Face::Triangle(0, 2, 3),
+        Face::from((0, 1, 2)),
+        Face::from((0, 2, 3)),
+        Face::from((0, 3, 1)),
     ];
  
     let mesh = Mesh::from_vertices(vertices, faces, Attributes::default());
 
     // Print the mesh details
     println!("{:?}", mesh);
+}
+```
+
+or like that 
+```rust
+fn main() {
+    let mesh = Mesh::from_polygons(
+        vec![
+            poly!(-2.5, -2.5, 0.0; 2.5, -2.5, 0.0; 0.0, 0.0, 5.0),
+            poly!(2.5, -2.5, 0.0; 2.5, 2.5, 0.0; 0.0, 0.0, 5.0),
+        ],
+        Attributes::default(),
+    );
 }
 ```
