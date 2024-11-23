@@ -421,6 +421,8 @@ fn main() -&gt; TessResult&lt;()&gt; {
 <li><a href="./ply.html">PLY</a></li>
 <li><a href="./obj.html">OBJ</a></li>
 </ul>
+<p>Usage example can be found in
+<a href="https://github.com/besok/tessellate/tree/main/examples/import_models" target="_blank">repository</a></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="import-stl-files"><a class="header" href="#import-stl-files">Import STL files</a></h1>
 <p>The format of the <a href="https://en.wikipedia.org/wiki/STL_(file_format)">STL</a> file.</p>
 <pre><pre class="playground"><code class="language-rust">
@@ -447,10 +449,234 @@ fn main() -&gt; TessResult&lt;()&gt; {
     let meshes = import_objs("path/to/your.obj", &amp;options)?;
     Ok(())
 }</code></pre></pre>
-<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="boolean-operations"><a class="header" href="#boolean-operations">Boolean Operations</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="visualization"><a class="header" href="#visualization">Visualization</a></h1>
+<p>The library uses wgpu, egui, winit for visualization.</p>
+<h2 id="example-2"><a class="header" href="#example-2">Example</a></h2>
+<pre><pre class="playground"><code class="language-rust">
+use env_logger::Builder;
+use glam::{Mat4, Vec3};
+use log::{info, LevelFilter};
+use tessellate::gpu::options::{CameraOptions, GpuOptions, LightOptions};
+use tessellate::mesh::material::{Color, RgbaColor};
+use tessellate::mesh::transform::Transform;
+use tessellate::mesh::{HasMesh, Mesh, MeshError};
+use tessellate::{files, gpu, TessError, TessResult};
+use tobj::LoadOptions;
+
+fn main() -&gt; TessResult&lt;()&gt; {
+    let path = "examples/import_models/cow.obj";
+    let mut cow = files::obj::import_obj(path, &amp;LoadOptions::default())?;
+    let meshes = vec![cow];
+    let options = GpuOptions::default();
+    Ok(gpu::visualize(meshes, options)?)
+}
+
+</code></pre></pre>
+<p><img src="../assets/cow.png" alt="Visualization Example" /></p>
+<h2 id="components"><a class="header" href="#components">Components</a></h2>
+<h3 id="camera"><a class="header" href="#camera">Camera</a></h3>
+<p>The visualization gives the option to rotate,shift, scale the scene. The manipulations are performed
+around the center of the scene where the center is the centroid of the bounding box of the scene.
+The initial position for the camera is set from the configurations.</p>
+<h3 id="light"><a class="header" href="#light">Light</a></h3>
+<p>The light affects the surfaces for the objects in the scene. The light is set from the configurations.
+Every mesh has a set of light properties that can be set.</p>
+<h3 id="axes"><a class="header" href="#axes">Axes</a></h3>
+<p>The axes are drawn in the scene to give a sense of direction. The axes are drawn on the corner
+of the bounding box of the scene.</p>
+<h3 id="ui"><a class="header" href="#ui">UI</a></h3>
+<p>The UI is used to control the camera and light properties. The UI is drawn using egui.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="gnu-options"><a class="header" href="#gnu-options">Gnu Options</a></h1>
+<p>The options module provides the following options for the visualization</p>
+<h2 id="camera-options"><a class="header" href="#camera-options">Camera options</a></h2>
+<h3 id="camera-position"><a class="header" href="#camera-position">Camera position</a></h3>
+<p>The initial positions for the camera. The position is a vector in the space. The default value is [0, 3, 3].</p>
+<h3 id="camera-fovy"><a class="header" href="#camera-fovy">Camera fovy</a></h3>
+<p>The field of view of the camera. The default value is 45. That means that the camera has a 45 degrees field of view.</p>
+<h3 id="camera-znear"><a class="header" href="#camera-znear">Camera znear</a></h3>
+<p>The near clipping plane of the camera. The default value is 0.1.
+It is the distance from the camera to the near clipping plane.</p>
+<h3 id="camera-zfar"><a class="header" href="#camera-zfar">Camera zfar</a></h3>
+<p>The far clipping plane of the camera. The default value is 1000.
+It is the distance from the camera to the far clipping plane.</p>
+<h3 id="camera-speed-and-sensitivity"><a class="header" href="#camera-speed-and-sensitivity">Camera speed and sensitivity</a></h3>
+<p>The speed and sensitivity of the camera. The default value is 0.1.
+It is the speed of the camera when moving and the sensitivity of the camera when rotating.</p>
+<h2 id="light-options"><a class="header" href="#light-options">Light options</a></h2>
+<h3 id="light-position"><a class="header" href="#light-position">Light position</a></h3>
+<p>The initial positions for the light. The position is a vector in the space. The default value is [0, 3, 3].</p>
+<h3 id="light-ambient"><a class="header" href="#light-ambient">Light ambient</a></h3>
+<p>Light ambient color. The ambient affects all objects in the scene equally.
+This helps to ensure that no part of the scene is completely dark,
+even if it is not directly illuminated by a light source.
+The default value is [0.4, 0.4, 0.4].</p>
+<h3 id="light-diffuse"><a class="header" href="#light-diffuse">Light diffuse</a></h3>
+<p>Light diffuse color. The diffuse color is the color of the light that is reflected off a surface.
+The default value is [0.8, 0.8, 0.8].</p>
+<h3 id="light-specular"><a class="header" href="#light-specular">Light specular</a></h3>
+<p>Light specular color. The specular color is the color of the light that is reflected off a surface.
+The default value is [0.8, 0.8, 0.8].</p>
+<h3 id="show-light-source"><a class="header" href="#show-light-source">Show light source</a></h3>
+<p>Show the light source in the scene. The default value is false.</p>
+<h3 id="how-to-affect-intensity-of-the-light"><a class="header" href="#how-to-affect-intensity-of-the-light">How to affect intensity of the light</a></h3>
+<p>The intensity of the light is calculated as the sum of the ambient, diffuse, and specular colors.
+To get higher intensity, you can increase the values of the colors.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="controls"><a class="header" href="#controls">Controls</a></h1>
+<p>By default, there are several controls that are available to the user.
+These controls are used to manipulate the camera.</p>
+<h2 id="camera-controls-by-mouse"><a class="header" href="#camera-controls-by-mouse">Camera controls by mouse</a></h2>
+<p>With left mouse button, you can rotate the camera around the object.
+With right mouse button, you can shift the camera in the plane perpendicular to the view direction.
+With middle mouse button, you can zoom in and out.</p>
+<h2 id="ui-controls"><a class="header" href="#ui-controls">UI controls</a></h2>
+<p>The UI controls are displayed on the left side of the screen.
+<img src="./assets/controls.png" alt="Controls" /></p>
+<p>with the UI controls, you can:</p>
+<ul>
+<li>Rotate the camera around the object</li>
+<li>Shift the camera in the plane perpendicular to the view direction</li>
+<li>Zoom in and out</li>
+<li>(X,Y,Z) +- set the camera position to 0 in the space according to the axis and button pressed</li>
+<li>Reset the camera position to the initial position</li>
+<li>Set all axes to 0</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="mesh-manipulation"><a class="header" href="#mesh-manipulation">Mesh Manipulation</a></h1>
+<p>This section covers the various techniques and operations for manipulating 3D meshes.
+It includes methods for creating basic geometries, performing mesh filtering,
+and applying advanced manipulation techniques.
+The goal is to provide a comprehensive guide for developers and researchers
+to modify and analyze mesh structures effectively.</p>
+<h2 id="topics-covered"><a class="header" href="#topics-covered">Topics Covered</a></h2>
+<ul>
+<li><strong>Basic Geometries</strong>: Introduction to creating fundamental geometric shapes.</li>
+<li><strong>Parametric Geometric Objects</strong>: Techniques for generating shapes based on parametric equations.</li>
+<li><strong>Explicit Structured Grid</strong>: Methods for defining and manipulating structured grids.</li>
+<li><strong>Structured Surface</strong>: Techniques for creating and modifying structured surfaces.</li>
+<li><strong>Triangulated Surface</strong>: Working with surfaces composed of triangles.</li>
+<li><strong>Platonic Solids</strong>: Creating and manipulating regular, convex polyhedra.</li>
+<li><strong>Point Cloud</strong>: Handling and processing collections of points in 3D space.</li>
+</ul>
+<h2 id="mesh-filtering-techniques"><a class="header" href="#mesh-filtering-techniques">Mesh Filtering Techniques</a></h2>
+<ul>
+<li><strong>Boolean Operations</strong>: Performing union, intersection, and difference operations on meshes.</li>
+<li><strong>Extract Cell Centers</strong>: Identifying and extracting the centers of mesh cells.</li>
+<li><strong>Clipping with a Surface, Plane, and Boxes</strong>: Techniques for clipping meshes using various shapes.</li>
+<li><strong>Collision Detection</strong>: Methods for detecting collisions between meshes.</li>
+<li><strong>Volumetric Analysis</strong>: Analyzing the volume and other properties of meshes.</li>
+<li><strong>Find and Label Connected Regions</strong>: Identifying and labeling connected components in a mesh.</li>
+<li><strong>Decimate a Mesh</strong>: Reducing the number of vertices and faces in a mesh.</li>
+<li><strong>Extract Edges</strong>: Extracting the edges from a mesh.</li>
+<li><strong>Extract Surface</strong>: Techniques for extracting the surface of a mesh.</li>
+<li><strong>Gaussian Smoothing</strong>: Applying Gaussian smoothing to a mesh.</li>
+<li><strong>Geodesic Paths</strong>: Calculating geodesic paths on a mesh.</li>
+<li><strong>Interpolating</strong>: Interpolating values across a mesh.</li>
+<li><strong>Computing Mesh Quality</strong>: Evaluating the quality of a mesh.</li>
+<li><strong>Resampling</strong>: Resampling a mesh to a different resolution.</li>
+<li><strong>Surface Smoothing</strong>: Techniques for smoothing the surface of a mesh.</li>
+<li><strong>Surface Reconstruction</strong>: Reconstructing surfaces from point clouds or other data.</li>
+<li><strong>Voxelize a Surface Mesh</strong>: Converting a surface mesh into a voxel representation.</li>
+<li><strong>Subdivide Cells</strong>: Subdividing the cells of a mesh for finer detail.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="basic-shapes"><a class="header" href="#basic-shapes">Basic shapes</a></h1>
+<p>This section covers the creation of basic geometric shapes using <code>tesselate</code>.</p>
+<p><img src="../assets/bshapes.png" alt="Example" /></p>
+<p>The running example can be found
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/basic_shapes" target="_blank">repository</a></p>
+<h2 id="shapes"><a class="header" href="#shapes">Shapes</a></h2>
+<ul>
+<li>cuboid
+<ul>
+<li>cube</li>
+<li>rectangle cuboid</li>
+</ul>
+</li>
+<li>beam</li>
+<li>cylinder</li>
+<li>cone</li>
+<li>grid</li>
+<li>icosahedron</li>
+<li>plane</li>
+<li>pyramid</li>
+<li>ring</li>
+<li>sphere</li>
+<li>torus</li>
+</ul>
+<p>All shapes are created using the <code>tesselate</code> module.
+The module provides a set of functions to create the shapes.
+All shapes have  default method and <code>create</code> method.</p>
+<h3 id="example-3"><a class="header" href="#example-3">Example</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use glam::{Mat4, Quat, Vec3};
+use tessellate::mesh::shape::pyramid::Pyramid;
+use tessellate::mesh::shape::sphere::Sphere;
+
+fn pyramid() -&gt; Result&lt;Pyramid, TessError&gt; {
+    let mut pyramid = Pyramid::default();
+    pyramid.transform(Mat4::from_rotation_translation(
+        Quat::from_rotation_x(0.0),
+        Vec3::new(0.0, 1.0, -3.0),
+    ))?;
+    Ok(pyramid)
+}
+
+fn green_sphere() -&gt; TessResult&lt;Sphere&gt; {
+    Ok(Sphere::create_ico(Vertex::default(), 1.0, 3, RgbaColor::GREEN.into()))
+}
+
+<span class="boring">}</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="parametric-geometric-objects"><a class="header" href="#parametric-geometric-objects">Parametric Geometric Objects</a></h1>
+<p>Parametric geometric objects are a set of predefined geometric objects
+that can be generated by specifying a set of parameters.
+These objects are useful for generating simple geometric shapes that can be used for testing,
+visualization, and other purposes.</p>
+<p><img src="../assets/pshapes.png" alt="Example" /></p>
+<p>The running example can be found
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/parametric_shapes" target="_blank">repository</a></p>
+<p>The following parametric geometric objects are available in <code>tesselate</code>:</p>
+<ul>
+<li><a href="https://mathworld.wolfram.com/BohemianDome.html">Bohemian dome</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Bour%27s_minimal_surface">Bour</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Boy%27s_surface">Boy</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Conic_spiral">Conic spiral</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Dini%27s_surface">Dini surface</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Ellipsoid">Ellipsoid</a></li>
+<li><a href="https://en.wikipedia.org/wiki/M%C3%B6bius_strip">Mobius strip</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Pseudosphere">Pseudosphere</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Superellipsoid">Superellipsoid</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Supertoroid">Supertoroid</a></li>
+</ul>
+<p>All shapes are created using the <code>tesselate</code> module.
+The module provides a set of functions to create the shapes.
+All shapes have  default method and <code>create</code> method.</p>
+<h3 id="example-4"><a class="header" href="#example-4">Example</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use glam::Vec3;
+use tessellate::mesh::shape::parametric::*;
+use tessellate::mesh::material::Color;
+fn mobius_strip() -&gt; MobiusStrip {
+    MobiusStrip::default()
+}
+fn super_ellipsoid() -&gt; SuperEllipsoid {
+    SuperEllipsoid::create(
+        Vec3::new(3.0, 3.0, 2.0), 
+        50, 
+        1.0, 
+        1.0, 
+        2.0, 
+        4.0, 
+        5.0, 
+        Color::default())
+}
+fn pseudo_sphere() -&gt; Pseudosphere {
+    Pseudosphere::default()
+}
+
+<span class="boring">}</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="boolean-operations"><a class="header" href="#boolean-operations">Boolean Operations</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="extract-cell-centers"><a class="header" href="#extract-cell-centers">Extract Cell Centers</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="extract-edges"><a class="header" href="#extract-edges">Extract Edges</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="resampling"><a class="header" href="#resampling">Resampling</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-1"><a class="header" href="#contributing-1">Contributing</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><p>MIT License</p>
 <p>Copyright (c) [2024] [Boris Zhguchev]</p>

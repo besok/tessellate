@@ -152,7 +152,42 @@
 
                 <div id="content" class="content">
                     <main>
-                        
+                        <h1 id="gnu-options"><a class="header" href="#gnu-options">Gnu Options</a></h1>
+<p>The options module provides the following options for the visualization</p>
+<h2 id="camera-options"><a class="header" href="#camera-options">Camera options</a></h2>
+<h3 id="camera-position"><a class="header" href="#camera-position">Camera position</a></h3>
+<p>The initial positions for the camera. The position is a vector in the space. The default value is [0, 3, 3].</p>
+<h3 id="camera-fovy"><a class="header" href="#camera-fovy">Camera fovy</a></h3>
+<p>The field of view of the camera. The default value is 45. That means that the camera has a 45 degrees field of view.</p>
+<h3 id="camera-znear"><a class="header" href="#camera-znear">Camera znear</a></h3>
+<p>The near clipping plane of the camera. The default value is 0.1.
+It is the distance from the camera to the near clipping plane.</p>
+<h3 id="camera-zfar"><a class="header" href="#camera-zfar">Camera zfar</a></h3>
+<p>The far clipping plane of the camera. The default value is 1000.
+It is the distance from the camera to the far clipping plane.</p>
+<h3 id="camera-speed-and-sensitivity"><a class="header" href="#camera-speed-and-sensitivity">Camera speed and sensitivity</a></h3>
+<p>The speed and sensitivity of the camera. The default value is 0.1.
+It is the speed of the camera when moving and the sensitivity of the camera when rotating.</p>
+<h2 id="light-options"><a class="header" href="#light-options">Light options</a></h2>
+<h3 id="light-position"><a class="header" href="#light-position">Light position</a></h3>
+<p>The initial positions for the light. The position is a vector in the space. The default value is [0, 3, 3].</p>
+<h3 id="light-ambient"><a class="header" href="#light-ambient">Light ambient</a></h3>
+<p>Light ambient color. The ambient affects all objects in the scene equally.
+This helps to ensure that no part of the scene is completely dark,
+even if it is not directly illuminated by a light source.
+The default value is [0.4, 0.4, 0.4].</p>
+<h3 id="light-diffuse"><a class="header" href="#light-diffuse">Light diffuse</a></h3>
+<p>Light diffuse color. The diffuse color is the color of the light that is reflected off a surface.
+The default value is [0.8, 0.8, 0.8].</p>
+<h3 id="light-specular"><a class="header" href="#light-specular">Light specular</a></h3>
+<p>Light specular color. The specular color is the color of the light that is reflected off a surface.
+The default value is [0.8, 0.8, 0.8].</p>
+<h3 id="show-light-source"><a class="header" href="#show-light-source">Show light source</a></h3>
+<p>Show the light source in the scene. The default value is false.</p>
+<h3 id="how-to-affect-intensity-of-the-light"><a class="header" href="#how-to-affect-intensity-of-the-light">How to affect intensity of the light</a></h3>
+<p>The intensity of the light is calculated as the sum of the ambient, diffuse, and specular colors.
+To get higher intensity, you can increase the values of the colors.</p>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
@@ -161,7 +196,7 @@
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="mesh_manipul.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="controls.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -175,7 +210,7 @@
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="mesh_manipul.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="controls.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
