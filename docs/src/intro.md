@@ -2,7 +2,7 @@
 
 # Tessellate
 
-<img src="logo.jpeg" alt="Tessellate Logo" width="128"/>
+<img src="assets/logo.jpeg" alt="Tessellate Logo" width="128"/>
 
 ### 3D Scientific Data Visualization and Plotting Tool for Rust
 

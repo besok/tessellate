@@ -10,7 +10,7 @@ With middle mouse button, you can zoom in and out.
 
 ## UI controls
 The UI controls are displayed on the left side of the screen.
-![Controls](controls.png)
+![Controls](assets/controls.png)
 
 with the UI controls, you can:
 - Rotate the camera around the object 
