@@ -1,6 +1,6 @@
 use crate::mesh::material::RgbaColor;
 use glam::Vec3;
-
+/// GpuOptions holds the configuration for the GPU, including camera and light options.
 #[derive(Debug, Clone, Default)]
 pub struct GpuOptions {
     light_opts: LightOptions,

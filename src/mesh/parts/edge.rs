@@ -1,6 +1,6 @@
 use std::hash::Hash;
 use crate::mesh::parts::vertex::Vertex;
-use crate::mesh::{MeshError, MeshResult};
+use crate::mesh::{MeshResult};
 use glam::Vec3;
 
 /// Mesh edge

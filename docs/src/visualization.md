@@ -27,7 +27,7 @@ fn main() -> TessResult<()> {
 
 ```
 
-![Visualization Example](../assets/cow.png) 
+![Visualization Example](assets/cow.png) 
 
 
 ## Components

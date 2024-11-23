@@ -3,6 +3,22 @@ use crate::mesh::parts::vertex::Vertex;
 use crate::mesh::{Mesh, MeshResult};
 use std::collections::{HashMap, HashSet};
 
+/// This struct provides various methods to analyze and query the properties
+/// of a mesh, such as checking if it is manifold, watertight, or solid.
+///
+/// # Examples
+///
+/// ```
+/// use crate::tessellate::mesh::shape::pyramid::Pyramid;
+/// use crate::tessellate::mesh::{Mesh, properties::MeshProperties};
+/// use crate::tessellate::mesh::parts::vertex::Vertex;
+/// use crate::tessellate::mesh::parts::face::Face;
+///
+/// let pyramid = Pyramid::default();
+///
+/// assert!(&pyramid.props().is_manifold());
+/// assert!(&pyramid.props().is_watertight());
+/// ```
 pub struct MeshProperties<'a> {
     mesh: &'a Mesh,
 }

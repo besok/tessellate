@@ -25,8 +25,7 @@ use crate::mesh::parts::vertex::Vertex;
 ///
 /// # Examples
 ///
-/// ```rust
-///
+/// ```no_run
 /// use tessellate::files::obj::import_objs;
 /// let options = tobj::LoadOptions::default();
 /// let meshes = import_objs("path/to/your.obj", &options)?;

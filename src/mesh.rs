@@ -19,7 +19,7 @@ pub mod bool;
 pub mod material;
 pub mod normals;
 pub mod parts;
-mod properties;
+pub mod properties;
 pub mod query;
 pub mod shape;
 pub mod tables;

@@ -1,6 +1,7 @@
 use crate::mesh::material::{Color, Material, RgbaColor};
 use std::hash::Hash;
 
+/// Represents the attributes of a mesh.
 #[derive(Debug, Clone)]
 pub struct Attributes {
     mesh_type: MeshType,

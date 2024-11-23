@@ -21,14 +21,48 @@ impl From<&Face> for Vec<MeshEdge> {
         }
     }
 }
-
+/// Represents a polygonal surface in a mesh, typically defined by three or more vertices.
+///
+/// # Examples
+///
+/// ```
+///
+/// // Creating a triangle face using new3 method
+/// use tessellate::mesh::parts::face::Face;
+/// let triangle = Face::new3(0, 1, 2);
+///
+/// // Creating a quad face using new4 method
+/// let quad = Face::new4(0, 1, 2, 3);
+///
+/// // Creating faces from a vector of elements
+/// let faces = Face::new(vec![0, 1, 2, 3, 4, 5, 6]).unwrap();
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Face {
     Triangle(Idx, Idx, Idx),
     Quad(Idx, Idx, Idx, Idx),
 }
 
+
 impl Face {
+    /// Represents a polygonal surface in a mesh, typically defined by three or more vertices.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Creating a triangle face using new3 method
+    /// use tessellate::mesh::parts::face::Face;
+    /// let triangle = Face::new3(0, 1, 2);
+    ///
+    /// // Creating a quad face using new4 method
+    /// let quad = Face::new4(0, 1, 2, 3);
+    ///
+    /// // Creating faces from a vector of elements
+    /// let faces = Face::new(vec![0, 1, 2, 3, 4, 5, 6]).unwrap();
+    /// ```
+    ///
+    /// # Note
+    /// When the number of elements is more than 4, the method will attempt to triangulate the face.
     pub fn new<T, E>(elems: Vec<T>) -> MeshResult<Vec<Self>>
     where
         T: TryInto<Idx, Error = E> + Copy,

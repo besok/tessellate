@@ -22,6 +22,28 @@ async fn run(meshes: Vec<Mesh>, options: GpuOptions) -> Result<(), GpuError> {
     Ok(event_loop.run_app(&mut GpuProcessor::new(meshes, camera_pos, options))?)
 }
 
+/// Visualizes the given meshes using the specified GPU options.
+///
+/// This function blocks the current thread until the visualization is complete.
+///
+/// # Arguments
+///
+/// * `meshes` - A vector of `Mesh` objects to be visualized.
+/// * `options` - `GpuOptions` containing the configuration for the GPU.
+///
+/// # Returns
+///
+/// * `Result<(), GpuError>` - Returns `Ok(())` if successful, or a `GpuError` if an error occurs.
+///
+/// # Examples
+///
+/// ```no_run
+/// use tessellate::gpu::options::GpuOptions;
+/// use tessellate::gpu::visualize;
+/// let meshes = vec![/* ... */];
+/// let options = GpuOptions::default();
+/// visualize(meshes, options)?;
+/// ```
 pub fn visualize(meshes: Vec<Mesh>, options: GpuOptions) -> Result<(), GpuError> {
     pollster::block_on(run(meshes, options))
 }

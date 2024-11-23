@@ -44,7 +44,24 @@ impl TryFrom<Polygon> for Triangle {
         }
     }
 }
-
+/// Represents a polygonal surface in a mesh, typically defined by three or more vertices.
+///
+/// # Examples
+///
+/// ```
+/// use tessellate::mesh::parts::polygon::Polygon;
+/// use tessellate::mesh::parts::vertex::Vertex;
+///
+/// // Creating a polygon with three vertices
+/// let v0 = Vertex::new(0.0, 0.0, 0.0);
+/// let v1 = Vertex::new(1.0, 0.0, 0.0);
+/// let v2 = Vertex::new(0.0, 1.0, 0.0);
+/// let triangle = Polygon::new(vec![v0, v1, v2]);
+///
+/// // Creating a polygon with four vertices
+/// let v3 = Vertex::new(1.0, 1.0, 0.0);
+/// let quad:Polygon = vec![v0, v1, v2, v3].into();
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Polygon {
     vertices: Vec<Vertex>,

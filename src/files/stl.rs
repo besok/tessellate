@@ -3,7 +3,6 @@ use stl_io::IndexedTriangle;
 
 use crate::files::FileError;
 use crate::mesh::attributes::Attributes;
-use crate::mesh::material::Color;
 use crate::mesh::Mesh;
 use crate::mesh::parts::face::Face;
 use crate::mesh::parts::vertex::Vertex;

@@ -6,7 +6,24 @@ use crate::mesh::normals::calculate_normal;
 use crate::mesh::parts::face::Face;
 use crate::mesh::parts::polygon::Polygon;
 use crate::mesh::parts::vertex::Vertex;
-
+/// A `Plane` is a flat, two-dimensional surface that extends infinitely in 3D space.
+///
+/// # Examples
+///
+/// ```
+/// use glam::Vec3;
+/// use tessellate::mesh::attributes::Attributes;
+/// use tessellate::mesh::parts::plane::Plane;
+///
+/// // Create a plane from a normal vector and a point
+/// let normal = Vec3::new(0.0, 1.0, 0.0);
+/// let point = Vec3::new(0.0, 0.0, 0.0);
+/// let plane = Plane::new(normal, point);
+///
+/// // Calculate the distance from a point to the plane
+/// let distance = plane.distance(Vec3::new(0.0, 2.0, 0.0));
+/// assert_eq!(distance, 2.0);
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Plane {
     normal: Vec3,

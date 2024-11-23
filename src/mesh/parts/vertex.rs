@@ -60,6 +60,18 @@ impl Vertex2 {
     }
 }
 
+/// Represents a point in 3D space with x, y, and z coordinates.
+///
+/// # Examples
+///
+/// ```
+/// use tessellate::v;
+///
+/// let vertex = v!(1.0, 2.0, 3.0);
+/// assert_eq!(vertex.x, 1.0);
+/// assert_eq!(vertex.y, 2.0);
+/// assert_eq!(vertex.z, 3.0);
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct Vertex {
     pub(crate) x: f32,

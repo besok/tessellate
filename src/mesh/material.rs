@@ -2,11 +2,16 @@ use crate::mesh::parts::vertex::Vertex;
 use glam::Vec3;
 use rand::Rng;
 
+/// Represents the material properties of a mesh, which affect how it interacts with light.
 #[derive(Clone, Debug)]
 pub struct Material {
+    /// The ambient color of the material.
     ambient: Vec3,
+    /// The diffuse color of the material.
     diffuse: Vec3,
+    /// The specular color of the material.
     specular: Vec3,
+    /// The shininess of the material.
     shininess: f32,
 }
 
@@ -111,12 +116,18 @@ impl RgbaColor {
     }
 }
 
+/// Represents the color attribute of a mesh.
 #[derive(Clone, Debug)]
 pub enum Color {
+    /// A function that generates a color based on a vertex and its index.
     Func(fn(&Vertex, usize) -> RgbaColor),
+    /// A color assigned to each vertex.
     Vertex(Vec<RgbaColor>),
+    /// A color assigned to each face.
     Face(Vec<RgbaColor>),
+    /// A color assigned to each line.
     Line(Vec<RgbaColor>),
+    /// A single color for the entire mesh.
     Mesh(RgbaColor),
 }
 
