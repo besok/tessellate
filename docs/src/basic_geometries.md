@@ -1,7 +1,7 @@
 # Basic shapes
 
 This section covers the creation of basic geometric shapes using `tesselate`.
-![Example](bshapes.png)
+![Example](assets/bshapes.png)
 
 The running example can be found 
 in the <a href="https://github.com/besok/tessellate/tree/main/examples/basic_shapes" target="_blank">repository</a>
