@@ -25,7 +25,7 @@
   - [Point Cloud]()
 - [Mesh filtering](mesh_filtering.md)
   - [Boolean Operations](./boolean_operations.md) 
-  - [Extract Cell Centers](./extract_cell_centers.md)
+  - [Extract Polygon and Edge Centers](./extract_cell_centers.md)
   - [Clipping with a Surface, plane and boxes]()
   - [Collision Detection]()
   - [Volumetric Analysis]()
