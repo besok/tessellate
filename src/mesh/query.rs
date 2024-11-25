@@ -11,6 +11,7 @@ pub mod kdtree;
 pub mod octree;
 pub mod sskdtree;
 pub mod edges;
+pub mod connectivity;
 
 /// A query object for a mesh
 pub struct MeshQuery<'a>(&'a Mesh);
