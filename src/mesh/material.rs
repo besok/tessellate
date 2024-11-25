@@ -1,4 +1,5 @@
 use crate::mesh::parts::vertex::Vertex;
+use egui_wgpu::wgpu;
 use glam::Vec3;
 use rand::Rng;
 
@@ -76,6 +77,18 @@ impl Default for RgbaColor {
 impl From<[u8; 4]> for RgbaColor {
     fn from(color: [u8; 4]) -> Self {
         RgbaColor(color)
+    }
+}
+
+impl Into<wgpu::Color> for RgbaColor {
+    fn into(self) -> wgpu::Color {
+        let RgbaColor([r, g, b, a]) = self;
+        wgpu::Color {
+            r: r as f64 / 255.0,
+            g: g as f64 / 255.0,
+            b: b as f64 / 255.0,
+            a: a as f64 / 255.0,
+        }
     }
 }
 

@@ -85,6 +85,7 @@ pub struct GpuHandler {
     camera: Camera,
     light: Light,
     gui: GuiRenderer,
+    gpu_options: GpuOptions,
 }
 
 impl GpuHandler {
@@ -101,6 +102,7 @@ impl GpuHandler {
         camera: Camera,
         gui: GuiRenderer,
         light: Light,
+        gpu_options: GpuOptions,
     ) -> Self {
         Self {
             window,
@@ -115,6 +117,7 @@ impl GpuHandler {
             camera,
             gui,
             light,
+            gpu_options
         }
     }
 }

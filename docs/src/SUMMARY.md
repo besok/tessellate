@@ -29,7 +29,7 @@
   - [Clipping with a Surface, plane and boxes]()
   - [Collision Detection]()
   - [Volumetric Analysis]()
-  - [Find and label connected regions]()
+  - [Connectivity]()
   - [Decimate a mesh]()
   - [Extract Edges](./extract_edges.md)
   - [Extract Surface]()

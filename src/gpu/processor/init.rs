@@ -271,7 +271,7 @@ impl GpuProcessor {
 
         Ok(GpuHandler::new(
             window, instance, surface, device, queue, config, size, pipelines, gpu_meshes, camera,
-            gui, light,
+            gui, light, options,
         ))
     }
 }

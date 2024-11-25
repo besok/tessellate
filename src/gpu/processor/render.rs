@@ -44,18 +44,19 @@ impl GpuHandler {
             });
 
         {
+            let b_color = self
+                .gpu_options
+                .light_opts()
+                .background_color()
+                .clone()
+                .into();
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: &view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 1.0,
-                            a: 1.0,
-                        }),
+                        load: wgpu::LoadOp::Clear(b_color),
                         store: wgpu::StoreOp::Store,
                     },
                 })],

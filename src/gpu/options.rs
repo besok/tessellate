@@ -143,6 +143,7 @@ pub struct LightOptions {
     diffuse: Vec3,
     specular: Vec3,
     show_source: bool,
+    background_color: RgbaColor,
 }
 
 impl Default for LightOptions {
@@ -153,6 +154,7 @@ impl Default for LightOptions {
             diffuse: Vec3::new(0.8, 0.8, 0.8),
             specular: Vec3::new(0.8, 0.8, 0.8),
             show_source: false,
+            background_color: RgbaColor::WHITE,
         }
     }
 }
@@ -164,6 +166,7 @@ impl LightOptions {
         diffuse: Vec3,
         specular: Vec3,
         show_source: bool,
+        background_color: RgbaColor,
     ) -> Self {
         Self {
             position,
@@ -171,6 +174,7 @@ impl LightOptions {
             diffuse,
             specular,
             show_source,
+            background_color,
         }
     }
     pub fn new_position(position: Vec3) -> Self {
@@ -204,6 +208,11 @@ impl LightOptions {
         self.show_source = show_source;
         self
     }
+
+    pub fn with_background_color(&mut self, background_color: RgbaColor) -> &Self {
+        self.background_color = background_color;
+        self
+    }
 }
 
 impl LightOptions {
@@ -225,6 +234,10 @@ impl LightOptions {
 
     pub fn show_source(&self) -> bool {
         self.show_source
+    }
+
+    pub fn background_color(&self) -> &RgbaColor {
+        &self.background_color
     }
 }
 
