@@ -36,6 +36,22 @@ pub enum MeshError {
     Custom(String),
 }
 
+impl From<&str> for MeshError {
+    fn from(value: &str) -> Self {
+        if value.contains("index") {
+            MeshError::InvalidIndex(value.to_string())
+        } else if value.contains("face") {
+            MeshError::InvalidFaceType(value.to_string())
+        } else if value.contains("intersection") {
+            MeshError::WrongIntersection(value.to_string())
+        } else if value.contains("mesh") {
+            MeshError::WrongMesh(value.to_string())
+        } else {
+            MeshError::Custom(value.to_string())
+        }
+    }
+}
+
 impl From<TryFromIntError> for MeshError {
     fn from(value: TryFromIntError) -> Self {
         MeshError::Custom(value.to_string())
@@ -116,7 +132,7 @@ impl Mesh {
     /// # Returns
     ///
     /// A new `Mesh` instance containing the specified vertices and faces.
-    pub fn from_vertices<V, F>(vertices: Vec<V>, faces: Vec<F>,  attributes: Attributes) -> Self
+    pub fn from_vertices<V, F>(vertices: Vec<V>, faces: Vec<F>, attributes: Attributes) -> Self
     where
         V: Into<Vertex>,
         F: Into<Face>,
@@ -197,7 +213,7 @@ impl Mesh {
     /// # Returns
     ///
     /// A new `Mesh` instance representing the cloud of vertices.
-    pub fn cloud<V>(vertices: Vec<V>, vert_size: usize, attributes:Attributes) -> Self
+    pub fn cloud<V>(vertices: Vec<V>, vert_size: usize, attributes: Attributes) -> Self
     where
         V: Into<Vertex>,
     {
@@ -212,7 +228,7 @@ impl Mesh {
         }
     }
 
-    pub fn lines(lines: Vec<Edge>, attributes:Attributes) -> MeshResult<Self> {
+    pub fn lines(lines: Vec<Edge>, attributes: Attributes) -> MeshResult<Self> {
         let mut vertices_map = HashMap::new();
         let mut vertices = Vec::new();
 
@@ -412,9 +428,12 @@ impl Mesh {
         &self.faces
     }
 
-
     pub fn props(&self) -> properties::MeshProperties {
         properties::MeshProperties::new(self)
+    }
+
+    pub fn face_idx_to_polygon(&self, idx: usize) -> MeshResult<Polygon> {
+        self.face_to_polygon(self.faces().get(idx).ok_or("Invalid face index")?)
     }
 
     fn face_to_polygon(&self, face: &Face) -> MeshResult<Polygon> {

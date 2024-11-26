@@ -7,11 +7,11 @@ use crate::mesh::query::sskdtree::SSKDTree;
 use crate::mesh::{Mesh, MeshResult};
 
 pub mod bsp;
+pub mod connectivity;
+pub mod edges;
 pub mod kdtree;
 pub mod octree;
 pub mod sskdtree;
-pub mod edges;
-pub mod connectivity;
 
 /// A query object for a mesh
 pub struct MeshQuery<'a>(&'a Mesh);
@@ -130,4 +130,7 @@ impl<'a> MeshQuery<'a> {
         edges::extract_feature_edges(self.0, feature_angle)
     }
 
+    pub fn connected_components(&self) -> MeshResult<Vec<Mesh>> {
+        connectivity::connected_components(self.0)
+    }
 }

@@ -23,11 +23,8 @@ fn main() -> TessResult<()> {
         files::ply::import_ply("examples/connectivity/footbones.ply")?;
 
 
-    let meshes = vec![
-        foot_bones,
-
-    ];
-
+    let meshes  = foot_bones.query().connected_components()?;
+    // let meshes = vec![foot_bones,];
     let options = GpuOptions::new(
         CameraOptions::new_position(Vec3::new(2., 3., 15.)),
         LightOptions::new_position(Vec3::new(2., 5., 0.))
