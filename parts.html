@@ -1,0 +1,283 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Parts - Tesselate. 3d scientific visualization with Rust</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Tesselate. 3d scientific visualization with Rust</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="parts-and-components-of-mesh"><a class="header" href="#parts-and-components-of-mesh">Parts and components of mesh</a></h1>
+<h2 id="vertex"><a class="header" href="#vertex">Vertex</a></h2>
+<p>A <code>Vertex</code> represents a point in 3D space with x, y, and z coordinates.</p>
+<pre><pre class="playground"><code class="language-rust">use tessellate::v;
+fn main(){
+    let vertex1 = v!(1.0, 2.0, 3.0);
+    let vertex2 = Vertex::new(1.0, 2.0, 3.0);
+    let vertex3 = [1.0, 2.0, 3.0].into();
+    
+    println!("{:?}", [vertex2, vertex3, vertex1]);
+}</code></pre></pre>
+<h2 id="edge"><a class="header" href="#edge">Edge</a></h2>
+<p>An <code>Edge</code> represents a connection between two vertices in a mesh.</p>
+<p>There are two types of edges:</p>
+<ul>
+<li>MeshEdge - An edge that connects two vertices in a mesh using their indices.</li>
+<li>Edge - An edge that connects two vertices in a mesh using the vertices themselves.</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust">fn main(){
+    let edge:Edge = (v!(0.0, 0.0, 0.0), v!(1.0, 1.0, 1.0)).into();
+}
+</code></pre></pre>
+<h2 id="face"><a class="header" href="#face">Face</a></h2>
+<p>A <code>Face</code> represents a polygonal surface in a mesh, typically defined by three or more vertices.
+There are two types of faces:</p>
+<ul>
+<li>Triangle - A face with three vertices.</li>
+<li>Quad - A face with four vertices.</li>
+</ul>
+<p>The face works with indices of vertices in the mesh.</p>
+<pre><pre class="playground"><code class="language-rust">
+use tessellate::mesh::parts::face::Face;
+fn main(){
+    let triangle = Face::new3(0, 1, 2);
+ 
+    let quad = Face::new4(0, 1, 2, 3);
+
+    // Creating faces from a vector of elements with an attempt to triangulate it.
+    let faces = Face::new(vec![0, 1, 2, 3, 4, 5, 6]).unwrap();
+}
+</code></pre></pre>
+<h2 id="polygon"><a class="header" href="#polygon">Polygon</a></h2>
+<p>A <code>Polygon</code> is a flat shape consisting of straight, non-intersecting lines that are joined to form a closed chain or circuit.</p>
+<pre><pre class="playground"><code class="language-rust">use tessellate::mesh::parts::polygon::Polygon;
+use tessellate::mesh::parts::vertex::Vertex;
+
+fn main() { 
+    // Creating a polygon with three vertices
+    let v0 = Vertex::new(0.0, 0.0, 0.0);
+    let v1 = Vertex::new(1.0, 0.0, 0.0);
+    let v2 = Vertex::new(0.0, 1.0, 0.0);
+    let triangle = Polygon::new(vec![v0, v1, v2]);
+    
+    // Creating a polygon with four vertices
+    let v3 = Vertex::new(1.0, 1.0, 0.0);
+    let quad:Polygon = vec![v0, v1, v2, v3].into(); 
+}
+</code></pre></pre>
+<h2 id="plane"><a class="header" href="#plane">Plane</a></h2>
+<p>A <code>Plane</code> is a flat, two-dimensional surface that extends infinitely in 3D space.</p>
+<pre><pre class="playground"><code class="language-rust">use glam::Vec3;
+use tessellate::mesh::attributes::Attributes;
+use tessellate::mesh::parts::plane::Plane;
+
+fn main(){ 
+    // Create a plane from a normal vector and a point
+    let normal = Vec3::new(0.0, 1.0, 0.0);
+    let point = Vec3::new(0.0, 0.0, 0.0);
+    let plane = Plane::new(normal, point);
+    
+    // Calculate the distance from a point to the plane
+    let distance = plane.distance(Vec3::new(0.0, 2.0, 0.0));
+    assert_eq!(distance, 2.0);
+}</code></pre></pre>
+<h2 id="bbox"><a class="header" href="#bbox">BBox</a></h2>
+<p>A <code>BBox</code> (Bounding Box) is a rectangular box that completely contains a 3D object,
+used for spatial indexing and collision detection.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="mesh.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="properties.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="mesh.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="properties.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
