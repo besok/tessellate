@@ -343,6 +343,10 @@ impl Mesh {
         *self = Mesh::from_vertices(new_vertices, new_faces, self.attributes.clone());
         Ok(())
     }
+
+    pub fn contains(&self, v: &Vertex) -> bool {
+        self.vertices.contains(v)
+    }
 }
 impl Mesh {
     pub fn try_tables(&self) -> MeshResult<MeshTables> {

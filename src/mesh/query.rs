@@ -1,4 +1,5 @@
 use super::parts::vertex::Vertex;
+use super::MeshError;
 use crate::mesh::parts::edge::Edge;
 use crate::mesh::query::bsp::BSPTree;
 use crate::mesh::query::kdtree::KDTree;
@@ -130,7 +131,68 @@ impl<'a> MeshQuery<'a> {
         edges::extract_feature_edges(self.0, feature_angle)
     }
 
-    pub fn connected_components(&self) -> MeshResult<Vec<Mesh>> {
-        connectivity::connected_components(self.0)
+    /// Extract the connected regions of the mesh
+    /// This function identifies and returns all the connected regions within the mesh.
+    pub fn extract_connected_regions(&self) -> MeshResult<Vec<Mesh>> {
+        connectivity::connected_regions(self.0)
+    }
+    pub fn extract_largest_connected_region(&self) -> MeshResult<Mesh> {
+        connectivity::connected_regions(self.0)?
+            .into_iter()
+            .max_by_key(|m| m.faces().len())
+            .ok_or(MeshError::Custom("No connected region found".to_string()))
+    }
+
+    /// Extract the connected regions of the mesh by vertex indices
+    ///
+    /// This function identifies and returns the connected regions
+    /// within the mesh that contain any of the specified vertex indices.
+    ///
+    /// # Arguments
+    ///
+    /// * `seeds` - A vector of vertex indices to use as seeds for identifying connected regions.
+    ///
+    /// # Returns
+    ///
+    /// * `MeshResult<Vec<Mesh>>` - A result containing a vector of connected regions or an error.
+    pub fn extract_connected_regions_by_vertexes(
+        &self,
+        seeds: Vec<usize>,
+    ) -> MeshResult<Vec<Mesh>> {
+        let vertices = self.0.vertices();
+        let seeds = seeds
+            .into_iter()
+            .map(|i| vertices.get(i).ok_or(MeshError::idx_vertex(i)))
+            .collect::<MeshResult<Vec<&Vertex>>>()?;
+
+        Ok(connectivity::connected_regions(self.0)?
+            .into_iter()
+            .filter(|m| seeds.iter().any(|v| m.vertices().contains(v)))
+            .collect())
+    }
+
+    /// Extract the closest connected region to a given point
+    ///
+    /// This function identifies and returns the connected region within the mesh
+    /// that is closest to the specified point.
+    ///
+    /// # Arguments
+    ///
+    /// * `point` - A reference to a `Vertex` representing the point to which the closest connected region is to be found.
+    ///
+    /// # Returns
+    ///
+    /// * `MeshResult<Mesh>` - A result containing the closest connected region or an error.
+    pub fn extract_closest_connected_region(&self, point: &Vertex) -> MeshResult<Mesh> {
+        connectivity::connected_regions(self.0)?
+            .into_iter()
+            .min_by_key(|m| {
+                m.vertices()
+                    .iter()
+                    .map(|v| v.distance_rounded(point))
+                    .min()
+                    .unwrap_or(usize::MAX)
+            })
+            .ok_or(MeshError::Custom("No connected region found".to_string()))
     }
 }

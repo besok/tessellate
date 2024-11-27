@@ -251,6 +251,9 @@ impl Vertex {
             .sum::<f32>()
             .sqrt()
     }
+    pub fn distance_rounded(&self, other: &Vertex) -> usize {
+        self.distance(other).round() as usize
+    }
 
     pub fn get(&self, axis: &Axis) -> f32 {
         match axis {
