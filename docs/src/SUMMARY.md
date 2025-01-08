@@ -54,5 +54,6 @@
 - [Auxiliary Tools and Structures](./auxiliary.md)
   - [KDTree](./kdtree.md)
   - [BSP Tree](./bsptree.md)
+  - [Distance](./distance.md)
 - [Contributing](./CONTRIBUTING.md)
 - [License](./LICENSE.md)

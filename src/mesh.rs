@@ -2,7 +2,7 @@ use crate::mesh::attributes::{Attributes, MeshType};
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
 use crate::mesh::parts::edge::Edge;
-use crate::mesh::tables::MeshTables;
+use crate::mesh::tables::MeshTables; 
 use parts::bbox::BoundingBox;
 use parts::edge::MeshEdge;
 use parts::face::Face;
@@ -16,6 +16,7 @@ use std::num::TryFromIntError;
 
 pub mod attributes;
 pub mod bool;
+pub mod distance;
 pub mod material;
 pub mod normals;
 pub mod parts;
@@ -347,6 +348,19 @@ impl Mesh {
     pub fn contains(&self, v: &Vertex) -> bool {
         self.vertices.contains(v)
     }
+
+    pub fn centroid(&self) -> MeshResult<Vertex> {
+        if !self.faces().is_empty() {
+            let mut vertices = vec![];
+            for face in self.faces() {
+                vertices.push(self.face_to_polygon(face)?.centroid()?);
+            }
+            Polygon::new(vertices).centroid()
+        } else {
+            Polygon::new(self.vertices().to_vec()).centroid()
+        }
+    }
+
 }
 impl Mesh {
     pub fn try_tables(&self) -> MeshResult<MeshTables> {

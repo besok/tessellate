@@ -131,7 +131,7 @@ mod tests {
                 &Vertex::new(1.0, 2.0, 0.0),
             ]),
         ];
-        let mesh = Mesh::from_polygons(polygons, Color::default());
+        let mesh = Mesh::from_polygons(polygons, Color::default().into());
         let octree = Octree::try_from_mesh(&mesh, Some(3)).expect("Failed to build octree");
 
         match *octree.root {
@@ -163,7 +163,7 @@ mod tests {
                 &Vertex::new(1.0, 2.0, 0.0),
             ]),
         ];
-        let mesh = Mesh::from_polygons(polygons, Color::default());
+        let mesh = Mesh::from_polygons(polygons, Color::default().into());
         let octree = Octree::try_from_mesh(&mesh, Some(3)).expect("Failed to build octree");
 
         let bb = octree.root.aabb().clone();

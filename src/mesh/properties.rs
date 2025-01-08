@@ -161,7 +161,7 @@ mod tests {
             Face::from((0, 3, 1)),
             Face::from((1, 3, 2)),
         ];
-        let mesh = Mesh::from_vertices(vertices, faces, Color::default());
+        let mesh = Mesh::from_vertices(vertices, faces, Color::default().into());
         let properties = MeshProperties::new(&mesh);
         assert!(properties.is_manifold());
     }

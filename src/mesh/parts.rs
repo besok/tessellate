@@ -13,7 +13,7 @@ pub type Idx = usize;
 mod tests {
     use crate::mesh::parts::edge::MeshEdge;
     use crate::mesh::Vertex;
-    use crate::{mesh_edge, v, edge};
+    use crate::{v, edge};
     use crate::mesh::parts::edge::Edge;
     #[test]
     fn is_intersected_edges() {

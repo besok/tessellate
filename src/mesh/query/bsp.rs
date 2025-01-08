@@ -147,13 +147,12 @@ mod tests {
 
     #[test]
     fn viz_test() {
-        turn_on_test_logs();
         let fig = Cone::default();
         let mesh = fig.mesh();
         let query:MeshQuery = mesh.into();
         let bsp: BSPTree = query.try_into().unwrap();
 
         let bsp_mesh = &bsp.mesh(Default::default());
-        let planes = &bsp.plane_meshes(10.0, Color::default());
+        let planes = &bsp.plane_meshes(10.0, Color::default().into());
     }
 }
