@@ -1,6 +1,5 @@
 use glam::{Mat4, Vec3};
 use tessellate::gpu::options::{CameraOptions, GpuOptions, LightOptions};
-use tessellate::mesh::distance::{distance_between_surfaces, distance_to_surface};
 use tessellate::mesh::shape::pyramid::Pyramid;
 use tessellate::mesh::shape::torus::Torus;
 use tessellate::mesh::transform::Transform;
@@ -17,9 +16,9 @@ fn main() -> TessResult<()> {
 
     println!("Distances");
     println!("  Centroids = {}", torus_centroid.distance(&pyramid_centroid));
-    println!("  Torus centroid and pyramid = {}", distance_to_surface(&torus_centroid, &pyramid)?);
-    println!("  Pyramid centroid and torus = {}", distance_to_surface(&pyramid_centroid, &torus)?);
-    println!("  Surfaces = {}", distance_between_surfaces(&pyramid, &torus)?);
+    println!("  Torus centroid and pyramid = {}", &torus_centroid.distance_to_mesh(&pyramid)?);
+    println!("  Pyramid centroid and torus = {}", &pyramid_centroid.distance_to_mesh(&torus)?);
+    println!("  Surfaces = {}", pyramid.distance(&torus)?);
 
     Ok(gpu::visualize(vec![torus.mesh().clone(), pyramid.mesh().clone()], GpuOptions::default())?)
 }

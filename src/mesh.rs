@@ -1,8 +1,9 @@
 use crate::mesh::attributes::{Attributes, MeshType};
+use crate::mesh::distance::distance_between_surfaces;
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
 use crate::mesh::parts::edge::Edge;
-use crate::mesh::tables::MeshTables; 
+use crate::mesh::tables::MeshTables;
 use parts::bbox::BoundingBox;
 use parts::edge::MeshEdge;
 use parts::face::Face;
@@ -360,7 +361,6 @@ impl Mesh {
             Polygon::new(self.vertices().to_vec()).centroid()
         }
     }
-
 }
 impl Mesh {
     pub fn try_tables(&self) -> MeshResult<MeshTables> {
@@ -452,6 +452,23 @@ impl Mesh {
 
     pub fn face_idx_to_polygon(&self, idx: usize) -> MeshResult<Polygon> {
         self.face_to_polygon(self.faces().get(idx).ok_or("Invalid face index")?)
+    }
+    /// Calculates the distance between the surfaces of two meshes.
+    ///
+    /// This function computes the minimum distance between the surfaces of the current mesh
+    /// and another mesh. It takes into account the vertices, edges, and faces of both meshes
+    /// to determine the closest points and the distance between them.
+    ///
+    /// # Parameters
+    ///
+    /// * `other` - A reference to the other `Mesh` to calculate the distance to.
+    ///
+    /// # Returns
+    ///
+    /// A `MeshResult` containing the distance as an `f32` value if successful, or a `MeshError` if an error occurs.
+
+    pub fn distance(&self, other: &Mesh) -> MeshResult<f32> {
+        distance_between_surfaces(self, other)
     }
 
     fn face_to_polygon(&self, face: &Face) -> MeshResult<Polygon> {

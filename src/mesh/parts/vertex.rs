@@ -1,3 +1,5 @@
+use crate::mesh::distance::distance_to_surface;
+use crate::mesh::{Mesh, MeshResult};
 use glam::Vec3;
 use std::cmp::Ordering;
 use std::f32::consts::PI;
@@ -251,6 +253,23 @@ impl Vertex {
             .sum::<f32>()
             .sqrt()
     }
+    /// Calculates the distance from the vertex to the nearest surface of the given mesh.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - A reference to the mesh to calculate the distance to.
+    ///
+    /// # Returns
+    ///
+    /// A `MeshResult` containing the distance as a `f32` value.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the distance calculation fails.
+    pub fn distance_to_mesh(&self, other: &Mesh) -> MeshResult<f32> {
+        distance_to_surface(self, other)
+    }
+
     pub fn distance_rounded(&self, other: &Vertex) -> usize {
         self.distance(other).round() as usize
     }
