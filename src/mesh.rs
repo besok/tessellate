@@ -446,7 +446,7 @@ impl Mesh {
         &self.faces
     }
 
-    pub fn props(&self) -> properties::MeshProperties {
+    pub fn properties(&self) -> properties::MeshProperties {
         properties::MeshProperties::new(self)
     }
 

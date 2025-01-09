@@ -16,8 +16,8 @@ use std::collections::{HashMap, HashSet};
 ///
 /// let pyramid = Pyramid::default();
 ///
-/// assert!(&pyramid.props().is_manifold());
-/// assert!(&pyramid.props().is_watertight());
+/// assert!(&pyramid.properties().is_manifold());
+/// assert!(&pyramid.properties().is_watertight());
 /// ```
 pub struct MeshProperties<'a> {
     mesh: &'a Mesh,
