@@ -41,7 +41,7 @@
   - [Surface Smoothing]()
   - [Surface Reconstruction]()
   - [Voxelize a Surface Mesh]()
-  - [Subdivide Cells]()
+  - [Subdivide Cells](./subdivide_cells.md)
 - [Geometric quantities]()
   - [Laplacian smoothing]()
   - [Gaussian Curvature]()

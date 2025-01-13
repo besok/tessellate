@@ -3,6 +3,7 @@ use crate::mesh::distance::distance_between_surfaces;
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
 use crate::mesh::parts::edge::Edge;
+use crate::mesh::subdivision::MeshSubdivision;
 use crate::mesh::tables::MeshTables;
 use parts::bbox::BoundingBox;
 use parts::edge::MeshEdge;
@@ -24,6 +25,7 @@ pub mod parts;
 pub mod properties;
 pub mod query;
 pub mod shape;
+pub mod subdivision;
 pub mod tables;
 pub mod transform;
 
@@ -287,7 +289,7 @@ impl Mesh {
     /// The subdivision is based on the midpoint of the edges
     /// The new vertices are normalized
     /// The new faces are created based on the subdivision
-    pub fn subdivide(&mut self) -> MeshResult<()> {
+    pub fn subdivide_(&mut self) -> MeshResult<()> {
         let mut new_vertices = self.vertices.to_vec();
         let mut new_faces = Vec::new();
         let mut midpoint_cache = HashMap::new();
@@ -344,6 +346,9 @@ impl Mesh {
         let new_vertices = new_vertices.into_iter().map(|v| v.normalize()).collect();
         *self = Mesh::from_vertices(new_vertices, new_faces, self.attributes.clone());
         Ok(())
+    }
+    pub fn subdivide(&mut self) -> MeshSubdivision {
+        MeshSubdivision::new(self)
     }
 
     pub fn contains(&self, v: &Vertex) -> bool {

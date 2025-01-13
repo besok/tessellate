@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Extract Cell Centers - Tesselate. 3d scientific visualization with Rust</title>
+        <title>Extract Polygon and Edge Centers - Tesselate. 3d scientific visualization with Rust</title>
 
 
         <!-- Custom HTML head -->
@@ -152,7 +152,14 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="extract-cell-centers"><a class="header" href="#extract-cell-centers">Extract Cell Centers</a></h1>
+                        <h1 id="extract-polygon-and-edges-centers"><a class="header" href="#extract-polygon-and-edges-centers">Extract polygon and edges centers</a></h1>
+<p>It provides the means to extract the centers of the polygons and edges of a mesh.
+The centers are computed as the average of the vertices that define the polygon or edge.
+The centers are stored in a new mesh object.
+The new mesh object is a point cloud with the centers as vertices.</p>
+<p>The running example can be found
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/polygon_and_edges_centers" target="_blank">repository</a></p>
+<p>For details see <a href="./query.html">query</a> and <code>extract_poly_centers</code> and <code>extract_edge_centers</code> methods.</p>
 
                     </main>
 
@@ -162,7 +169,7 @@
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="extract_edges.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="connectivity.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -176,7 +183,7 @@
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="extract_edges.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="connectivity.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Extract Edges - Tesselate. 3d scientific visualization with Rust</title>
+        <title>Connectivity - Tesselate. 3d scientific visualization with Rust</title>
 
 
         <!-- Custom HTML head -->
@@ -152,29 +152,27 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="extract-edges"><a class="header" href="#extract-edges">Extract Edges</a></h1>
-<p>It provides the means to extract the edges of a mesh.</p>
+                        <h1 id="connected-regions-on-the-mesh"><a class="header" href="#connected-regions-on-the-mesh">Connected regions on the mesh</a></h1>
+<p>The query on the mesh provides a row of methods to extract the connected regions of the mesh.</p>
+<p>The following methods are available in the <code>tessellate</code> module:</p>
+<ul>
+<li><code>extract_connected_regions</code>: Extracts all connected regions from the mesh.</li>
+<li><code>extract_largest_connected_region</code>: Extracts the largest connected region from the mesh.</li>
+<li><code>extract_connected_regions_by_vertexes</code>: Extracts connected regions based on specified vertices.</li>
+<li><code>extract_closest_connected_region</code>: Extracts the connected region closest to a specified vertex.</li>
+</ul>
 <p>The running example can be found
-in the <a href="https://github.com/besok/tessellate/tree/main/examples/extract_edges" target="_blank">repository</a></p>
-<p>For details see <a href="./query.html">query</a> and the methods:</p>
-<h3 id="extract_boundary_edges"><a class="header" href="#extract_boundary_edges">extract_boundary_edges</a></h3>
-<p>This function identifies and returns the edges that are on the boundary of the mesh. Boundary edges are those that belong to only one face.</p>
-<h3 id="extract_manifold_edges"><a class="header" href="#extract_manifold_edges">extract_manifold_edges</a></h3>
-<p>This function identifies and returns the edges that are shared by exactly two faces.</p>
-<h3 id="extract_non_manifold_edges"><a class="header" href="#extract_non_manifold_edges">extract_non_manifold_edges</a></h3>
-<p>This function identifies and returns the edges that are shared by more than two faces.</p>
-<h3 id="extract_feature_edges"><a class="header" href="#extract_feature_edges">extract_feature_edges</a></h3>
-<p>This function identifies and returns the edges that</p>
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/connectivity" target="_blank">repository</a></p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="connectivity.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="extract_cell_centers.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="auxiliary.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="extract_edges.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -184,11 +182,11 @@ in the <a href="https://github.com/besok/tessellate/tree/main/examples/extract_e
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="connectivity.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="extract_cell_centers.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="auxiliary.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="extract_edges.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
