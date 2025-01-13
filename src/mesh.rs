@@ -347,6 +347,15 @@ impl Mesh {
         *self = Mesh::from_vertices(new_vertices, new_faces, self.attributes.clone());
         Ok(())
     }
+
+    /// Subdivides the mesh using the specified subdivision algorithm.
+    ///
+    /// This function returns a `MeshSubdivision` instance that can be used to
+    /// apply different subdivision algorithms such as butterfly, loop, or linear.
+    ///
+    /// # Returns
+    ///
+    /// A `MeshSubdivision` instance for further subdivision operations.
     pub fn subdivide(&mut self) -> MeshSubdivision {
         MeshSubdivision::new(self)
     }
