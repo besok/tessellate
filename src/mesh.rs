@@ -285,69 +285,6 @@ impl Mesh {
         BoundingBox::from(self)
     }
 
-    /// Subdivide the mesh
-    /// The subdivision is based on the midpoint of the edges
-    /// The new vertices are normalized
-    /// The new faces are created based on the subdivision
-    pub fn subdivide_(&mut self) -> MeshResult<()> {
-        let mut new_vertices = self.vertices.to_vec();
-        let mut new_faces = Vec::new();
-        let mut midpoint_cache = HashMap::new();
-
-        for face in self.faces.iter() {
-            let face_vertices = face.flatten();
-            let mut mid_indices = Vec::new();
-            for i in 0..face_vertices.len() {
-                let key = if face_vertices[i] < face_vertices[(i + 1) % face_vertices.len()] {
-                    (face_vertices[i], face_vertices[(i + 1) % face_vertices.len()])
-                } else {
-                    (face_vertices[(i + 1) % face_vertices.len()], face_vertices[i])
-                };
-
-                if let Some(&mid_index) = midpoint_cache.get(&key) {
-                    mid_indices.push(mid_index);
-                } else {
-                    let mid_vertex = midpoint(
-                        &self.vertices[face_vertices[i]],
-                        &self.vertices[face_vertices[(i + 1) % face_vertices.len()]],
-                    );
-                    let mid_index = new_vertices.len();
-                    new_vertices.push(mid_vertex);
-                    midpoint_cache.insert(key, mid_index);
-                    mid_indices.push(mid_index);
-                }
-            }
-
-            match face {
-                Face::Triangle(_, _, _) => {
-                    new_faces.push(Face::Triangle(
-                        face_vertices[0],
-                        mid_indices[0],
-                        mid_indices[2],
-                    ));
-                    new_faces.push(Face::Triangle(
-                        face_vertices[1],
-                        mid_indices[1],
-                        mid_indices[0],
-                    ));
-                    new_faces.push(Face::Triangle(
-                        face_vertices[2],
-                        mid_indices[2],
-                        mid_indices[1],
-                    ));
-                    new_faces.push(Face::Triangle(mid_indices[0], mid_indices[1], mid_indices[2]));
-                }
-                Face::Quad(_, _, _, _) => {
-                    // For Quad, adapt the logic to handle quad subdivision
-                }
-            }
-        }
-
-        let new_vertices = new_vertices.into_iter().map(|v| v.normalize()).collect();
-        *self = Mesh::from_vertices(new_vertices, new_faces, self.attributes.clone());
-        Ok(())
-    }
-
     /// Subdivides the mesh using the specified subdivision algorithm.
     ///
     /// This function returns a `MeshSubdivision` instance that can be used to
@@ -356,7 +293,7 @@ impl Mesh {
     /// # Returns
     ///
     /// A `MeshSubdivision` instance for further subdivision operations.
-    pub fn subdivide(&mut self) -> MeshSubdivision {
+    pub fn subdivide(&self) -> MeshSubdivision {
         MeshSubdivision::new(self)
     }
 
@@ -450,6 +387,14 @@ impl Mesh {
             .get(idx)
             .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
     }
+    pub fn triangulate(&self) -> MeshResult<Mesh> {
+        let faces = self
+            .faces()
+            .iter()
+            .flat_map(|f| f.triangulate())
+            .collect::<Vec<_>>();
+        Ok(Mesh::from_vertices(self.vertices().to_vec(), faces, self.attributes().clone()))
+    }
     pub fn vertices(&self) -> &Vec<Vertex> {
         &self.vertices
     }
@@ -506,13 +451,6 @@ impl<T: HasMesh> From<T> for Mesh {
     }
 }
 
-pub fn midpoint(vertex1: &Vertex, vertex2: &Vertex) -> Vertex {
-    Vertex::new(
-        (vertex1.x + vertex2.x) / 2.0,
-        (vertex1.y + vertex2.y) / 2.0,
-        (vertex1.z + vertex2.z) / 2.0,
-    )
-}
 pub fn dedup<T: Hash + Eq>(items: Vec<T>) -> Vec<T> {
     items
         .into_iter()

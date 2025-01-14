@@ -137,6 +137,16 @@ impl Face {
             Face::Quad(a, b, c, d) => vec![*a, *b, *c, *d],
         }
     }
+
+    pub fn triangulate(&self) -> Vec<Face> {
+        match self {
+            Face::Triangle(_, _, _) => vec![*self],
+            Face::Quad(a, b, c, d) => vec![
+                Face::Triangle(*a, *b, *c),
+                Face::Triangle(*a, *c, *d),
+            ],
+        }
+    }
 }
 
 impl From<(usize, usize, usize, usize)> for Face {
