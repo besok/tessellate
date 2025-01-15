@@ -1,31 +1,31 @@
+use crate::mesh::parts::face::Face;
 use crate::mesh::parts::Idx;
 use crate::mesh::{Mesh, MeshError, MeshResult};
 use std::collections::HashMap;
-use crate::mesh::parts::edge::MeshEdge;
-use crate::mesh::parts::face::Face;
-use crate::mesh::parts::vertex::Vertex;
 
-#[derive(Default)]
-pub struct MeshTables {
-    vertice_edges: HashMap<Idx, Vec<Idx>>,
-    vertice_faces: HashMap<Idx, Vec<Idx>>,
-    edge_faces: HashMap<Idx, Vec<Idx>>,
+pub struct MeshTables<'a> {
+    mesh: &'a Mesh,
+    vert_edges: HashMap<Idx, Vec<Idx>>,
+    vert_faces: HashMap<Idx, Vec<Idx>>,
+    edge_faces: HashMap<(Idx, Idx), Vec<Idx>>,
 }
 
-impl TryFrom<&Mesh> for MeshTables {
+impl<'a> TryFrom<&'a Mesh> for MeshTables<'a> {
     type Error = MeshError;
 
-    fn try_from(value: &Mesh) -> Result<Self, Self::Error> {
-        MeshTables::new(&value.vertices, &value.edges, &value.faces)
+    fn try_from(value: &'a Mesh) -> Result<MeshTables<'a>, Self::Error> {
+        MeshTables::new(value)
     }
 }
 
-impl MeshTables {
-    fn new(_vertices: &Vec<Vertex>, edges: &Vec<MeshEdge>, faces: &Vec<Face>) -> MeshResult<Self> {
+impl<'a> MeshTables<'a> {
+    fn new(mesh: &'a Mesh) -> MeshResult<Self> {
+        let edges = mesh.edges();
+        let faces = mesh.faces();
+
         let mut vertice_edges = HashMap::new();
         let mut edge_faces = HashMap::new();
         let mut vertice_faces = HashMap::new();
-
 
         let e_map: HashMap<_, _> = edges
             .iter()
@@ -39,61 +39,81 @@ impl MeshTables {
             vertice_edges.entry(v2).or_insert_with(Vec::new).push(idx);
         }
 
-        let i = |k: (usize, usize)| -> MeshResult<usize> {
-            e_map.get(&k).copied().ok_or(MeshError::idx_edge(k.0, k.1))
-        };
-
         for (idx, face) in faces.iter().enumerate() {
             match face {
                 Face::Triangle(v1, v2, v3) => {
                     edge_faces
-                        .entry(i((*v1, *v2))?)
+                        .entry((*v1, *v2))
                         .or_insert_with(Vec::new)
                         .push(idx);
                     edge_faces
-                        .entry(i((*v2, *v3))?)
+                        .entry((*v2, *v3))
                         .or_insert_with(Vec::new)
                         .push(idx);
                     edge_faces
-                        .entry(i((*v3, *v1))?)
+                        .entry((*v3, *v1))
                         .or_insert_with(Vec::new)
                         .push(idx);
 
                     vertice_faces.entry(*v1).or_insert_with(Vec::new).push(idx);
                     vertice_faces.entry(*v2).or_insert_with(Vec::new).push(idx);
                     vertice_faces.entry(*v3).or_insert_with(Vec::new).push(idx);
-
                 }
                 Face::Quad(v1, v2, v3, v4) => {
                     edge_faces
-                        .entry(i((*v1, *v2))?)
+                        .entry((*v1, *v2))
                         .or_insert_with(Vec::new)
                         .push(idx);
                     edge_faces
-                        .entry(i((*v2, *v3))?)
+                        .entry((*v2, *v3))
                         .or_insert_with(Vec::new)
                         .push(idx);
                     edge_faces
-                        .entry(i((*v3, *v4))?)
+                        .entry((*v3, *v4))
                         .or_insert_with(Vec::new)
                         .push(idx);
                     edge_faces
-                        .entry(i((*v4, *v1))?)
+                        .entry((*v4, *v1))
                         .or_insert_with(Vec::new)
                         .push(idx);
                     vertice_faces.entry(*v1).or_insert_with(Vec::new).push(idx);
                     vertice_faces.entry(*v2).or_insert_with(Vec::new).push(idx);
                     vertice_faces.entry(*v3).or_insert_with(Vec::new).push(idx);
                     vertice_faces.entry(*v4).or_insert_with(Vec::new).push(idx);
-
                 }
             }
         }
-        Ok(Self { vertice_edges, edge_faces, vertice_faces })
+        Ok(Self {
+            mesh,
+            vert_edges: vertice_edges,
+            edge_faces,
+            vert_faces: vertice_faces,
+        })
     }
 
-    pub fn vertex_faces(&self, idx: Idx) -> Option<&Vec<Idx>> {
-        self.vertice_faces.get(&idx)
+    pub fn vertex_faces_idx(&self, idx: Idx) -> Option<&Vec<Idx>> {
+        self.vert_faces.get(&idx)
+    }
+    pub fn vertex_faces(&self, idx: Idx) -> MeshResult<Vec<&Face>> {
+        self.vert_faces
+            .get(&idx)
+            .cloned()
+            .unwrap_or_default()
+            .into_iter()
+            .map(|f_idx| self.get_face(f_idx))
+            .collect()
     }
 
+    fn get_face(&self, idx: Idx) -> MeshResult<&Face> {
+        self.mesh.faces.get(idx).ok_or(MeshError::idx_face(idx))
+    }
+    pub fn edge_faces(&self, lhs: Idx, rhs: Idx) -> MeshResult<Vec<&Face>> {
+        let faces1 = self.edge_faces.get(&(lhs, rhs)).cloned().unwrap_or_default();
+        let faces2 = self.edge_faces.get(&(rhs, lhs)).cloned().unwrap_or_default();
+        faces1
+            .into_iter()
+            .chain(faces2.into_iter())
+            .map(|f_idx| self.get_face(f_idx))
+            .collect()
+    }
 }

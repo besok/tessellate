@@ -22,7 +22,7 @@ pub fn connected_regions(mesh: &Mesh) -> MeshResult<Vec<Mesh>> {
         let mut polygons = vec![];
         for v in v_indexes {
             let faces = tables
-                .vertex_faces(v.index())
+                .vertex_faces_idx(v.index())
                 .ok_or("Invalid vertex index")?;
             for f in faces {
                 polygons.push(mesh.face_idx_to_polygon(*f)?);

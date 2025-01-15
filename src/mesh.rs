@@ -78,6 +78,9 @@ impl MeshError {
     pub fn idx_edge(v1: usize, v2: usize) -> Self {
         MeshError::InvalidIndex(format!("Invalid index for the edge: {} - {}", v1, v2))
     }
+    pub fn idx_face(v1: usize) -> Self {
+        MeshError::InvalidIndex(format!("Invalid index for the face: {}", v1))
+    }
     pub fn idx_vertex(v: usize) -> Self {
         MeshError::InvalidIndex(format!("Invalid index for the vertex: {}", v))
     }

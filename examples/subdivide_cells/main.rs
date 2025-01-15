@@ -1,18 +1,23 @@
 use glam::{Mat4, Vec3};
 use tessellate::mesh::transform::Transform;
 use tessellate::mesh::HasMesh;
-use tessellate::{files, gpu, TessResult};
+use tessellate::{files, gpu, mesh, TessResult};
 use tessellate::gpu::options::{CameraOptions, GpuOptions, LightOptions};
+use tessellate::mesh::attributes::Attributes;
+use tessellate::mesh::parts::vertex::Vertex;
 
 fn main() -> TessResult<()> {
-    let bunny = files::ply::import_ply("examples/import_models/bunny.ply")?;
-    let mut bunny_new = bunny.subdivide().by_butterfly()?;
 
-    let _ = bunny_new.transform(Mat4::from_translation(Vec3::new(0.3, 0.3, 0.)))?;
+    let bunny = files::ply::import_ply("examples/import_models/bunny.ply")?;
+    let mut bunny_b = bunny.subdivide().by_butterfly()?;
+    let _ = bunny_b.transform(Mat4::from_translation(Vec3::new(0.3, 0.3, 0.)))?;
+
+    println!("Bunny vertices: {}", bunny.vertices().len());
+    println!("Bunny vertices: {}", bunny_b.vertices().len());
 
     let meshes = vec![
         bunny,
-        bunny_new
+        bunny_b
     ];
 
     let options = GpuOptions::new(
