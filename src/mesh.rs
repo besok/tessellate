@@ -3,7 +3,7 @@ use crate::mesh::distance::distance_between_surfaces;
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
 use crate::mesh::parts::edge::Edge;
-use crate::mesh::subdivision::MeshSubdivision;
+use crate::mesh::subdivision::by_loop;
 use crate::mesh::tables::MeshTables;
 use parts::bbox::BoundingBox;
 use parts::edge::MeshEdge;
@@ -296,8 +296,8 @@ impl Mesh {
     /// # Returns
     ///
     /// A `MeshSubdivision` instance for further subdivision operations.
-    pub fn subdivide(&self) -> MeshSubdivision {
-        MeshSubdivision::new(self)
+    pub fn subdivide_by_loop(&self, iterations:usize) -> MeshResult<Mesh> {
+        (0..iterations).try_fold(by_loop(self)?, |mesh, _| by_loop(&mesh))
     }
 
     pub fn contains(&self, v: &Vertex) -> bool {
@@ -388,7 +388,7 @@ impl Mesh {
     pub fn get(&self, idx: usize) -> MeshResult<&Vertex> {
         self.vertices
             .get(idx)
-            .ok_or(MeshError::InvalidIndex("Invalid vertex index".to_string()))
+            .ok_or(MeshError::idx_vertex(idx))
     }
     pub fn triangulate(&self) -> MeshResult<Mesh> {
         let faces = self

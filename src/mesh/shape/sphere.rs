@@ -1,6 +1,6 @@
 use crate::mesh::parts::face::Face;
 use crate::mesh::shape::icosahedron::Icosahedron;
-use crate::mesh::HasMesh;
+use crate::mesh::{HasMesh, MeshResult};
 use crate::mesh::Mesh;
 use std::f32::consts::PI;
 use std::ops::Deref;
@@ -72,20 +72,17 @@ impl Sphere {
             mesh: Mesh::from_vertices(vertices, faces,attributes),
         }
     }
-    pub fn create_ico<V: Into<Vertex>>(center: V, radius: f32, subdivisions: usize, attrs: Attributes) -> Self {
+    pub fn create_ico<V: Into<Vertex>>(center: V, radius: f32, subdivisions: usize, attrs: Attributes) -> MeshResult<Self> {
         let center = center.into();
         let mut ico = Icosahedron::create(center, radius, attrs);
-        let mesh = (0..subdivisions).fold(ico.mesh_mut(), |acc, _| {
-            let _ = acc.subdivide().by_linear();
-            acc
-        });
+        let mesh = ico.subdivide_by_loop(subdivisions)?;
 
-        Sphere {
+        Ok(Sphere {
             radius,
             center,
             segments: subdivisions,
             mesh:mesh.clone(),
-        }
+        })
     }
 
     pub fn create<V: Into<Vertex>>(center: V, radius: f32,color:Color) -> Self {
