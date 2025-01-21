@@ -1,0 +1,817 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Tesselate. 3d scientific visualization with Rust</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Tesselate. 3d scientific visualization with Rust</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <div align="center">
+<h1 id="tessellate"><a class="header" href="#tessellate">Tessellate</a></h1>
+<img src="assets/logo.jpeg" alt="Tessellate Logo" width="128"/>
+<h3 id="3d-scientific-data-visualization-and-plotting-tool-for-rust"><a class="header" href="#3d-scientific-data-visualization-and-plotting-tool-for-rust">3D Scientific Data Visualization and Plotting Tool for Rust</a></h3>
+<p><a href="https://crates.io/crates/tessellate"><img src="https://img.shields.io/crates/v/tessellate.svg" alt="Crates.io" /></a>
+<a href="https://docs.rs/tessellate"><img src="https://docs.rs/tessellate/badge.svg" alt="Documentation" /></a>
+<a href="LICENSE.html"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" /></a></p>
+</div>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Tessellate is a powerful 3D scientific visualization library written in Rust,
+designed for performance and safety.
+Drawing inspiration from PyVista and VTK,
+it provides a robust foundation for creating sophisticated scientific visualizations.</p>
+<h2 id="features"><a class="header" href="#features">Features</a></h2>
+<ul>
+<li>🚀 <strong>Robustness</strong>: Written entirely in Rust for maximum speed and efficiency</li>
+<li>🛡️ <strong>Memory Safe</strong>: Leverages Rust's safety guarantees</li>
+<li>📊 <strong>Scientific Visualization</strong>: Specialized tools for scientific data representation</li>
+<li>🎨 <strong>3D Plotting</strong>: Comprehensive 3D plotting capabilities</li>
+</ul>
+<h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
+<p>Add Tessellate to your <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+tessellate = "0.1.0"
+</code></pre>
+<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
+<pre><pre class="playground"><code class="language-rust">
+use tessellate::*;
+use glam::Vec3;
+
+fn main() -&gt; TessResult&lt;()&gt; {
+    let meshes = vec![
+        Torus::default().into(),
+    ];
+
+    let opts = GpuOptions::new(
+        CameraOptions::new_position(Vec3::new(0.0, 5.0, 10.0)),
+        LightOptions::new_position(Vec3::new(0.0, 5.0, 3.0)),
+    );
+
+    Ok(gpu::visualize(meshes, opts)?)
+}</code></pre></pre>
+<h2 id="documentation"><a class="header" href="#documentation">Documentation</a></h2>
+<p>This book provides a comprehensive guide to Tessellate's features and capabilities.
+For detailed information on the API, please refer to the <a href="https://docs.rs/tessellate">API Documentation</a>.</p>
+<h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
+<p>We welcome contributions! Please see our <a href="CONTRIBUTING.html">Contributing Guide</a> for details.</p>
+<h2 id="license"><a class="header" href="#license">License</a></h2>
+<p>This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.</p>
+<hr />
+<div align="center">
+Made with ❤️ by the Tessellate Team
+</div><div style="break-before: page; page-break-before: always;"></div><h1 id="definitions"><a class="header" href="#definitions">Definitions</a></h1>
+<p>This section provides an overview of the fundamental elements of the <strong>mesh module</strong>, which lies at the core of Tessellate. The module offers essential building blocks for working with meshes, enabling the creation, manipulation, and analysis of 3D geometries. Below are the primary elements and their roles:</p>
+<ul>
+<li><strong>Vertex</strong>: Represents a point in 3D space with <code>x</code>, <code>y</code>, and <code>z</code> coordinates.</li>
+<li><strong>Edge</strong>: A line segment that connects two vertices.</li>
+<li><strong>Face</strong>: A flat surface enclosed by edges, typically a triangle or polygon.</li>
+<li><strong>Mesh</strong>: A collection of vertices, edges, and faces that together define the structure of a 3D object.</li>
+<li><strong>Properties</strong>: Functions and data structures to compute and manage mesh characteristics, such as area and volume.</li>
+<li><strong>Attributes</strong>: Metadata associated with the mesh, including colors, texture coordinates, and other descriptive properties.</li>
+<li><strong>MeshType</strong>: Specifies the type of mesh, such as a point cloud, surface, or wireframe representation.</li>
+<li><strong>BoundingBox</strong>: An enclosing box around the mesh, used for spatial queries and performance optimization.</li>
+<li><strong>Polygon</strong>: A flat, multi-sided shape defined by vertices and edges, often used to construct mesh faces.</li>
+<li><strong>Color</strong>: Defines the color properties of the mesh or its individual elements.</li>
+<li><strong>Transform</strong>: Tools for applying transformations to the mesh, such as translation, rotation, and scaling.</li>
+<li><strong>Boolean Operations</strong>: Functions to perform operations like union, intersection, and difference between meshes.</li>
+<li><strong>Query</strong>: Tools to search and retrieve elements within the mesh, such as specific vertices, edges, or faces.</li>
+<li><strong>Shape</strong>: Utilities for creating and editing geometric shapes that form the basis of the mesh.</li>
+</ul>
+<p>Each of these elements plays a crucial role in building and working with 3D models,
+forming the foundation for advanced mesh operations and analysis.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="mesh"><a class="header" href="#mesh">Mesh</a></h1>
+<p>The <code>Mesh</code> struct represents a 3D mesh consisting of vertices, edges, and faces.
+It is the core data structure for representing 3D geometries in Tessellate.
+The <code>Mesh</code> struct provides various methods for creating, manipulating, and analyzing 3D meshes.</p>
+<h2 id="fields"><a class="header" href="#fields">Fields</a></h2>
+<ul>
+<li><strong>vertices</strong>: A vector of vertices in the mesh.</li>
+<li><strong>edges</strong>: A vector of edges in the mesh.</li>
+<li><strong>faces</strong>: A vector of faces in the mesh.</li>
+<li><strong>attributes</strong>: Additional attributes associated with the mesh.</li>
+</ul>
+<h2 id="example-of-creating-a-mesh"><a class="header" href="#example-of-creating-a-mesh">Example of creating a mesh</a></h2>
+<pre><pre class="playground"><code class="language-rust">use tessellate::mesh::attributes::Attributes;
+use tessellate::mesh::parts::polygon::Polygon;
+use tessellate::mesh::parts::vertex::Vertex;
+use tessellate::mesh::Mesh;
+
+fn main() {
+    let vertices = vec![
+        Vertex::new(0.0, 0.0, 0.0),
+        Vertex::new(1.0, 0.0, 0.0),
+        Vertex::new(1.0, 1.0, 0.0),
+        Vertex::new(0.0, 1.0, 0.0),
+    ];
+    let faces = vec![
+        Face::from((0, 1, 2)),
+        Face::from((0, 2, 3)),
+        Face::from((0, 3, 1)),
+    ];
+ 
+    let mesh = Mesh::from_vertices(vertices, faces, Attributes::default());
+
+    // Print the mesh details
+    println!("{:?}", mesh);
+}</code></pre></pre>
+<p>or like that</p>
+<pre><pre class="playground"><code class="language-rust">fn main() {
+    let mesh = Mesh::from_polygons(
+        vec![
+            poly!(-2.5, -2.5, 0.0; 2.5, -2.5, 0.0; 0.0, 0.0, 5.0),
+            poly!(2.5, -2.5, 0.0; 2.5, 2.5, 0.0; 0.0, 0.0, 5.0),
+        ],
+        Attributes::default(),
+    );
+}</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="parts-and-components-of-mesh"><a class="header" href="#parts-and-components-of-mesh">Parts and components of mesh</a></h1>
+<h2 id="vertex"><a class="header" href="#vertex">Vertex</a></h2>
+<p>A <code>Vertex</code> represents a point in 3D space with x, y, and z coordinates.</p>
+<pre><pre class="playground"><code class="language-rust">use tessellate::v;
+fn main(){
+    let vertex1 = v!(1.0, 2.0, 3.0);
+    let vertex2 = Vertex::new(1.0, 2.0, 3.0);
+    let vertex3 = [1.0, 2.0, 3.0].into();
+    
+    println!("{:?}", [vertex2, vertex3, vertex1]);
+}</code></pre></pre>
+<h2 id="edge"><a class="header" href="#edge">Edge</a></h2>
+<p>An <code>Edge</code> represents a connection between two vertices in a mesh.</p>
+<p>There are two types of edges:</p>
+<ul>
+<li>MeshEdge - An edge that connects two vertices in a mesh using their indices.</li>
+<li>Edge - An edge that connects two vertices in a mesh using the vertices themselves.</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust">fn main(){
+    let edge:Edge = (v!(0.0, 0.0, 0.0), v!(1.0, 1.0, 1.0)).into();
+}
+</code></pre></pre>
+<h2 id="face"><a class="header" href="#face">Face</a></h2>
+<p>A <code>Face</code> represents a polygonal surface in a mesh, typically defined by three or more vertices.
+There are two types of faces:</p>
+<ul>
+<li>Triangle - A face with three vertices.</li>
+<li>Quad - A face with four vertices.</li>
+</ul>
+<p>The face works with indices of vertices in the mesh.</p>
+<pre><pre class="playground"><code class="language-rust">
+use tessellate::mesh::parts::face::Face;
+fn main(){
+    let triangle = Face::new3(0, 1, 2);
+ 
+    let quad = Face::new4(0, 1, 2, 3);
+
+    // Creating faces from a vector of elements with an attempt to triangulate it.
+    let faces = Face::new(vec![0, 1, 2, 3, 4, 5, 6]).unwrap();
+}
+</code></pre></pre>
+<h2 id="polygon"><a class="header" href="#polygon">Polygon</a></h2>
+<p>A <code>Polygon</code> is a flat shape consisting of straight, non-intersecting lines that are joined to form a closed chain or circuit.</p>
+<pre><pre class="playground"><code class="language-rust">use tessellate::mesh::parts::polygon::Polygon;
+use tessellate::mesh::parts::vertex::Vertex;
+
+fn main() { 
+    // Creating a polygon with three vertices
+    let v0 = Vertex::new(0.0, 0.0, 0.0);
+    let v1 = Vertex::new(1.0, 0.0, 0.0);
+    let v2 = Vertex::new(0.0, 1.0, 0.0);
+    let triangle = Polygon::new(vec![v0, v1, v2]);
+    
+    // Creating a polygon with four vertices
+    let v3 = Vertex::new(1.0, 1.0, 0.0);
+    let quad:Polygon = vec![v0, v1, v2, v3].into(); 
+}
+</code></pre></pre>
+<h2 id="plane"><a class="header" href="#plane">Plane</a></h2>
+<p>A <code>Plane</code> is a flat, two-dimensional surface that extends infinitely in 3D space.</p>
+<pre><pre class="playground"><code class="language-rust">use glam::Vec3;
+use tessellate::mesh::attributes::Attributes;
+use tessellate::mesh::parts::plane::Plane;
+
+fn main(){ 
+    // Create a plane from a normal vector and a point
+    let normal = Vec3::new(0.0, 1.0, 0.0);
+    let point = Vec3::new(0.0, 0.0, 0.0);
+    let plane = Plane::new(normal, point);
+    
+    // Calculate the distance from a point to the plane
+    let distance = plane.distance(Vec3::new(0.0, 2.0, 0.0));
+    assert_eq!(distance, 2.0);
+}</code></pre></pre>
+<h2 id="bbox"><a class="header" href="#bbox">BBox</a></h2>
+<p>A <code>BBox</code> (Bounding Box) is a rectangular box that completely contains a 3D object,
+used for spatial indexing and collision detection.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="properties"><a class="header" href="#properties">Properties</a></h1>
+<p>A set of properties that can be analyzed from a mesh.</p>
+<h2 id="example"><a class="header" href="#example">Example</a></h2>
+<pre><pre class="playground"><code class="language-rust">use crate::tessellate::mesh::shape::pyramid::Pyramid;
+use crate::tessellate::mesh::{Mesh, properties::MeshProperties};
+use crate::tessellate::mesh::parts::vertex::Vertex;
+use crate::tessellate::mesh::parts::face::Face;
+
+fn main(){
+    let pyramid = Pyramid::default();
+    
+    assert!(&amp;pyramid.props().is_manifold());
+    assert!(&amp;pyramid.props().is_watertight());
+    assert!(&amp;pyramid.props().isolated_vertices().is_empty());
+}</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="attributes"><a class="header" href="#attributes">Attributes</a></h1>
+<p>The attributes that can be set up on the mesh and provided to use for visualization or other purposes.</p>
+<h2 id="meshtype"><a class="header" href="#meshtype">MeshType</a></h2>
+<p>The type of mesh that can be created. The following types are available:</p>
+<ul>
+<li>Polygons: A mesh that is made up of polygons.</li>
+<li>Lines: A mesh that is made up of lines.</li>
+<li>Cloud: A mesh that is made up of points.</li>
+</ul>
+<h2 id="material"><a class="header" href="#material">Material</a></h2>
+<p>The material for the mesh that affects how it will interact with the light.
+The following properties can be set:</p>
+<ul>
+<li>Ambient: The ambient color of the material.</li>
+<li>Diffuse: The diffuse color of the material.</li>
+<li>Specular: The specular color of the material.</li>
+<li>Shininess: The shininess of the material.</li>
+</ul>
+<h2 id="color"><a class="header" href="#color">Color</a></h2>
+<p>The color of the mesh.
+The color can be set as a single color or as a gradient.
+The color is set up as a tuple of 4 values (r, g, b, a)
+where r, g, b are the red, green, blue values and a is the alpha value.</p>
+<p>Can be set up for the following parts of the mesh:</p>
+<ul>
+<li>Vertex: A color assigned to each vertex.</li>
+<li>Face: A color assigned to each face.</li>
+<li>Line: A color assigned to each line.</li>
+<li>Mesh: A single color for the entire mesh.</li>
+<li>Func: A function that assigns a color a vertex with some logic.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="query"><a class="header" href="#query">Query</a></h1>
+<p>A set of queries that can be performed on a mesh.
+It helps to analyze the mesh and extract useful information.
+It uses auxiliary structures like <code>KDTree</code> and <code>BSP Tree</code> to perform the queries.</p>
+<h2 id="example-1"><a class="header" href="#example-1">Example</a></h2>
+<pre><pre class="playground"><code class="language-rust">use std::process::Termination;
+use crate::tessellate::mesh::shape::cylinder::Cylinder;
+
+fn main() -&gt; TessResult&lt;()&gt; {
+    let cylinder = Cylinder::default();
+    
+    let kd_tree = &amp;cylinder.query().try_kd_tree(None)?;
+    let sskd_tree = &amp;cylinder.query().try_sskd_tree(None, None)?;
+    let octree = &amp;cylinder.query().try_octree(None)?;
+    let bsp_tree = &amp;cylinder.query().try_bsp_tree(None)?;
+    
+    let poly_centers = &amp;cylinder.query().extract_poly_centers()?;
+    let edge_centers = &amp;cylinder.query().extract_edge_centers()?;
+    let manifold_edges = &amp;cylinder.query().extract_manifold_edges()?;
+    
+}</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="import"><a class="header" href="#import">Import</a></h1>
+<p>The <code>import</code> module provides functions to read mesh data from files. The supported file formats are:</p>
+<ul>
+<li><a href="./stl.html">STL</a></li>
+<li><a href="./ply.html">PLY</a></li>
+<li><a href="./obj.html">OBJ</a></li>
+</ul>
+<p>Usage example can be found in
+<a href="https://github.com/besok/tessellate/tree/main/examples/import_models" target="_blank">repository</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="import-stl-files"><a class="header" href="#import-stl-files">Import STL files</a></h1>
+<p>The format of the <a href="https://en.wikipedia.org/wiki/STL_(file_format)">STL</a> file.</p>
+<pre><pre class="playground"><code class="language-rust">
+fn main() -&gt; TessResult&lt;()&gt; {
+    let building = files::stl::import_stl("examples/import_models/at_t_building.stl")?;
+    Ok(())
+}
+
+
+</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="import-ply-files"><a class="header" href="#import-ply-files">Import PLY files</a></h1>
+<p>The <a href="https://en.wikipedia.org/wiki/PLY_(file_format)">PLY</a> file format.</p>
+<pre><pre class="playground"><code class="language-rust">
+fn main() -&gt; TessResult&lt;()&gt; {
+    let building = files::ply::import_ply("examples/import_models/ply/ply_ascii.ply")?;
+    Ok(())
+}
+</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="import-obj-files"><a class="header" href="#import-obj-files">Import OBJ files</a></h1>
+<p>The <a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file">OBJ</a> file format.</p>
+<pre><pre class="playground"><code class="language-rust">use tessellate::files::obj::import_objs;
+fn main() -&gt; TessResult&lt;()&gt; {
+    let options = tobj::LoadOptions::default();
+    let meshes = import_objs("path/to/your.obj", &amp;options)?;
+    Ok(())
+}</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="visualization"><a class="header" href="#visualization">Visualization</a></h1>
+<p>The library uses wgpu, egui, winit for visualization.</p>
+<h2 id="example-2"><a class="header" href="#example-2">Example</a></h2>
+<pre><pre class="playground"><code class="language-rust">
+use env_logger::Builder;
+use glam::{Mat4, Vec3};
+use log::{info, LevelFilter};
+use tessellate::gpu::options::{CameraOptions, GpuOptions, LightOptions};
+use tessellate::mesh::material::{Color, RgbaColor};
+use tessellate::mesh::transform::Transform;
+use tessellate::mesh::{HasMesh, Mesh, MeshError};
+use tessellate::{files, gpu, TessError, TessResult};
+use tobj::LoadOptions;
+
+fn main() -&gt; TessResult&lt;()&gt; {
+    let path = "examples/import_models/cow.obj";
+    let mut cow = files::obj::import_obj(path, &amp;LoadOptions::default())?;
+    let meshes = vec![cow];
+    let options = GpuOptions::default();
+    Ok(gpu::visualize(meshes, options)?)
+}
+
+</code></pre></pre>
+<p><img src="assets/cow.png" alt="Example" /></p>
+<h2 id="components"><a class="header" href="#components">Components</a></h2>
+<h3 id="camera"><a class="header" href="#camera">Camera</a></h3>
+<p>The visualization gives the option to rotate,shift, scale the scene. The manipulations are performed
+around the center of the scene where the center is the centroid of the bounding box of the scene.
+The initial position for the camera is set from the configurations.</p>
+<h3 id="light"><a class="header" href="#light">Light</a></h3>
+<p>The light affects the surfaces for the objects in the scene. The light is set from the configurations.
+Every mesh has a set of light properties that can be set.</p>
+<h3 id="axes"><a class="header" href="#axes">Axes</a></h3>
+<p>The axes are drawn in the scene to give a sense of direction. The axes are drawn on the corner
+of the bounding box of the scene.</p>
+<h3 id="ui"><a class="header" href="#ui">UI</a></h3>
+<p>The UI is used to control the camera and light properties. The UI is drawn using egui.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="gnu-options"><a class="header" href="#gnu-options">Gnu Options</a></h1>
+<p>The options module provides the following options for the visualization</p>
+<h2 id="camera-options"><a class="header" href="#camera-options">Camera options</a></h2>
+<h3 id="camera-position"><a class="header" href="#camera-position">Camera position</a></h3>
+<p>The initial positions for the camera. The position is a vector in the space. The default value is [0, 3, 3].</p>
+<h3 id="camera-fovy"><a class="header" href="#camera-fovy">Camera fovy</a></h3>
+<p>The field of view of the camera. The default value is 45. That means that the camera has a 45 degrees field of view.</p>
+<h3 id="camera-znear"><a class="header" href="#camera-znear">Camera znear</a></h3>
+<p>The near clipping plane of the camera. The default value is 0.1.
+It is the distance from the camera to the near clipping plane.</p>
+<h3 id="camera-zfar"><a class="header" href="#camera-zfar">Camera zfar</a></h3>
+<p>The far clipping plane of the camera. The default value is 1000.
+It is the distance from the camera to the far clipping plane.</p>
+<h3 id="camera-speed-and-sensitivity"><a class="header" href="#camera-speed-and-sensitivity">Camera speed and sensitivity</a></h3>
+<p>The speed and sensitivity of the camera. The default value is 0.1.
+It is the speed of the camera when moving and the sensitivity of the camera when rotating.</p>
+<h2 id="light-options"><a class="header" href="#light-options">Light options</a></h2>
+<h3 id="light-position"><a class="header" href="#light-position">Light position</a></h3>
+<p>The initial positions for the light. The position is a vector in the space. The default value is [0, 3, 3].</p>
+<h3 id="light-ambient"><a class="header" href="#light-ambient">Light ambient</a></h3>
+<p>Light ambient color. The ambient affects all objects in the scene equally.
+This helps to ensure that no part of the scene is completely dark,
+even if it is not directly illuminated by a light source.
+The default value is [0.4, 0.4, 0.4].</p>
+<h3 id="light-diffuse"><a class="header" href="#light-diffuse">Light diffuse</a></h3>
+<p>Light diffuse color. The diffuse color is the color of the light that is reflected off a surface.
+The default value is [0.8, 0.8, 0.8].</p>
+<h3 id="light-specular"><a class="header" href="#light-specular">Light specular</a></h3>
+<p>Light specular color. The specular color is the color of the light that is reflected off a surface.
+The default value is [0.8, 0.8, 0.8].</p>
+<h3 id="show-light-source"><a class="header" href="#show-light-source">Show light source</a></h3>
+<p>Show the light source in the scene. The default value is false.</p>
+<h3 id="how-to-affect-intensity-of-the-light"><a class="header" href="#how-to-affect-intensity-of-the-light">How to affect intensity of the light</a></h3>
+<p>The intensity of the light is calculated as the sum of the ambient, diffuse, and specular colors.
+To get higher intensity, you can increase the values of the colors.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="controls"><a class="header" href="#controls">Controls</a></h1>
+<p>By default, there are several controls that are available to the user.
+These controls are used to manipulate the camera.</p>
+<h2 id="camera-controls-by-mouse"><a class="header" href="#camera-controls-by-mouse">Camera controls by mouse</a></h2>
+<p>With left mouse button, you can rotate the camera around the object.
+With right mouse button, you can shift the camera in the plane perpendicular to the view direction.
+With middle mouse button, you can zoom in and out.</p>
+<h2 id="ui-controls"><a class="header" href="#ui-controls">UI controls</a></h2>
+<p>The UI controls are displayed on the left side of the screen.
+<img src="assets/controls.png" alt="Controls" /></p>
+<p>with the UI controls, you can:</p>
+<ul>
+<li>Rotate the camera around the object</li>
+<li>Shift the camera in the plane perpendicular to the view direction</li>
+<li>Zoom in and out</li>
+<li>(X,Y,Z) +- set the camera position to 0 in the space according to the axis and button pressed</li>
+<li>Reset the camera position to the initial position</li>
+<li>Set all axes to 0</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="mesh-manipulation"><a class="header" href="#mesh-manipulation">Mesh Manipulation</a></h1>
+<p>This section covers the various techniques and operations for manipulating 3D meshes.
+It includes methods for creating basic geometries, performing mesh filtering,
+and applying advanced manipulation techniques.
+The goal is to provide a comprehensive guide for developers and researchers
+to modify and analyze mesh structures effectively.</p>
+<h2 id="topics-covered"><a class="header" href="#topics-covered">Topics Covered</a></h2>
+<ul>
+<li><strong>Basic Geometries</strong>: Introduction to creating fundamental geometric shapes.</li>
+<li><strong>Parametric Geometric Objects</strong>: Techniques for generating shapes based on parametric equations.</li>
+<li><strong>Explicit Structured Grid</strong>: Methods for defining and manipulating structured grids.</li>
+<li><strong>Structured Surface</strong>: Techniques for creating and modifying structured surfaces.</li>
+<li><strong>Triangulated Surface</strong>: Working with surfaces composed of triangles.</li>
+<li><strong>Platonic Solids</strong>: Creating and manipulating regular, convex polyhedra.</li>
+<li><strong>Point Cloud</strong>: Handling and processing collections of points in 3D space.</li>
+</ul>
+<h2 id="mesh-filtering-techniques"><a class="header" href="#mesh-filtering-techniques">Mesh Filtering Techniques</a></h2>
+<ul>
+<li><strong>Boolean Operations</strong>: Performing union, intersection, and difference operations on meshes.</li>
+<li><strong>Extract Cell Centers</strong>: Identifying and extracting the centers of mesh cells.</li>
+<li><strong>Clipping with a Surface, Plane, and Boxes</strong>: Techniques for clipping meshes using various shapes.</li>
+<li><strong>Collision Detection</strong>: Methods for detecting collisions between meshes.</li>
+<li><strong>Volumetric Analysis</strong>: Analyzing the volume and other properties of meshes.</li>
+<li><strong>Find and Label Connected Regions</strong>: Identifying and labeling connected components in a mesh.</li>
+<li><strong>Decimate a Mesh</strong>: Reducing the number of vertices and faces in a mesh.</li>
+<li><strong>Extract Edges</strong>: Extracting the edges from a mesh.</li>
+<li><strong>Extract Surface</strong>: Techniques for extracting the surface of a mesh.</li>
+<li><strong>Gaussian Smoothing</strong>: Applying Gaussian smoothing to a mesh.</li>
+<li><strong>Geodesic Paths</strong>: Calculating geodesic paths on a mesh.</li>
+<li><strong>Interpolating</strong>: Interpolating values across a mesh.</li>
+<li><strong>Computing Mesh Quality</strong>: Evaluating the quality of a mesh.</li>
+<li><strong>Resampling</strong>: Resampling a mesh to a different resolution.</li>
+<li><strong>Surface Smoothing</strong>: Techniques for smoothing the surface of a mesh.</li>
+<li><strong>Surface Reconstruction</strong>: Reconstructing surfaces from point clouds or other data.</li>
+<li><strong>Voxelize a Surface Mesh</strong>: Converting a surface mesh into a voxel representation.</li>
+<li><strong>Subdivide Cells</strong>: Subdividing the cells of a mesh for finer detail.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="basic-shapes"><a class="header" href="#basic-shapes">Basic shapes</a></h1>
+<p>This section covers the creation of basic geometric shapes using <code>tesselate</code>.
+<img src="assets/bshapes.png" alt="Example" /></p>
+<p>The running example can be found
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/basic_shapes" target="_blank">repository</a></p>
+<h2 id="shapes"><a class="header" href="#shapes">Shapes</a></h2>
+<ul>
+<li>cuboid
+<ul>
+<li>cube</li>
+<li>rectangle cuboid</li>
+</ul>
+</li>
+<li>beam</li>
+<li>cylinder</li>
+<li>cone</li>
+<li>grid</li>
+<li>icosahedron</li>
+<li>plane</li>
+<li>pyramid</li>
+<li>ring</li>
+<li>sphere</li>
+<li>torus</li>
+</ul>
+<p>All shapes are created using the <code>tesselate</code> module.
+The module provides a set of functions to create the shapes.
+All shapes have  default method and <code>create</code> method.</p>
+<h3 id="example-3"><a class="header" href="#example-3">Example</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use glam::{Mat4, Quat, Vec3};
+use tessellate::mesh::shape::pyramid::Pyramid;
+use tessellate::mesh::shape::sphere::Sphere;
+
+fn pyramid() -&gt; Result&lt;Pyramid, TessError&gt; {
+    let mut pyramid = Pyramid::default();
+    pyramid.transform(Mat4::from_rotation_translation(
+        Quat::from_rotation_x(0.0),
+        Vec3::new(0.0, 1.0, -3.0),
+    ))?;
+    Ok(pyramid)
+}
+
+fn green_sphere() -&gt; TessResult&lt;Sphere&gt; {
+    Ok(Sphere::create_ico(Vertex::default(), 1.0, 3, RgbaColor::GREEN.into()))
+}
+
+<span class="boring">}</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="parametric-geometric-objects"><a class="header" href="#parametric-geometric-objects">Parametric Geometric Objects</a></h1>
+<p>Parametric geometric objects are a set of predefined geometric objects
+that can be generated by specifying a set of parameters.
+These objects are useful for generating simple geometric shapes that can be used for testing,
+visualization, and other purposes.</p>
+<p><img src="assets/pshapes.png" alt="Example" /></p>
+<p>The running example can be found
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/parametric_shapes" target="_blank">repository</a></p>
+<p>The following parametric geometric objects are available in <code>tesselate</code>:</p>
+<ul>
+<li><a href="https://mathworld.wolfram.com/BohemianDome.html">Bohemian dome</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Bour%27s_minimal_surface">Bour</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Boy%27s_surface">Boy</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Conic_spiral">Conic spiral</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Dini%27s_surface">Dini surface</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Ellipsoid">Ellipsoid</a></li>
+<li><a href="https://en.wikipedia.org/wiki/M%C3%B6bius_strip">Mobius strip</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Pseudosphere">Pseudosphere</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Superellipsoid">Superellipsoid</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Supertoroid">Supertoroid</a></li>
+</ul>
+<p>All shapes are created using the <code>tesselate</code> module.
+The module provides a set of functions to create the shapes.
+All shapes have  default method and <code>create</code> method.</p>
+<h3 id="example-4"><a class="header" href="#example-4">Example</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use glam::Vec3;
+use tessellate::mesh::shape::parametric::*;
+use tessellate::mesh::material::Color;
+fn mobius_strip() -&gt; MobiusStrip {
+    MobiusStrip::default()
+}
+fn super_ellipsoid() -&gt; SuperEllipsoid {
+    SuperEllipsoid::create(
+        Vec3::new(3.0, 3.0, 2.0), 
+        50, 
+        1.0, 
+        1.0, 
+        2.0, 
+        4.0, 
+        5.0, 
+        Color::default())
+}
+fn pseudo_sphere() -&gt; Pseudosphere {
+    Pseudosphere::default()
+}
+
+<span class="boring">}</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><div style="break-before: page; page-break-before: always;"></div><h1 id="boolean-operations"><a class="header" href="#boolean-operations">Boolean Operations</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="extract-polygon-and-edges-centers"><a class="header" href="#extract-polygon-and-edges-centers">Extract polygon and edges centers</a></h1>
+<p>It provides the means to extract the centers of the polygons and edges of a mesh.
+The centers are computed as the average of the vertices that define the polygon or edge.
+The centers are stored in a new mesh object.
+The new mesh object is a point cloud with the centers as vertices.</p>
+<p>The running example can be found
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/polygon_and_edges_centers" target="_blank">repository</a></p>
+<p>For details see <a href="./query.html">query</a> and <code>extract_poly_centers</code> and <code>extract_edge_centers</code> methods.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="connected-regions-on-the-mesh"><a class="header" href="#connected-regions-on-the-mesh">Connected regions on the mesh</a></h1>
+<p>The query on the mesh provides a row of methods to extract the connected regions of the mesh.</p>
+<p>The following methods are available in the <code>tessellate</code> module:</p>
+<ul>
+<li><code>extract_connected_regions</code>: Extracts all connected regions from the mesh.</li>
+<li><code>extract_largest_connected_region</code>: Extracts the largest connected region from the mesh.</li>
+<li><code>extract_connected_regions_by_vertexes</code>: Extracts connected regions based on specified vertices.</li>
+<li><code>extract_closest_connected_region</code>: Extracts the connected region closest to a specified vertex.</li>
+</ul>
+<p>The running example can be found
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/connectivity" target="_blank">repository</a></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="extract-edges"><a class="header" href="#extract-edges">Extract Edges</a></h1>
+<p>It provides the means to extract the edges of a mesh.</p>
+<p>The running example can be found
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/extract_edges" target="_blank">repository</a></p>
+<p>For details see <a href="./query.html">query</a> and the methods:</p>
+<h3 id="extract_boundary_edges"><a class="header" href="#extract_boundary_edges">extract_boundary_edges</a></h3>
+<p>This function identifies and returns the edges that are on the boundary of the mesh. Boundary edges are those that belong to only one face.</p>
+<h3 id="extract_manifold_edges"><a class="header" href="#extract_manifold_edges">extract_manifold_edges</a></h3>
+<p>This function identifies and returns the edges that are shared by exactly two faces.</p>
+<h3 id="extract_non_manifold_edges"><a class="header" href="#extract_non_manifold_edges">extract_non_manifold_edges</a></h3>
+<p>This function identifies and returns the edges that are shared by more than two faces.</p>
+<h3 id="extract_feature_edges"><a class="header" href="#extract_feature_edges">extract_feature_edges</a></h3>
+<p>This function identifies and returns the edges that</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="subdivide-cells"><a class="header" href="#subdivide-cells">Subdivide cells</a></h1>
+<p>The filter utilizes three different subdivision algorithms to subdivide a mesh’s cells:</p>
+<ul>
+<li>butterfly - Butterfly subdivision algorithm</li>
+<li>loop   - Loop subdivision algorithm</li>
+</ul>
+<p>The running example can be found
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/subdivide_cells" target="_blank">repository</a></p>
+<pre><pre class="playground"><code class="language-rust">fn main() -&gt; TessResult&lt;()&gt; {
+
+    let ico = mesh::shape::icosahedron::Icosahedron::create(Vertex::default(), 0.2,  Attributes::default());
+    let ico_b1 = ico.subdivide_by_loop(1)?;
+    let ico_b2 = ico.subdivide_by_butterfly(1)?;
+    Ok()
+}
+</code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="auxiliary-methods-and-structures"><a class="header" href="#auxiliary-methods-and-structures">Auxiliary methods and structures</a></h1>
+<p>This section contains a collection of auxiliary methods and structures that are used in the library.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="kdtree"><a class="header" href="#kdtree">KDTree</a></h1>
+<p>A KDTree (k-dimensional tree) is a space-partitioning data structure for organizing points in a k-dimensional space.
+K DTrees are useful for applications
+that involve multidimensional search keys, such as range searches and nearest neighbor searches.<br />
+For more information, you can visit the <a href="https://en.wikipedia.org/wiki/K-d_tree">Wikipedia</a> page on KDTrees.</p>
+<p>The running example can be found
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/sskd_tree" target="_blank">repository</a></p>
+<p>For details see <a href="./query.html">query</a> and `` and <code>try_sskd_tree</code>, <code>try_kd_tree</code> methods.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="bsptree"><a class="header" href="#bsptree">BSPTree</a></h1>
+<p>A BSPTree (Binary Space Partitioning Tree) is a data structure used in computer graphics, computational geometry, and
+other fields to recursively subdivide a space into convex sets by hyperplanes. This structure is useful for rendering
+scenes, collision detection, and other spatial queries.</p>
+<p>For details see <a href="./query.html">query</a> and `` and <code>try_bsp_tree</code>  method.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="distance"><a class="header" href="#distance">Distance</a></h1>
+<p>Calculate the distance in 3D space.</p>
+<p>It can be used to calculate the distance between:</p>
+<ul>
+<li>two vertices</li>
+<li>a vertex and a mesh</li>
+<li>two meshes</li>
+</ul>
+<p>The running example can be found
+in the <a href="https://github.com/besok/tessellate/tree/main/examples/distance" target="_blank">repository</a></p>
+<h2 id="notes"><a class="header" href="#notes">Notes</a></h2>
+<p>The distance is calculated using the Euclidean distance formula.
+The meshes must be watertight and closed.
+It uses existing KDTree implementation with vertices so the precision is limited to the vertices.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-1"><a class="header" href="#contributing-1">Contributing</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><p>MIT License</p>
+<p>Copyright (c) [2024] [Boris Zhguchev]</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+    </div>
+    </body>
+</html>
