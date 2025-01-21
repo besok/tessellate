@@ -3,7 +3,7 @@ use crate::mesh::distance::distance_between_surfaces;
 use crate::mesh::material::Color;
 use crate::mesh::normals::MeshNormals;
 use crate::mesh::parts::edge::Edge;
-use crate::mesh::subdivision::by_loop;
+use crate::mesh::subdivision::{by_butterfly, by_loop};
 use crate::mesh::tables::MeshTables;
 use parts::bbox::BoundingBox;
 use parts::edge::MeshEdge;
@@ -293,6 +293,9 @@ impl Mesh {
     /// This function returns a `MeshSubdivision` instance that can be used to
     /// apply different subdivision algorithms such as butterfly, loop, or linear.
     ///
+    /// # Parameters
+    /// * `iterations` - The number of iterations to apply the subdivision algorithm.
+    ///
     /// # Returns
     ///
     /// A `MeshSubdivision` instance for further subdivision operations.
@@ -300,6 +303,20 @@ impl Mesh {
         (0..iterations).try_fold(by_loop(self)?, |mesh, _| by_loop(&mesh))
     }
 
+    /// Subdivides the mesh using the specified subdivision algorithm.
+    ///
+    /// This function returns a `MeshSubdivision` instance that can be used to
+    /// apply different subdivision algorithms such as butterfly, loop, or linear.
+    ///
+    /// # Parameters
+    /// * `iterations` - The number of iterations to apply the subdivision algorithm.
+    ///
+    /// # Returns
+    ///
+    /// A `MeshSubdivision` instance for further subdivision operations.
+    pub fn subdivide_by_butterfly(&self, iterations:usize) -> MeshResult<Mesh> {
+        (0..iterations).try_fold(by_butterfly(self)?, |mesh, _| by_butterfly(&mesh))
+    }
     pub fn contains(&self, v: &Vertex) -> bool {
         self.vertices.contains(v)
     }

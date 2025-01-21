@@ -17,7 +17,7 @@ cargo run --example subdivide_cells
 ```
 
 ## Screenshot
-![Subdivide](screenshot.png)
+![Subdivide](img.png)
 
 # Notes
  
